@@ -2,7 +2,11 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([libwupsxx], [0.0], [], [], [])
+AC_INIT([libwupsxx],
+        [0.0],
+        [https://github.com/dkosmari/libwupsxx/issues],
+        [],
+        [https://github.com/dkosmari/libwupsxx])
 AC_CONFIG_SRCDIR([src/item.cpp])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -18,8 +22,6 @@ AM_PROG_AR
 
 AC_LANG([C++])
 AX_APPEND_COMPILE_FLAGS([-std=c++23], [CXX])
-
-
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

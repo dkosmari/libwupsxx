@@ -1,9 +1,9 @@
 /*
- * Papaya-HUD - a HUD plugin for Aroma.
+ * List of Private Use Area symbols in the Wii U's system font.
  *
  * Copyright (C) 2024  Daniel K. O.
  *
- * SPDX-License-Identifier: GPL-3.0-or-later
+ * SPDX-License-Identifier: MIT
  */
 
 #ifndef NINTENDO_GLYPHS_H

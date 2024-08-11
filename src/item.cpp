@@ -1,4 +1,10 @@
-// SPDX-License-Identifier: MIT
+/*
+ * libwupsxx - A C++ wrapper for libwups.
+ *
+ * Copyright (C) 2024  Daniel K. O.
+ *
+ * SPDX-License-Identifier: MIT
+ */
 
 #include <array>
 #include <chrono>
