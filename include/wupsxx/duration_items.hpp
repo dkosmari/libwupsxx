@@ -24,8 +24,6 @@ namespace wups::config {
 
     using hours_item = numeric_item<std::chrono::hours>;
 
-    using days_item = numeric_item<std::chrono::days>;
-
 } // namespace wups::config
 
 #endif

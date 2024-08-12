@@ -33,7 +33,7 @@ wupsxx_HEADERS = 				\
 	include/wupsxx/storage_error.hpp	\
 	include/wupsxx/storage.hpp		\
 	include/wupsxx/text_item.hpp		\
-	include/wupsxx/var_watch.hpp
+	include/wupsxx/var_item.hpp
 
 
 lib_LIBRARIES = src/libwupsxx.a

@@ -6,6 +6,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "wupsxx/duration_items.hpp"
+
 #include "numeric_item_impl.hpp"
 
 namespace wups::config {
@@ -19,7 +21,5 @@ namespace wups::config {
     template class numeric_item<std::chrono::minutes>;
 
     template class numeric_item<std::chrono::hours>;
-
-    template class numeric_item<std::chrono::days>;
 
 } // namespace wups::config

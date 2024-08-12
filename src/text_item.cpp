@@ -24,23 +24,21 @@ namespace {
 
 namespace wups::config {
 
-    text_item::text_item(const std::optional<std::string>& key,
-                         const std::string& label,
+    text_item::text_item(const std::string& label,
                          const std::string& text,
                          std::size_t max_width) :
-        item{key, label},
+        item{label},
         text{text},
         max_width{std::min<std::size_t>(max_width, 79)}
     {}
 
 
     std::unique_ptr<text_item>
-    text_item::create(const std::optional<std::string>& key,
-                      const std::string& label,
+    text_item::create(const std::string& label,
                       const std::string& text,
                       std::size_t max_width)
     {
-        return std::make_unique<text_item>(key, label, text, max_width);
+        return std::make_unique<text_item>(label, text, max_width);
     }
 
 
@@ -89,8 +87,8 @@ namespace wups::config {
 
 
     int
-    text_item::get_selected_display(char* buf,
-                                    std::size_t size)
+    text_item::get_focused_display(char* buf,
+                                   std::size_t size)
         const
     {
         // Note: `buf` is a C string, it needs a null terminator at the end,
@@ -130,46 +128,43 @@ namespace wups::config {
     }
 
 
-    void
-    text_item::on_selected(bool /*is_selected*/)
+    bool
+    text_item::on_focus_request(bool new_focus)
+        const
     {
-        // if (!is_selected)
-        //     first = 0;
+        // Don't let small text be focused, there's no scrolling.
+        if (new_focus && text.size() <= max_width)
+            return false;
+        return true;
     }
 
 
-    void
-    text_item::on_input(WUPSConfigSimplePadData input,
-                        WUPS_CONFIG_SIMPLE_INPUT repeat)
+    FocusChange
+    text_item::on_input(const SimplePadData& input)
     {
-        item::on_input(input, repeat);
+        // Only process inputs if text is not fully visible.
+        if (text.size() > max_width) {
 
-        if (text.empty())
-            return;
+            // Handle text scrolling
 
-        // If text is fully visible, no scrolling happens.
-        if (text.size() <= max_width)
-            return;
+            const std::size_t max_first = text.size() - max_width + left_glyph.size();
 
-        // Handle text scrolling
+            if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_LEFT))
+                if (first > 0)
+                    --first;
 
-        const std::size_t max_first = text.size() - max_width + left_glyph.size();
+            if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_RIGHT))
+                if (first < max_first)
+                    ++first;
 
-        if (input.buttons_d & WUPS_CONFIG_BUTTON_LEFT ||
-            repeat & WUPS_CONFIG_BUTTON_LEFT)
-            if (first > 0)
-                --first;
+            if (input.buttons_d & WUPS_CONFIG_BUTTON_L)
+                first = 0;
 
-        if (input.buttons_d & WUPS_CONFIG_BUTTON_RIGHT ||
-            repeat & WUPS_CONFIG_BUTTON_RIGHT)
-            if (first < max_first)
-                ++first;
+            if (input.buttons_d & WUPS_CONFIG_BUTTON_R)
+                first = max_first;
+        }
 
-        if (input.buttons_d & WUPS_CONFIG_BUTTON_L)
-            first = 0;
-
-        if (input.buttons_d & WUPS_CONFIG_BUTTON_R)
-            first = max_first;
+        return item::on_input(input);
     }
 
 } // namespace wups::config

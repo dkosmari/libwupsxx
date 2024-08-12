@@ -24,27 +24,24 @@ namespace wups::config {
         std::size_t max_width;
         std::size_t first = 0; // first visible character
 
-        text_item(const std::optional<std::string>& key,
-                  const std::string& label,
+        text_item(const std::string& label,
                   const std::string& text = "",
                   std::size_t max_width = 50);
 
         static
         std::unique_ptr<text_item>
-        create(const std::optional<std::string>& key,
-               const std::string& label,
+        create(const std::string& label,
                const std::string& text = "",
                std::size_t max_width = 50);
 
 
         virtual int get_display(char* buf, std::size_t size) const override;
 
-        virtual int get_selected_display(char* buf, std::size_t size) const override;
+        virtual int get_focused_display(char* buf, std::size_t size) const override;
 
-        virtual void on_selected(bool is_selected) override;
+        virtual bool on_focus_request(bool new_focus) const override;
 
-        virtual void on_input(WUPSConfigSimplePadData input,
-                              WUPS_CONFIG_SIMPLE_INPUT repeat) override;
+        virtual FocusChange on_input(const SimplePadData& input) override;
 
     };
 

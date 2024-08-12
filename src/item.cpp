@@ -10,6 +10,8 @@
 #include <chrono>
 #include <cstdio>               // snprintf()
 
+#include <whb/log.h>
+
 #include "wupsxx/item.hpp"
 
 #include "wupsxx/config_error.hpp"
@@ -18,112 +20,196 @@
 using namespace std::literals;
 
 
+#define REPORT_ERROR(e) \
+    WHBLogPrintf("[libwupsxx] error in %s: %s\n", __PRETTY_FUNCTION__, e.what())
+
+
 namespace wups::config {
+
+    // SimplePadData
+
+    SimplePadData::SimplePadData(const WUPSConfigSimplePadData& base)
+        noexcept :
+        WUPSConfigSimplePadData{base},
+        buttons_repeat{}
+    {}
+
+
+    bool
+    SimplePadData::pressed_or_repeated(unsigned mask)
+        const noexcept
+    {
+        return (buttons_d | buttons_repeat) & mask;
+    }
+
 
     namespace dispatchers {
 
         int32_t
         get_display(void* ctx, char* buf, int32_t size)
+            noexcept
         {
-            auto i = static_cast<const item*>(ctx);
-            return i->get_display(buf, size);
+            try {
+                auto it = static_cast<const item*>(ctx);
+                return it->get_display(buf, size);
+            }
+            catch (std::exception& e) {
+                REPORT_ERROR(e);
+                return -1;
+            }
         }
 
 
         int32_t
         get_selected_display(void* ctx, char* buf, int32_t size)
+            noexcept
         {
-            auto i = static_cast<const item*>(ctx);
-            return i->get_selected_display(buf, size);
+            try {
+                auto it = static_cast<const item*>(ctx);
+                if (it->has_focus())
+                    return it->get_focused_display(buf, size);
+                else
+                    return it->get_display(buf, size);
+            }
+            catch (std::exception& e) {
+                REPORT_ERROR(e);
+                return -1;
+            }
         }
 
 
         bool
         is_movement_allowed(void* ctx)
+            noexcept
         {
-            auto i = static_cast<const item*>(ctx);
-            return i->is_movement_allowed();
+            auto it = static_cast<const item*>(ctx);
+            return !it->has_focus();
         }
 
 
         void
         on_close(void* ctx)
+            noexcept
         {
-            auto i = static_cast<item*>(ctx);
-            i->on_close();
+            try {
+                auto it = static_cast<item*>(ctx);
+                it->on_close();
+            }
+            catch (std::exception& e) {
+                REPORT_ERROR(e);
+            }
         }
 
 
         void
         on_delete(void* ctx)
+            noexcept
         {
-            auto i = static_cast<item*>(ctx);
-            i->release(); // don't destroy the handle, it's already happening
-            delete i;
+            try {
+                auto it = static_cast<item*>(ctx);
+                it->release(); // don't destroy the handle, it's already happening
+                delete it;
+            }
+            catch (std::exception& e) {
+                REPORT_ERROR(e);
+            }
         }
 
 
         void
         on_input(void* ctx, WUPSConfigSimplePadData input)
+            noexcept
         {
-            // Here we implement a "repeat" function.
-            using clock = std::chrono::steady_clock;
-            using time_point = clock::time_point;
+            auto it = static_cast<item*>(ctx);
 
-            constexpr auto repeat_delay = 500ms;
-            static std::array<time_point, 16> pressed_time{};
-            auto now = clock::now();
+            try {
+                if (!it->has_focus()) {
+                    // when not focused, the only useful input is A to focus it
+                    if (input.buttons_d & WUPS_CONFIG_BUTTON_A)
+                        it->set_focus(true);
+                    return;
+                }
 
-            unsigned repeat = 0;
-            for (unsigned b = 0; b < 16; ++b) {
-                unsigned mask = 1u << b;
-                if (input.buttons_d & mask)
-                    pressed_time[b] = now;
+                // Here we implement a "repeat" function.
+                using clock = std::chrono::steady_clock;
+                using time_point = clock::time_point;
 
-                if (input.buttons_h & mask)
-                    // if button was held long enough, flag it as being on a repeat state
-                    if (now - pressed_time[b] >= repeat_delay)
-                        repeat |= mask;
+                constexpr auto repeat_delay = 500ms;
+                static std::array<time_point, 16> pressed_time{}; // zero-initialized
+                auto now = clock::now();
 
-                if (input.buttons_r & mask)
-                    pressed_time[b] = {};
+                unsigned repeat = 0;
+                for (unsigned b = 0; b < 16; ++b) {
+                    unsigned mask = 1u << b;
+                    if (input.buttons_d & mask)
+                        pressed_time[b] = now;
+
+                    if (input.buttons_h & mask)
+                        // if button was held long enough, flag it as being on a repeat state
+                        if (now - pressed_time[b] >= repeat_delay)
+                            repeat |= mask;
+
+                    if (input.buttons_r & mask)
+                        pressed_time[b] = {};
+                }
+
+                SimplePadData sinput = input;
+                sinput.buttons_repeat = static_cast<WUPS_CONFIG_SIMPLE_INPUT>(repeat);
+
+                if (it->on_input(sinput) == FocusChange::Lose)
+                    it->set_focus(false);
             }
-
-            auto i = static_cast<item*>(ctx);
-            i->on_input(input, static_cast<WUPS_CONFIG_SIMPLE_INPUT>(repeat));
+            catch (std::exception& e) {
+                REPORT_ERROR(e);
+                it->set_focus(false);
+            }
         }
 
 
         void
         on_input_ex(void* ctx, WUPSConfigComplexPadData input)
+            noexcept
         {
-            // TODO: implement "repeat" functionality for extended input too
-            auto i = static_cast<item*>(ctx);
-            i->on_input(input);
+            auto it = static_cast<item*>(ctx);
+            try {
+                // TODO: implement "repeat" functionality for extended input too
+                if (!it->has_focus())
+                    return;
+
+                if (it->on_input(input) == FocusChange::Lose)
+                    it->set_focus(false);
+            }
+            catch (std::exception& e) {
+                REPORT_ERROR(e);
+                it->set_focus(false);
+            }
         }
 
 
         void
-        on_selected(void* ctx, bool is_selected)
-        {
-            auto i = static_cast<item*>(ctx);
-            i->on_selected(is_selected);
-        }
+        on_selected(void* /*ctx*/, bool /*is_selected*/)
+            noexcept
+        {}
 
 
         void
         restore_default(void* ctx)
+            noexcept
         {
-            auto i = static_cast<item*>(ctx);
-            i->restore();
+            try {
+                auto it = static_cast<item*>(ctx);
+                it->restore();
+            }
+            catch (std::exception& e) {
+                REPORT_ERROR(e);
+            }
         }
 
     } // namespace dispatchers
 
 
-    item::item(const std::optional<std::string>& key,
-               const std::string& label) :
-        key{key}
+    item::item(const std::string& label) :
+        focused{false}
     {
         WUPSConfigAPIItemOptionsV2 options {
             .displayName = label.c_str(),
@@ -157,6 +243,7 @@ namespace wups::config {
 
     void
     item::release()
+        noexcept
     {
         handle = {};
     }
@@ -173,17 +260,20 @@ namespace wups::config {
 
 
     int
-    item::get_selected_display(char* buf,
-                               std::size_t size)
+    item::get_focused_display(char* buf,
+                              std::size_t size)
         const
     {
         return get_display(buf, size);
     }
 
 
-    void
-    item::on_selected(bool)
-    {}
+    bool
+    item::on_focus_request(bool /*new_focus*/)
+        const
+    {
+        return true; // always allow changing focus state
+    }
 
 
     void
@@ -191,30 +281,45 @@ namespace wups::config {
     {}
 
 
-    bool
-    item::is_movement_allowed()
-        const
-    {
-        return true;
-    }
-
-
     void
     item::on_close()
     {}
 
 
-    void
-    item::on_input(WUPSConfigSimplePadData input,
-                   WUPS_CONFIG_SIMPLE_INPUT /*repeat*/)
+    FocusChange
+    item::on_input(const SimplePadData& input)
     {
         if (input.buttons_d & WUPS_CONFIG_BUTTON_X)
             restore();
+
+        if (input.buttons_d & WUPS_CONFIG_BUTTON_B)
+            return FocusChange::Lose;
+
+        return FocusChange::Keep;
+    }
+
+
+    FocusChange
+    item::on_input(const WUPSConfigComplexPadData& /*input*/)
+    {
+        return FocusChange::Keep;
+    }
+
+
+    bool
+    item::has_focus()
+        const noexcept
+    {
+        return focused;
     }
 
 
     void
-    item::on_input(WUPSConfigComplexPadData /*input*/)
-    {}
+    item::set_focus(bool new_focus)
+    {
+        if (on_focus_request(new_focus))
+            focused = new_focus;
+    }
+
 
 } // namespace wups::config

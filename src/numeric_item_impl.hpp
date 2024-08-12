@@ -17,21 +17,19 @@
 
 #include "wupsxx/numeric_item.hpp"
 
+#include "wupsxx/duration.hpp" // make to_string() overload visible
+
 #include "nintendo_glyphs.h"
-#include "wupsxx/storage.hpp"
 
 
 namespace wups::config {
 
     template<typename T>
-    numeric_item<T>::numeric_item(const std::optional<std::string>& key,
-                                  const std::string& label,
+    numeric_item<T>::numeric_item(const std::string& label,
                                   T& variable, T default_value,
                                   T min_value, T max_value,
                                   T fast_increment, T slow_increment) :
-        item{key, label},
-        variable(variable),
-        default_value{default_value},
+        var_item<T>{label, variable, default_value},
         min_value{min_value},
         max_value{max_value},
         fast_increment{fast_increment},
@@ -41,13 +39,12 @@ namespace wups::config {
 
     template<typename T>
     std::unique_ptr<numeric_item<T>>
-    numeric_item<T>::create(const std::optional<std::string>& key,
-                            const std::string& label,
+    numeric_item<T>::create(const std::string& label,
                             T& variable, T default_value,
                             T min_value, T max_value,
                             T fast_increment, T slow_increment)
     {
-        return std::make_unique<numeric_item<T>>(key, label,
+        return std::make_unique<numeric_item<T>>(label,
                                                  variable, default_value,
                                                  min_value, max_value,
                                                  fast_increment, slow_increment);
@@ -61,7 +58,7 @@ namespace wups::config {
     {
         using std::to_string;
         using wups::config::to_string;
-        std::string str = to_string(*variable);
+        std::string str = to_string(variable);
         ::strlcpy(buf, str.c_str(), size);
         return 0;
     }
@@ -69,23 +66,23 @@ namespace wups::config {
 
     template<typename T>
     int
-    numeric_item<T>::get_selected_display(char* buf, std::size_t size)
+    numeric_item<T>::get_focused_display(char* buf, std::size_t size)
         const
     {
         const char* slow_left = "";
         const char* slow_right = "";
         const char* fast_left = "";
         const char* fast_right = "";
-        if (*variable > min_value) {
+        if (variable > min_value) {
             slow_left = NIN_GLYPH_BTN_DPAD_LEFT " ";
             fast_left = NIN_GLYPH_BTN_L;
-        } if (*variable < max_value) {
+        } if (variable < max_value) {
             slow_right = " " NIN_GLYPH_BTN_DPAD_RIGHT;
             fast_right = NIN_GLYPH_BTN_R;
         }
         using std::to_string;
         using wups::config::to_string;
-        std::string str = to_string(*variable);
+        std::string str = to_string(variable);
         std::snprintf(buf, size,
                       "%s%s" "%s" "%s%s",
                       fast_left,
@@ -98,59 +95,24 @@ namespace wups::config {
 
 
     template<typename T>
-    void
-    numeric_item<T>::restore()
+    FocusChange
+    numeric_item<T>::on_input(const SimplePadData& input)
     {
-        variable = default_value;
-        on_changed();
-    }
-
-
-    template<typename T>
-    void
-    numeric_item<T>::on_input(WUPSConfigSimplePadData input,
-                              WUPS_CONFIG_SIMPLE_INPUT repeat)
-    {
-        item::on_input(input, repeat);
-
-        if (input.buttons_d & WUPS_CONFIG_BUTTON_LEFT ||
-            repeat & WUPS_CONFIG_BUTTON_LEFT)
+        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_LEFT))
             variable -= slow_increment;
 
-        if (input.buttons_d & WUPS_CONFIG_BUTTON_RIGHT ||
-            repeat & WUPS_CONFIG_BUTTON_RIGHT)
+        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_RIGHT))
             variable += slow_increment;
 
-        if (input.buttons_d & WUPS_CONFIG_BUTTON_L ||
-            repeat & WUPS_CONFIG_BUTTON_L)
+        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_L))
             variable -= fast_increment;
 
-        if (input.buttons_d & WUPS_CONFIG_BUTTON_R ||
-            repeat & WUPS_CONFIG_BUTTON_R)
+        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_R))
             variable += fast_increment;
 
-        variable = std::clamp(*variable, min_value, max_value);
+        variable = std::clamp(variable, min_value, max_value);
 
-        on_changed();
-    }
-
-
-    template<typename T>
-    void
-    numeric_item<T>::on_changed()
-    {
-        if (!key)
-            return;
-        if (!variable.changed())
-            return;
-
-        try {
-            storage::store(*key, *variable);
-            variable.reset();
-        }
-        catch (std::exception& e) {
-
-        }
+        return var_item<T>::on_input(input);
     }
 
 } // namespace wups::config

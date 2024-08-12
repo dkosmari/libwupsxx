@@ -11,20 +11,19 @@
 
 #include <memory>
 
-#include "item.hpp"
-#include "var_watch.hpp"
+#include "var_item.hpp"
 
 
 namespace wups::config {
 
 
     template<typename T>
-    class numeric_item : public item {
+    class numeric_item : public var_item<T> {
 
     protected:
 
-        var_watch<T> variable;
-        const T default_value;
+        using var_item<T>::variable;
+
         T min_value;
         T max_value;
         T fast_increment;
@@ -32,8 +31,7 @@ namespace wups::config {
 
     public:
 
-        numeric_item(const std::optional<std::string>& key,
-                     const std::string& label,
+        numeric_item(const std::string& label,
                      T& variable, T default_value,
                      T min_value, T max_value,
                      T fast_increment = T{10},
@@ -41,8 +39,7 @@ namespace wups::config {
 
         static
         std::unique_ptr<numeric_item>
-        create(const std::optional<std::string>& key,
-               const std::string& label,
+        create(const std::string& label,
                T& variable, T default_value,
                T min_value, T max_value,
                T fast_increment = T{10},
@@ -51,16 +48,9 @@ namespace wups::config {
 
         virtual int get_display(char* buf, std::size_t size) const override;
 
-        virtual int get_selected_display(char* buf, std::size_t size) const override;
+        virtual int get_focused_display(char* buf, std::size_t size) const override;
 
-        virtual void restore() override;
-
-        virtual void on_input(WUPSConfigSimplePadData input,
-                              WUPS_CONFIG_SIMPLE_INPUT repeat) override;
-
-    private:
-
-        void on_changed();
+        virtual FocusChange on_input(const SimplePadData& input) override;
 
     };
 

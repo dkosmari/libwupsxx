@@ -11,23 +11,19 @@
 
 #include <memory>
 
-#include "item.hpp"
-#include "var_watch.hpp"
+#include "var_item.hpp"
 
 
 namespace wups::config {
 
-    class bool_item : public item {
+    class bool_item : public var_item<bool> {
 
-        var_watch<bool> variable;
-        const bool default_value;
         std::string true_str;
         std::string false_str;
 
     public:
 
-        bool_item(const std::optional<std::string>& key,
-                  const std::string& label,
+        bool_item(const std::string& label,
                   bool& variable,
                   bool default_value,
                   const std::string& true_str = "true",
@@ -35,8 +31,7 @@ namespace wups::config {
 
         static
         std::unique_ptr<bool_item>
-        create(const std::optional<std::string>& key,
-               const std::string& label,
+        create(const std::string& label,
                bool& variable,
                bool default_value,
                const std::string& true_str = "true",
@@ -44,16 +39,9 @@ namespace wups::config {
 
         virtual int get_display(char* buf, std::size_t size) const override;
 
-        virtual int get_selected_display(char* buf, std::size_t size) const override;
+        virtual int get_focused_display(char* buf, std::size_t size) const override;
 
-        virtual void restore() override;
-
-        virtual void on_input(WUPSConfigSimplePadData input,
-                              WUPS_CONFIG_SIMPLE_INPUT repeat) override;
-
-    private:
-
-        void on_changed();
+        virtual FocusChange on_input(const SimplePadData& input) override;
 
     };
 
