@@ -11,8 +11,6 @@
 #include <ranges>
 #include <utility>              // move()
 
-#include <whb/log.h> // DEBUG
-
 #include "wupsxx/file_item.hpp"
 
 #include "nintendo_glyphs.h"
@@ -114,7 +112,7 @@ namespace wups::config {
 
         std::snprintf(buf, size,
                       "(" NIN_GLYPH_BTN_A "=enter%s) "
-                      "%s%s" "%s%s" "%s",
+                      "%s" "%s%s" "%s",
                       up_symbol,
                       prev_symbol,
                       variable.c_str(),
@@ -156,10 +154,6 @@ namespace wups::config {
                                std::filesystem::path filename)
     {
         try {
-            // WHBLogPrintf("%s: dirname = \"%s\", filename = \"%s\"\n",
-            //              __PRETTY_FUNCTION__,
-            //              dirname.c_str(), filename.c_str());
-
             // Special handling for "fs:/vol", because it's not counted as a directory.
             if (dirname == "fs:/vol" && is_sd_root(filename)) {
                 entries.clear();
@@ -182,7 +176,6 @@ namespace wups::config {
 
             current_idx = 0;
             entries = std::move(new_entries);
-
             std::ranges::sort(entries, icase_compare);
 
             // find the entry that matches filename

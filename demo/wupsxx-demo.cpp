@@ -30,17 +30,26 @@
 #endif
 
 
-#define PLUGIN_NAME "Demo for libwupsxx"
-
+#define PLUGIN_NAME "Demo plugin for libwupsxx"
+#define PLUGIN_FILE_NAME PACKAGE_TARNAME "-demo"
 
 WUPS_PLUGIN_NAME(PLUGIN_NAME);
 WUPS_PLUGIN_VERSION(PACKAGE_VERSION);
-WUPS_PLUGIN_DESCRIPTION("Show libwupsxx items.");
+WUPS_PLUGIN_DESCRIPTION("Show libwupsxx config items.");
 WUPS_PLUGIN_AUTHOR("Daniel K. O.");
 WUPS_PLUGIN_LICENSE("MIT");
 
 WUPS_USE_WUT_DEVOPTAB();
-WUPS_USE_STORAGE("wupsxx-demo"); // store config in wupsxx-demo.json
+WUPS_USE_STORAGE(PLUGIN_FILE_NAME); // store config in libwupsxx-demo.json
+
+
+
+#define LOG(msg, ...)                                           \
+    WHBLogPrintf("[" PLUGIN_FILE_NAME "] %s:%d in %s: " msg,    \
+                 __FILE__,                                      \
+                 __LINE__,                                      \
+                 __PRETTY_FUNCTION__,                           \
+                 __VA_ARGS__)
 
 
 using namespace std::literals;
@@ -105,7 +114,7 @@ namespace cfg {
             wups::storage::save();
         }
         catch (std::exception& e) {
-            WHBLogPrintf("ERROR in %s: %s\n", __PRETTY_FUNCTION__, e.what());
+            LOG("exception caught: %s\n", e.what());
         }
     }
 
@@ -132,7 +141,7 @@ namespace cfg {
             LOAD(some_file, "fs:/vol/external01");
         }
         catch (std::exception& e) {
-            WHBLogPrintf("ERROR in %s: %s\n", __PRETTY_FUNCTION__, e.what());
+            LOG("exception caught: %s\n", e.what());
         }
     }
 #undef LOAD
@@ -238,7 +247,7 @@ menu_open(WUPSConfigCategoryHandle root_handle)
         return WUPSCONFIG_API_CALLBACK_RESULT_SUCCESS;
     }
     catch (std::exception& e) {
-        WHBLogPrintf("menu_open(): %s\n", e.what());
+        LOG("exception caught: %s\n", e.what());
         return WUPSCONFIG_API_CALLBACK_RESULT_ERROR;
     }
 }
@@ -251,7 +260,7 @@ menu_close()
         cfg::save();
     }
     catch (std::exception& e) {
-        WHBLogPrintf("menu_close(): %s\n", e.what());
+        LOG("exception caught: %s\n", e.what());
     }
 }
 
@@ -264,8 +273,7 @@ INITIALIZE_PLUGIN()
     WUPSConfigAPIOptionsV1 options{ .name = PLUGIN_NAME };
     auto status = WUPSConfigAPI_Init(options, menu_open, menu_close);
     if (status != WUPSCONFIG_API_RESULT_SUCCESS) {
-        WHBLogPrintf("WUPSConfigAPI_Init() error: %s",
-                     WUPSConfigAPI_GetStatusStr(status));
+        LOG("WUPSConfigAPI_Init() failed: %s\n", WUPSConfigAPI_GetStatusStr(status));
     } else {
         cfg::load();
     }
