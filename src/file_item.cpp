@@ -50,7 +50,15 @@ namespace wups::config {
             return false;
         }
 
-    }
+
+        bool
+        wut_is_root(const std::filesystem::path& p)
+        {
+            // TODO: it seems fs:/vol is not a valid directory, what's up with that?
+            return p == "fs:/vol/external01";
+        }
+
+    } // namespace
 
 
     file_item::file_item(const std::string& label,
@@ -94,15 +102,19 @@ namespace wups::config {
         if (is_directory(variable))
             dir_indicator = "/";
 
+        const char* up_symbol = "";
         const char* prev_symbol = "";
         const char* next_symbol = "";
+        if (!wut_is_root(variable.parent_path()))
+            up_symbol = "(" NIN_GLYPH_BTN_L " = " NIN_GLYPH_BACK ") " ;
         if (current_idx > 0)
             prev_symbol = NIN_GLYPH_BTN_DPAD_LEFT " ";
         if (current_idx + 1 < entries.size())
             next_symbol = " " NIN_GLYPH_BTN_DPAD_RIGHT;
 
         std::snprintf(buf, size,
-                      "%s" "%s%s" "%s",
+                      "%s%s" "%s%s" "%s",
+                      up_symbol,
                       prev_symbol,
                       variable.c_str(),
                       dir_indicator,
@@ -131,6 +143,9 @@ namespace wups::config {
         if (input.buttons_d & WUPS_CONFIG_BUTTON_A)
             enter_directory(variable);
 
+        if (input.buttons_d & WUPS_CONFIG_BUTTON_L)
+            navigate_up();
+
         return var_item::on_input(input);
     }
 
@@ -146,13 +161,10 @@ namespace wups::config {
             if (!is_directory(dirname))
                 return;
 
-            if (dirname.filename() == "..") {
-                filename = dirname.parent_path();
-                dirname = filename.parent_path();
-            }
-
-            // TODO: it seems fs:/vol is not a valid directory, what's up with that?
-            bool dir_is_root = dirname == "fs:/vol/external01";
+            // if (dirname.filename() == "..") {
+            //     filename = dirname.parent_path();
+            //     dirname = filename.parent_path();
+            // }
 
             current_idx = 0;
             entries.clear();
@@ -161,13 +173,12 @@ namespace wups::config {
 
             std::ranges::sort(entries, icase_compare);
 
-            if (!dir_is_root) {
-                // add ".." at the top
-                entries.insert(entries.begin(),
-                               std::filesystem::directory_entry{dirname / ".."});
-                if (entries.size() > 1)
-                    current_idx = 1;
-            }
+            // if (!wup_is_root(dirname)) {
+            //     entries.insert(entries.begin(),
+            //                    std::filesystem::directory_entry{dirname / ".."});
+            //     if (entries.size() > 1)
+            //         current_idx = 1;
+            // }
 
             // find the entry that matches filename
             if (!filename.empty()) {
@@ -205,5 +216,12 @@ namespace wups::config {
         variable = entries[current_idx];
     }
 
+
+    void
+    file_item::navigate_up()
+    {
+        enter_directory(variable.parent_path().parent_path(),
+                        variable.parent_path());
+    }
 
 } // namespace wups::config

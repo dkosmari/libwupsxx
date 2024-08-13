@@ -53,9 +53,8 @@ namespace wups::config {
                              std::filesystem::path filename = "");
 
         void navigate_prev();
-
         void navigate_next();
-
+        void navigate_up();
     };
 
 } // namespace wups::config
