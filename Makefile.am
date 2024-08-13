@@ -57,15 +57,15 @@ src_libwupsxx_a_SOURCES = 		\
 	src/text_item.cpp
 
 
-WPS_FILE = wupsxx-demo.wps
+WPS_FILE = demo/wupsxx-demo.wps
 
 CLEANFILES = $(WPS_FILE)
 
-noinst_PROGRAMS = wupsxx-demo.elf
+noinst_PROGRAMS = demo/wupsxx-demo.elf
 
-wupsxx_demo_elf_SOURCES = demo/wupsxx-demo.cpp
+demo_wupsxx_demo_elf_SOURCES = demo/wupsxx-demo.cpp
 
-wupsxx_demo_elf_LDADD = src/libwupsxx.a
+demo_wupsxx_demo_elf_LDADD = src/libwupsxx.a
 
 
 all-local: $(WPS_FILE)
