@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <ranges>
+#include <utility>              // move()
 
 #include <whb/log.h> // DEBUG
 
@@ -161,24 +162,18 @@ namespace wups::config {
             if (!is_directory(dirname))
                 return;
 
-            // if (dirname.filename() == "..") {
-            //     filename = dirname.parent_path();
-            //     dirname = filename.parent_path();
-            // }
+            std::vector<std::filesystem::directory_entry> new_entries;
+            for (auto& entry : std::filesystem::directory_iterator{dirname})
+                new_entries.push_back(entry);
+
+            // Don't enter empty directories, there's nothing to select.
+            if (new_entries.empty())
+                return;
 
             current_idx = 0;
-            entries.clear();
-            for (auto& entry : std::filesystem::directory_iterator{dirname})
-                entries.push_back(entry);
+            entries = std::move(new_entries);
 
             std::ranges::sort(entries, icase_compare);
-
-            // if (!wup_is_root(dirname)) {
-            //     entries.insert(entries.begin(),
-            //                    std::filesystem::directory_entry{dirname / ".."});
-            //     if (entries.size() > 1)
-            //         current_idx = 1;
-            // }
 
             // find the entry that matches filename
             if (!filename.empty()) {
@@ -190,7 +185,7 @@ namespace wups::config {
             }
 
             variable = entries[current_idx];
-            // WHBLogPrintf("    variable = \"%s\"\n", variable.c_str());
+
         }
         catch (std::exception& e) {
         }
@@ -203,7 +198,8 @@ namespace wups::config {
         if (current_idx == 0)
             return;
         --current_idx;
-        variable = entries[current_idx];
+        if (!entries.empty())
+            variable = entries[current_idx];
     }
 
 

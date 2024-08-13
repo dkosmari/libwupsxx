@@ -11,7 +11,6 @@
 
 #include <filesystem>
 #include <memory>
-#include <utility>
 #include <vector>
 
 #include "var_item.hpp"
