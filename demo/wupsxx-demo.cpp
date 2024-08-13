@@ -129,7 +129,7 @@ namespace cfg {
             LOAD(int_value_1, 5);
             LOAD(int_value_2, 0);
             LOAD(text, "The quick brown fox jumps over the lazy dog.");
-            LOAD(some_file, "fs:/vol/external01/wiiu");
+            LOAD(some_file, "fs:/vol/external01");
         }
         catch (std::exception& e) {
             WHBLogPrintf("ERROR in %s: %s\n", __PRETTY_FUNCTION__, e.what());
@@ -204,7 +204,7 @@ menu_open(WUPSConfigCategoryHandle root_handle)
         // A file item
         root.add(wups::config::file_item::create("Some file",
                                                  cfg::some_file,
-                                                 "fs:/vol/external01/wiiu"));
+                                                 "fs:/vol/external01"));
 
 #if 0
         {

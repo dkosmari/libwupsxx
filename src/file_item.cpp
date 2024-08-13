@@ -53,9 +53,8 @@ namespace wups::config {
 
 
         bool
-        wut_is_root(const std::filesystem::path& p)
+        is_sd_root(const std::filesystem::path& p)
         {
-            // TODO: it seems fs:/vol is not a valid directory, what's up with that?
             return p == "fs:/vol/external01";
         }
 
@@ -106,14 +105,15 @@ namespace wups::config {
         const char* up_symbol = "";
         const char* prev_symbol = "";
         const char* next_symbol = "";
-        if (!wut_is_root(variable.parent_path()))
-            up_symbol = "(" NIN_GLYPH_BTN_L " = " NIN_GLYPH_BACK ") " ;
+        if (!is_sd_root(variable))
+            up_symbol = ", " NIN_GLYPH_BTN_L "=" NIN_GLYPH_BACK;
         if (current_idx > 0)
             prev_symbol = NIN_GLYPH_BTN_DPAD_LEFT " ";
         if (current_idx + 1 < entries.size())
             next_symbol = " " NIN_GLYPH_BTN_DPAD_RIGHT;
 
         std::snprintf(buf, size,
+                      "(" NIN_GLYPH_BTN_A "=enter%s) "
                       "%s%s" "%s%s" "%s",
                       up_symbol,
                       prev_symbol,
@@ -159,6 +159,16 @@ namespace wups::config {
             // WHBLogPrintf("%s: dirname = \"%s\", filename = \"%s\"\n",
             //              __PRETTY_FUNCTION__,
             //              dirname.c_str(), filename.c_str());
+
+            // Special handling for "fs:/vol", because it's not counted as a directory.
+            if (dirname == "fs:/vol" && is_sd_root(filename)) {
+                entries.clear();
+                entries.emplace_back(filename);
+                current_idx = 0;
+                variable = filename;
+                return;
+            }
+
             if (!is_directory(dirname))
                 return;
 
@@ -216,8 +226,9 @@ namespace wups::config {
     void
     file_item::navigate_up()
     {
-        enter_directory(variable.parent_path().parent_path(),
-                        variable.parent_path());
+        if (!is_sd_root(variable))
+            enter_directory(variable.parent_path().parent_path(),
+                            variable.parent_path());
     }
 
 } // namespace wups::config
