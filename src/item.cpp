@@ -43,7 +43,7 @@ namespace wups::config {
     }
 
 
-    namespace dispatchers {
+    namespace glue {
 
         int32_t
         get_display(void* ctx, char* buf, int32_t size)
@@ -82,8 +82,14 @@ namespace wups::config {
         is_movement_allowed(void* ctx)
             noexcept
         {
-            auto it = static_cast<const item*>(ctx);
-            return !it->has_focus();
+            try {
+                auto it = static_cast<const item*>(ctx);
+                return !it->has_focus();
+            }
+            catch (std::exception& e) {
+                REPORT_ERROR(e);
+                return true;
+            }
         }
 
 
@@ -216,15 +222,15 @@ namespace wups::config {
             .context = this,
             .callbacks = {
                 // Note: do not sort, must be initialized in the order of declaration.
-                .getCurrentValueDisplay         = dispatchers::get_display,
-                .getCurrentValueSelectedDisplay = dispatchers::get_selected_display,
-                .onSelected                     = dispatchers::on_selected,
-                .restoreDefault                 = dispatchers::restore_default,
-                .isMovementAllowed              = dispatchers::is_movement_allowed,
-                .onCloseCallback                = dispatchers::on_close,
-                .onInput                        = dispatchers::on_input,
-                .onInputEx                      = dispatchers::on_input_ex,
-                .onDelete                       = dispatchers::on_delete,
+                .getCurrentValueDisplay         = glue::get_display,
+                .getCurrentValueSelectedDisplay = glue::get_selected_display,
+                .onSelected                     = glue::on_selected,
+                .restoreDefault                 = glue::restore_default,
+                .isMovementAllowed              = glue::is_movement_allowed,
+                .onCloseCallback                = glue::on_close,
+                .onInput                        = glue::on_input,
+                .onInputEx                      = glue::on_input_ex,
+                .onDelete                       = glue::on_delete,
             }
         };
 
@@ -277,6 +283,11 @@ namespace wups::config {
 
 
     void
+    item::on_focus_changed()
+    {}
+
+
+    void
     item::restore()
     {}
 
@@ -317,8 +328,13 @@ namespace wups::config {
     void
     item::set_focus(bool new_focus)
     {
-        if (on_focus_request(new_focus))
+        if (focused == new_focus)
+            return;
+
+        if (on_focus_request(new_focus)) {
             focused = new_focus;
+            on_focus_changed();
+        }
     }
 
 

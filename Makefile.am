@@ -27,6 +27,7 @@ wupsxx_HEADERS = 				\
 	include/wupsxx/config_error.hpp		\
 	include/wupsxx/duration.hpp		\
 	include/wupsxx/duration_items.hpp	\
+	include/wupsxx/file_item.hpp		\
 	include/wupsxx/int_item.hpp		\
 	include/wupsxx/item.hpp			\
 	include/wupsxx/numeric_item.hpp		\
@@ -47,6 +48,7 @@ src_libwupsxx_a_SOURCES = 		\
 	src/config_error.cpp		\
 	src/duration.cpp		\
 	src/duration_items.cpp		\
+	src/file_item.cpp		\
 	src/int_item.cpp		\
 	src/item.cpp			\
 	src/numeric_item_impl.hpp	\
@@ -56,6 +58,8 @@ src_libwupsxx_a_SOURCES = 		\
 
 
 WPS_FILE = wupsxx-demo.wps
+
+CLEANFILES = $(WPS_FILE)
 
 noinst_PROGRAMS = wupsxx-demo.elf
 

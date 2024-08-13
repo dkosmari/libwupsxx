@@ -68,7 +68,7 @@ namespace wups::config {
     FocusChange
     bool_item::on_input(const SimplePadData& input)
     {
-        // Allow toggling wit left or right.
+        // Allow toggling with left or right.
         if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_LEFT | WUPS_CONFIG_BUTTON_RIGHT))
             variable = !variable;
 

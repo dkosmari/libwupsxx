@@ -10,6 +10,7 @@
 #define WUPSXX_STORAGE_HPP
 
 #include <expected>
+#include <filesystem>
 #include <string>
 #include <utility>
 
@@ -53,6 +54,11 @@ namespace wups::storage {
     load<config::color>(const std::string& key);
 
 
+    template<>
+    std::expected<std::filesystem::path, storage_error>
+    load<std::filesystem::path>(const std::string& key);
+
+
 
     template<typename T>
     void
@@ -75,6 +81,11 @@ namespace wups::storage {
 
     void
     store(const std::string& key, const config::color& c);
+
+
+    void
+    store(const std::string& key, const std::filesystem::path& p);
+
 
 
     // This will either load the variable from the config, or initialize

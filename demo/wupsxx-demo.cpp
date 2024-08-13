@@ -7,6 +7,7 @@
  */
 
 #include <chrono>
+#include <filesystem>
 #include <string>
 #include <utility>              // move()
 
@@ -19,6 +20,7 @@
 #include <wupsxx/category.hpp>
 #include <wupsxx/color_item.hpp>
 #include <wupsxx/duration_items.hpp> // note, plural
+#include <wupsxx/file_item.hpp>
 #include <wupsxx/int_item.hpp>
 #include <wupsxx/storage.hpp>
 #include <wupsxx/text_item.hpp>
@@ -28,14 +30,17 @@
 #endif
 
 
-WUPS_PLUGIN_NAME("wupsxx-demo");
+#define PLUGIN_NAME "Demo for libwupsxx"
+
+
+WUPS_PLUGIN_NAME(PLUGIN_NAME);
 WUPS_PLUGIN_VERSION(PACKAGE_VERSION);
-WUPS_PLUGIN_DESCRIPTION("Show wupsxx items.");
+WUPS_PLUGIN_DESCRIPTION("Show libwupsxx items.");
 WUPS_PLUGIN_AUTHOR("Daniel K. O.");
 WUPS_PLUGIN_LICENSE("MIT");
 
 WUPS_USE_WUT_DEVOPTAB();
-WUPS_USE_STORAGE("wupsxx-demo");
+WUPS_USE_STORAGE("wupsxx-demo"); // store config in wupsxx-demo.json
 
 
 using namespace std::literals;
@@ -60,8 +65,9 @@ namespace cfg {
     int int_value_1;
     int int_value_2;
 
-    std::string text = "The quick brown fox jumps over the lazy dog.";
+    std::string text;
 
+    std::filesystem::path some_file;
 
     namespace foo {
 
@@ -93,6 +99,7 @@ namespace cfg {
             STORE(int_value_1);
             STORE(int_value_2);
             STORE(text);
+            STORE(some_file);
             // TODO: handle nested elements
 
             wups::storage::save();
@@ -122,6 +129,7 @@ namespace cfg {
             LOAD(int_value_1, 5);
             LOAD(int_value_2, 0);
             LOAD(text, "The quick brown fox jumps over the lazy dog.");
+            LOAD(some_file, "fs:/vol/external01/wiiu");
         }
         catch (std::exception& e) {
             WHBLogPrintf("ERROR in %s: %s\n", __PRETTY_FUNCTION__, e.what());
@@ -135,98 +143,116 @@ namespace cfg {
 WUPSConfigAPICallbackStatus
 menu_open(WUPSConfigCategoryHandle root_handle)
 {
-    wups::config::category root{root_handle};
+    try {
+        wups::config::category root{root_handle};
 
-    // A bool item, default=true, strings are true/false
-    root.add(wups::config::bool_item::create("Boolean option 1",
-                                             cfg::bool_option_1, true));
+        // A bool item, default=true, strings are true/false
+        root.add(wups::config::bool_item::create("Boolean option 1",
+                                                 cfg::bool_option_1, true));
 
-    // Another bool item, default=false, strings are ■/□
-    root.add(wups::config::bool_item::create("Boolean option 2",
-                                             cfg::bool_option_2, false,
-                                             "■", "□"));
-
-
-    // A color item, only RGB
-    root.add(wups::config::color_item::create("Foreground (RGB)",
-                                              cfg::foreground, color{0xff, 0x40, 0x80}));
-
-    // Another color item, RGBA
-    root.add(wups::config::color_item::create("Background (RGBA)",
-                                              cfg::background, color{0xaa, 0xbb, 0xcc, 0xdd},
-                                              true));
+        // Another bool item, default=false, strings are ■/□
+        root.add(wups::config::bool_item::create("Boolean option 2",
+                                                 cfg::bool_option_2, false,
+                                                 "■", "□"));
 
 
-    // Some time duration items
-    root.add(wups::config::milliseconds_item::create("Duration (ms)",
-                                                     cfg::ms_value, 10ms,
-                                                     0ms, 1000ms));
+        // A color item, only RGB
+        root.add(wups::config::color_item::create("Foreground (RGB)",
+                                                  cfg::foreground, color{0xff, 0x40, 0x80}));
 
-    root.add(wups::config::seconds_item::create("Duration (s)",
-                                                cfg::s_value, 10s,
-                                                0s, 1000s));
-
-    root.add(wups::config::minutes_item::create("Duration (min)",
-                                                cfg::min_value, 10min,
-                                                0min, 1000min));
-
-    root.add(wups::config::hours_item::create("Duration (h)",
-                                              cfg::h_value, 10h,
-                                              0h, 1000h));
-
-    // An int item
-    root.add(wups::config::int_item::create("Integer option 1",
-                                            cfg::int_value_1, 5,
-                                            -100, 100));
-
-    // Another int item, with custom increments
-    root.add(wups::config::int_item::create("Integer option 2",
-                                            cfg::int_value_2, 0,
-                                            -1000, 1000,
-                                            100, 10));
+        // Another color item, RGBA
+        root.add(wups::config::color_item::create("Background (RGBA)",
+                                                  cfg::background, color{0xaa, 0xbb, 0xcc, 0xdd},
+                                                  true));
 
 
-    // A text item, max width limited to 30 chars.
-    root.add(wups::config::text_item::create("Text",
-                                             cfg::text,
-                                             30));
+        // Some time duration items
+        root.add(wups::config::milliseconds_item::create("Duration (ms)",
+                                                         cfg::ms_value, 10ms,
+                                                         0ms, 1000ms));
 
-    {
-        // A category named "Foo"
-        wups::config::category cat_foo{"Foo"};
+        root.add(wups::config::seconds_item::create("Duration (s)",
+                                                    cfg::s_value, 10s,
+                                                    0s, 1000s));
 
-        // Add a text item to this foo category
-        cat_foo.add(wups::config::text_item::create("This is Foo"));
+        root.add(wups::config::minutes_item::create("Duration (min)",
+                                                    cfg::min_value, 10min,
+                                                    0min, 1000min));
 
-        // ... and a bool item
-        cat_foo.add(wups::config::bool_item::create("Enabled",
-                                                    cfg::foo::enabled, false,
-                                                    "on", "off"));
+        root.add(wups::config::hours_item::create("Duration (h)",
+                                                  cfg::h_value, 10h,
+                                                  0h, 1000h));
 
-        // Nest another category named "Bar"
+        // An int item
+        root.add(wups::config::int_item::create("Integer option 1",
+                                                cfg::int_value_1, 5,
+                                                -100, 100));
+
+        // Another int item, with custom increments
+        root.add(wups::config::int_item::create("Integer option 2",
+                                                cfg::int_value_2, 0,
+                                                -1000, 1000,
+                                                100, 10));
+
+
+        // A text item, max width limited to 30 chars.
+        root.add(wups::config::text_item::create("Text",
+                                                 cfg::text,
+                                                 30));
+
+
+        // A file item
+        root.add(wups::config::file_item::create("Some file",
+                                                 cfg::some_file,
+                                                 "fs:/vol/external01/wiiu"));
+
+#if 0
         {
-            wups::config::category cat_bar{"Bar"};
-            cat_bar.add(wups::config::text_item::create("This is Bar, inside Foo"));
-            cat_bar.add(wups::config::int_item::create("Value",
-                                                       cfg::foo::bar::value, -1,
-                                                       -10, 10));
-            cat_foo.add(std::move(cat_bar));
+            // A category named "Foo"
+            wups::config::category cat_foo{"Foo"};
+
+            // Add a text item to this foo category
+            cat_foo.add(wups::config::text_item::create("This is Foo"));
+
+            // ... and a bool item
+            cat_foo.add(wups::config::bool_item::create("Enabled",
+                                                        cfg::foo::enabled, false,
+                                                        "on", "off"));
+
+            // Nest another category named "Bar"
+            {
+                wups::config::category cat_bar{"Bar"};
+                cat_bar.add(wups::config::text_item::create("This is Bar, inside Foo"));
+                cat_bar.add(wups::config::int_item::create("Value",
+                                                           cfg::foo::bar::value, -1,
+                                                           -10, 10));
+                cat_foo.add(std::move(cat_bar));
+            }
+
+
+            // Move it to the root.
+            root.add(std::move(cat_foo));
         }
+#endif
 
-
-        // Move it to the root.
-        root.add(std::move(cat_foo));
+        return WUPSCONFIG_API_CALLBACK_RESULT_SUCCESS;
     }
-
-
-    return WUPSCONFIG_API_CALLBACK_RESULT_SUCCESS;
+    catch (std::exception& e) {
+        WHBLogPrintf("menu_open(): %s\n", e.what());
+        return WUPSCONFIG_API_CALLBACK_RESULT_ERROR;
+    }
 }
 
 
 void
 menu_close()
 {
-    cfg::save();
+    try {
+        cfg::save();
+    }
+    catch (std::exception& e) {
+        WHBLogPrintf("menu_close(): %s\n", e.what());
+    }
 }
 
 
@@ -234,7 +260,8 @@ INITIALIZE_PLUGIN()
 {
     WHBLogModuleInit();
 
-    WUPSConfigAPIOptionsV1 options{ .name = "wupsxx-demo" };
+    // This name is shown in the config menu.
+    WUPSConfigAPIOptionsV1 options{ .name = PLUGIN_NAME };
     auto status = WUPSConfigAPI_Init(options, menu_open, menu_close);
     if (status != WUPSCONFIG_API_RESULT_SUCCESS) {
         WHBLogPrintf("WUPSConfigAPI_Init() error: %s",

@@ -63,6 +63,8 @@ namespace wups::config {
         // return `true` if item allows the focus change to occur
         virtual bool on_focus_request(bool new_focus) const;
 
+        virtual void on_focus_changed();
+
         virtual void restore();
 
         virtual void on_close();
