@@ -23,5 +23,12 @@ AM_PROG_AR
 AC_LANG([C++])
 AX_APPEND_COMPILE_FLAGS([-std=c++23], [CXX])
 
+
+AC_ARG_ENABLE([demo],
+              [AS_HELP_STRING([--enable-demo],
+                              [Build the libwupsxx-demo plugin.])])
+AM_CONDITIONAL([BUILD_DEMO], [test x$enable_demo = xyes])
+
+
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

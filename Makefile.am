@@ -53,8 +53,9 @@ src_libwupsxx_a_SOURCES = 			\
 
 
 WPS_FILE = demo/wupsxx-demo.wps
-
 CLEANFILES = $(WPS_FILE)
+
+if BUILD_DEMO
 
 noinst_PROGRAMS = demo/wupsxx-demo.elf
 
@@ -67,13 +68,13 @@ all-local: $(WPS_FILE)
 
 
 .PHONY: run
-
 run: $(WPS_FILE)
 	WIILOAD=tcp:wiiu wiiload $(WPS_FILE)
 
+endif BUILD_DEMO
+
 
 .PHONY: company
-
 company: compile_flags.txt
 
 compile_flags.txt: Makefile
