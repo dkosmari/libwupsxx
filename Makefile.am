@@ -17,9 +17,10 @@ AM_LDFLAGS = $(DEVKITPRO_LDFLAGS)
 LIBS = $(DEVKITPRO_LIBS)
 
 
-wupsxxdir = $(includedir)/wupsxx
+noinst_LIBRARIES = src/libwupsxx.a
 
-wupsxx_HEADERS = 				\
+
+src_libwupsxx_a_SOURCES = 			\
 	include/wupsxx/bool_item.hpp		\
 	include/wupsxx/category.hpp		\
 	include/wupsxx/color.hpp		\
@@ -34,26 +35,20 @@ wupsxx_HEADERS = 				\
 	include/wupsxx/storage_error.hpp	\
 	include/wupsxx/storage.hpp		\
 	include/wupsxx/text_item.hpp		\
-	include/wupsxx/var_item.hpp
-
-
-noinst_LIBRARIES = src/libwupsxx.a
-
-
-src_libwupsxx_a_SOURCES = 		\
-	src/bool_item.cpp		\
-	src/category.cpp		\
-	src/color.cpp			\
-	src/color_item.cpp		\
-	src/config_error.cpp		\
-	src/duration.cpp		\
-	src/duration_items.cpp		\
-	src/file_item.cpp		\
-	src/int_item.cpp		\
-	src/item.cpp			\
-	src/numeric_item_impl.hpp	\
-	src/storage.cpp			\
-	src/storage_error.cpp		\
+	include/wupsxx/var_item.hpp 		\
+	src/bool_item.cpp			\
+	src/category.cpp			\
+	src/color.cpp				\
+	src/color_item.cpp			\
+	src/config_error.cpp			\
+	src/duration.cpp			\
+	src/duration_items.cpp			\
+	src/file_item.cpp			\
+	src/int_item.cpp			\
+	src/item.cpp				\
+	src/numeric_item_impl.hpp		\
+	src/storage.cpp				\
+	src/storage_error.cpp			\
 	src/text_item.cpp
 
 
