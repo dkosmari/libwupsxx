@@ -52,10 +52,20 @@ src_libwupsxx_a_SOURCES = 			\
 	src/text_item.cpp
 
 
+.PHONY: company run
+
+
+company: compile_flags.txt
+
+compile_flags.txt: Makefile
+	printf "%s" "$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS)" | xargs -n1 | sort -u > $(srcdir)/compile_flags.txt
+
+
+if BUILD_DEMO
+
 WPS_FILE = demo/wupsxx-demo.wps
 CLEANFILES = $(WPS_FILE)
 
-if BUILD_DEMO
 
 noinst_PROGRAMS = demo/wupsxx-demo.elf
 
@@ -67,18 +77,10 @@ demo_wupsxx_demo_elf_LDADD = src/libwupsxx.a
 all-local: $(WPS_FILE)
 
 
-.PHONY: run
 run: $(WPS_FILE)
 	WIILOAD=tcp:wiiu wiiload $(WPS_FILE)
 
 endif BUILD_DEMO
-
-
-.PHONY: company
-company: compile_flags.txt
-
-compile_flags.txt: Makefile
-	printf "%s" "$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS)" | xargs -n1 | sort -u > $(srcdir)/compile_flags.txt
 
 
 @INC_AMINCLUDE@
