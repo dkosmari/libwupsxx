@@ -89,6 +89,13 @@ namespace wups::config {
                        std::size_t max_width)
         {
             std::u32string str = p.u32string();
+
+            // Replace "fs:/vol/external01/" by "sd:/"
+            const std::u32string pre = U"fs:/vol/external01";
+            if (str.starts_with(pre))
+                str.replace(0, pre.size(), U"SD:");
+
+
             if (str.size() > max_width) {
                 const std::u32string ellipsis = U"…";
                 const std::u32string separator = U"/";
