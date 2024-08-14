@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <locale>
 #include <ranges>
 #include <utility>              // move()
 
@@ -56,23 +57,89 @@ namespace wups::config {
             return p == "fs:/vol/external01";
         }
 
+
+        std::string
+        to_utf8(const std::u32string& s)
+        {
+            std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
+            return conv.to_bytes(s);
+        }
+
+
+        std::u32string
+        prefix(const std::u32string& str, std::size_t prefix_size)
+        {
+            // Note: count argument for substr() can safely exceed the string size.
+            return str.substr(0, prefix_size);
+        }
+
+
+        std::u32string
+        suffix(const std::u32string& str, std::size_t suffix_size)
+        {
+            if (suffix_size >= str.size())
+                return str;
+            // Note: str.substr(str.size()) is safe, returns empty string.
+            return str.substr(str.size() - suffix_size, suffix_size);
+        }
+
+
+        std::string
+        ellipsize_path(const std::filesystem::path& p,
+                       std::size_t max_width)
+        {
+            std::u32string str = p.u32string();
+            if (str.size() > max_width) {
+                const std::u32string ellipsis = U"…";
+                const std::u32string separator = U"/";
+                auto file_name = p.filename().u32string();
+                auto parent_name = p.parent_path().u32string();
+                if (file_name.size() + ellipsis.size() + separator.size()
+                    > max_width) {
+                    // Can't even show "…/file_name", so we ellipsize the file too, show
+                    // "…/file_na…".
+                    parent_name = ellipsis;
+                    std::size_t remaining = max_width
+                        - parent_name.size()
+                        - separator.size()
+                        - ellipsis.size();
+                    file_name = prefix(file_name, remaining) + ellipsis;
+                    str = parent_name + separator + file_name;
+                } else {
+                    // show "…end_of_path/file_name"
+                    std::size_t remaining = max_width
+                        - ellipsis.size()
+                        - separator.size()
+                        - file_name.size();
+                    parent_name = U"…" + suffix(parent_name, remaining);
+                    str = parent_name + separator + file_name;
+                }
+            }
+            return to_utf8(str);
+        }
+
+
     } // namespace
 
 
     file_item::file_item(const std::string& label,
                          std::filesystem::path& variable,
-                         const std::filesystem::path& default_value) :
+                         const std::filesystem::path& default_value,
+                         std::size_t max_width) :
         var_item{label, variable, default_value},
-        current_idx{0}
+        max_width{max_width},
+        current_idx{0},
+        variable_is_dir{is_directory(variable)}
     {}
 
 
     std::unique_ptr<file_item>
     file_item::create(const std::string& label,
                       std::filesystem::path& variable,
-                      const std::filesystem::path& default_value)
+                      const std::filesystem::path& default_value,
+                      std::size_t max_width)
     {
-        return std::make_unique<file_item>(label, variable, default_value);
+        return std::make_unique<file_item>(label, variable, default_value, max_width);
     }
 
 
@@ -81,12 +148,14 @@ namespace wups::config {
         const
     {
         const char* dir_indicator = "";
-        if (is_directory(variable))
+        if (variable_is_dir)
             dir_indicator = "/";
+
+        std::string variable_str = ellipsize_path(variable, max_width);
 
         std::snprintf(buf, size,
                       "%s%s",
-                      variable.c_str(),
+                      variable_str.c_str(),
                       dir_indicator);
         return 0;
     }
@@ -97,7 +166,7 @@ namespace wups::config {
         const
     {
         const char* dir_indicator = "";
-        if (is_directory(variable))
+        if (variable_is_dir)
             dir_indicator = "/";
 
         const char* up_symbol = "";
@@ -110,12 +179,14 @@ namespace wups::config {
         if (current_idx + 1 < entries.size())
             next_symbol = " " NIN_GLYPH_BTN_DPAD_RIGHT;
 
+        std::string variable_str = ellipsize_path(variable, max_width);
+
         std::snprintf(buf, size,
                       "(" NIN_GLYPH_BTN_A "=enter%s) "
                       "%s" "%s%s" "%s",
                       up_symbol,
                       prev_symbol,
-                      variable.c_str(),
+                      variable_str.c_str(),
                       dir_indicator,
                       next_symbol);
         return 0;
@@ -127,6 +198,15 @@ namespace wups::config {
     {
         if (has_focus())
             enter_directory(variable.parent_path(), variable);
+    }
+
+
+    // Note: when restoring to default value, we must update variable_is_dir.
+    void
+    file_item::restore()
+    {
+        var_item::restore();
+        variable_is_dir = is_directory(variable);
     }
 
 
@@ -160,6 +240,7 @@ namespace wups::config {
                 entries.emplace_back(filename);
                 current_idx = 0;
                 variable = filename;
+                variable_is_dir = is_directory(variable);
                 return;
             }
 
@@ -188,6 +269,7 @@ namespace wups::config {
             }
 
             variable = entries[current_idx];
+            variable_is_dir = entries[current_idx].is_directory();
 
         }
         catch (std::exception& e) {
@@ -201,8 +283,10 @@ namespace wups::config {
         if (current_idx == 0)
             return;
         --current_idx;
-        if (!entries.empty())
+        if (!entries.empty()) {
             variable = entries[current_idx];
+            variable_is_dir = entries[current_idx].is_directory();
+        }
     }
 
 
@@ -213,6 +297,7 @@ namespace wups::config {
             return;
         ++current_idx;
         variable = entries[current_idx];
+        variable_is_dir = entries[current_idx].is_directory();
     }
 
 

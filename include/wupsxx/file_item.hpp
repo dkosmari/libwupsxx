@@ -20,21 +20,24 @@ namespace wups::config {
 
     class file_item : public var_item<std::filesystem::path> {
 
+        std::size_t max_width;
         std::vector<std::filesystem::directory_entry> entries;
         std::size_t current_idx;
-
+        bool variable_is_dir;
 
     public:
 
         file_item(const std::string& label,
                   std::filesystem::path& variable,
-                  const std::filesystem::path& default_value);
+                  const std::filesystem::path& default_value,
+                  std::size_t max_width = 30);
 
         static
         std::unique_ptr<file_item>
         create(const std::string& label,
                std::filesystem::path& variable,
-               const std::filesystem::path& default_value);
+               const std::filesystem::path& default_value,
+               std::size_t max_width = 30);
 
 
         virtual int get_display(char* buf, std::size_t size) const override;
@@ -42,6 +45,8 @@ namespace wups::config {
         virtual int get_focused_display(char* buf, std::size_t size) const override;
 
         virtual void on_focus_changed() override;
+
+        virtual void restore() override;
 
         virtual FocusChange on_input(const SimplePadData& input) override;
 
