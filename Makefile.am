@@ -37,7 +37,7 @@ wupsxx_HEADERS = 				\
 	include/wupsxx/var_item.hpp
 
 
-lib_LIBRARIES = src/libwupsxx.a
+noinst_LIBRARIES = src/libwupsxx.a
 
 
 src_libwupsxx_a_SOURCES = 		\
