@@ -8,11 +8,13 @@
 
 #include <chrono>
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <utility>              // move()
 
 #include <whb/log.h>
 #include <whb/log_module.h>
+#include <whb/log_udp.h>
 
 #include <wups.h>
 
@@ -43,6 +45,40 @@ WUPS_USE_WUT_DEVOPTAB();
 WUPS_USE_STORAGE(PLUGIN_FILE_NAME); // store config in libwupsxx-demo.json
 
 
+using namespace std::literals;
+
+// This type has .r, .g, .b, .a members, and a to_string() function.
+using wups::config::color;
+
+
+struct log_manager {
+
+    bool module_init = false;
+    bool udp_init = false;
+
+
+    log_manager()
+    {
+        // Note: only use UDP if Logging Module failed to init
+        if (!(module_init = WHBLogModuleInit()))
+            udp_init = WHBLogUdpInit();
+    }
+
+
+    ~log_manager()
+    {
+        if (module_init)
+            WHBLogModuleDeinit();
+        if (udp_init)
+            WHBLogUdpDeinit();
+    }
+
+};
+
+
+// This is alive between application start and end hooks.
+std::optional<log_manager> app_log_mgr;
+
 
 #define LOG(msg, ...)                                           \
     WHBLogPrintf("[" PLUGIN_FILE_NAME "] %s:%d in %s: " msg,    \
@@ -50,12 +86,6 @@ WUPS_USE_STORAGE(PLUGIN_FILE_NAME); // store config in libwupsxx-demo.json
                  __LINE__,                                      \
                  __PRETTY_FUNCTION__,                           \
                  __VA_ARGS__)
-
-
-using namespace std::literals;
-
-// This type has .r, .g, .b, .a members, and a to_string() function.
-using wups::config::color;
 
 
 namespace cfg {
@@ -267,7 +297,7 @@ menu_close()
 
 INITIALIZE_PLUGIN()
 {
-    WHBLogModuleInit();
+    log_manager log_guard;
 
     // This name is shown in the config menu.
     WUPSConfigAPIOptionsV1 options{ .name = PLUGIN_NAME };
@@ -277,18 +307,16 @@ INITIALIZE_PLUGIN()
     } else {
         cfg::load();
     }
-
-    WHBLogModuleDeinit();
 }
 
 
 ON_APPLICATION_START()
 {
-    WHBLogModuleInit();
+    app_log_mgr.emplace();
 }
 
 
 ON_APPLICATION_ENDS()
 {
-    WHBLogModuleDeinit();
+    app_log_mgr.reset();
 }

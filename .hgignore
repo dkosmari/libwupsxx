@@ -1,22 +1,22 @@
 syntax: glob
 
-*~
-*.o
 *.a
-compile_flags.txt
-aminclude.am
-Makefile
-Makefile.in
-configure
+*.elf
 *.log
+*.o
+*.wps
+*~
+.deps
+.dirstamp
+aclocal.m4
+aminclude.am
 autom4te.cache
 build-aux
-.deps
-config.status
-.dirstamp
-*.elf
-*.wps
-stamp-h1
-aclocal.m4
+compile_flags.txt
 config.h
 config.h.in
+config.status
+configure
+Makefile
+Makefile.in
+stamp-h1
