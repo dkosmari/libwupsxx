@@ -278,10 +278,17 @@ INITIALIZE_PLUGIN()
         cfg::load();
     }
 
+    WHBLogModuleDeinit();
 }
 
 
-DEINITIALIZE_PLUGIN()
+ON_APPLICATION_START()
+{
+    WHBLogModuleInit();
+}
+
+
+ON_APPLICATION_ENDS()
 {
     WHBLogModuleDeinit();
 }
