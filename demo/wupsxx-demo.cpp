@@ -59,7 +59,7 @@ struct log_manager {
 
     log_manager()
     {
-        // Note: only use UDP if Logging Module failed to init
+        // Note: only use UDP if Logging Module failed to init.
         if (!(module_init = WHBLogModuleInit()))
             udp_init = WHBLogUdpInit();
     }
@@ -81,10 +81,10 @@ std::optional<log_manager> app_log_mgr;
 
 
 #define LOG(msg, ...)                                           \
-    WHBLogPrintf("[" PLUGIN_FILE_NAME "] %s:%d in %s: " msg,    \
+    WHBLogPrintf("[" PLUGIN_FILE_NAME "] %s:%d/%s(): " msg,     \
                  __FILE__,                                      \
                  __LINE__,                                      \
-                 __PRETTY_FUNCTION__,                           \
+                 __func__,                                      \
                  __VA_ARGS__)
 
 
