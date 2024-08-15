@@ -303,7 +303,8 @@ namespace wups::config {
         if (input.buttons_d & WUPS_CONFIG_BUTTON_X)
             restore();
 
-        if (input.buttons_d & WUPS_CONFIG_BUTTON_B)
+        // either A or B make it lose focus, confirming or canceling
+        if (input.buttons_d & (WUPS_CONFIG_BUTTON_A | WUPS_CONFIG_BUTTON_B))
             return FocusChange::Lose;
 
         return FocusChange::Keep;

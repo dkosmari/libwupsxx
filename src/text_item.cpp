@@ -47,6 +47,8 @@ namespace wups::config {
                            std::size_t size)
         const
     {
+        // TODO: process this in std::u32string
+
         // Note: `buf` is a C string, it needs a null terminator at the end,
         // so the effective `width` is one less than `size`.
         std::size_t width = std::min(size - 1, max_width);
@@ -91,6 +93,8 @@ namespace wups::config {
                                    std::size_t size)
         const
     {
+        // TODO: process this in std::u32string
+
         // Note: `buf` is a C string, it needs a null terminator at the end,
         // so the effective `width` is one less than `size`.
         std::size_t width = std::min(size - 1, max_width);

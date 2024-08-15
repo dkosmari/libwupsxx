@@ -172,30 +172,44 @@ namespace wups::config {
     file_item::get_focused_display(char* buf, std::size_t size)
         const
     {
+        std::string left;
+        std::string right;
+        const char* const blank = "　";
+
+        bool variable_is_root = is_sd_root(variable);
+
+        if (variable_is_dir && variable_is_root)
+            left = NIN_GLYPH_BTN_DPAD_RIGHT;
+        else if (variable_is_dir)
+            left = NIN_GLYPH_BTN_DPAD_LEFT_RIGHT;
+        else if (variable_is_root)
+            left = blank; // should never happen, root is dir
+        else // !root && !dir
+            left = NIN_GLYPH_BTN_DPAD_LEFT;
+
+        bool has_prev = current_idx > 0;
+        bool has_next = current_idx + 1 < entries.size();
+
+        if (has_prev && has_next)
+            right = NIN_GLYPH_BTN_DPAD_UP_DOWN;
+        else if (has_prev)
+            right = NIN_GLYPH_BTN_DPAD_UP;
+        else if (has_next)
+            right = NIN_GLYPH_BTN_DPAD_DOWN;
+        else
+            right = blank;
+
+        std::string variable_str = ellipsize_path(variable, max_width);
         const char* dir_indicator = "";
         if (variable_is_dir)
             dir_indicator = "/";
 
-        const char* up_symbol = "";
-        const char* prev_symbol = "";
-        const char* next_symbol = "";
-        if (!is_sd_root(variable))
-            up_symbol = ", " NIN_GLYPH_BTN_L "=" NIN_GLYPH_BACK;
-        if (current_idx > 0)
-            prev_symbol = NIN_GLYPH_BTN_DPAD_LEFT " ";
-        if (current_idx + 1 < entries.size())
-            next_symbol = " " NIN_GLYPH_BTN_DPAD_RIGHT;
-
-        std::string variable_str = ellipsize_path(variable, max_width);
-
         std::snprintf(buf, size,
-                      "(" NIN_GLYPH_BTN_A "=enter%s) "
-                      "%s" "%s%s" "%s",
-                      up_symbol,
-                      prev_symbol,
+                      "%s " "%s%s" " %s",
+                      left.c_str(),
                       variable_str.c_str(),
                       dir_indicator,
-                      next_symbol);
+                      right.c_str());
         return 0;
     }
 
@@ -203,16 +217,17 @@ namespace wups::config {
     void
     file_item::on_focus_changed()
     {
+        var_item::on_focus_changed();
         if (has_focus())
             enter_directory(variable.parent_path(), variable);
     }
 
 
-    // Note: when restoring to default value, we must update variable_is_dir.
     void
     file_item::restore()
     {
         var_item::restore();
+        // we must update variable_is_dir.
         variable_is_dir = is_directory(variable);
     }
 
@@ -220,16 +235,16 @@ namespace wups::config {
     FocusChange
     file_item::on_input(const SimplePadData& input)
     {
-        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_LEFT))
+        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_UP))
             navigate_prev();
 
-        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_RIGHT))
+        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_DOWN))
             navigate_next();
 
-        if (input.buttons_d & WUPS_CONFIG_BUTTON_A)
+        if (input.buttons_d & WUPS_CONFIG_BUTTON_RIGHT)
             enter_directory(variable);
 
-        if (input.buttons_d & WUPS_CONFIG_BUTTON_L)
+        if (input.buttons_d & WUPS_CONFIG_BUTTON_LEFT)
             navigate_up();
 
         return var_item::on_input(input);

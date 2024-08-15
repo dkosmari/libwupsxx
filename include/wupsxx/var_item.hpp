@@ -9,6 +9,8 @@
 #ifndef WUPSXX_VAR_ITEM_HPP
 #define WUPSXX_VAR_ITEM_HPP
 
+#include <optional>
+
 #include "item.hpp"
 
 
@@ -22,6 +24,7 @@ namespace wups::config {
     protected:
 
         T& variable;
+        std::optional<T> previous_value;
         const T default_value;
 
     public:
@@ -35,12 +38,43 @@ namespace wups::config {
         {}
 
 
+        // save or restore previous value of variable
+        virtual
+        void
+        on_focus_changed()
+            override
+        {
+            if (has_focus()) {
+                // gained focus, save the current value
+                previous_value = variable;
+            } else {
+                // lost focus, restore previous_value if it exists
+                if (previous_value) {
+                    variable = *previous_value;
+                    previous_value.reset();
+                }
+            }
+        }
+
+
         virtual
         void
         restore()
             override
         {
             variable = default_value;
+        }
+
+
+        // Check if confirming with A, then clear previous_value
+        FocusChange
+        on_input(const SimplePadData& input)
+            override
+        {
+            if (input.buttons_d & WUPS_CONFIG_BUTTON_A)
+                previous_value.reset(); // we're confirming, nothing to restore
+
+            return item::on_input(input);
         }
 
     };
