@@ -46,6 +46,7 @@ src_libwupsxx_a_SOURCES = 			\
 	src/file_item.cpp			\
 	src/int_item.cpp			\
 	src/item.cpp				\
+	src/nintendo_glyphs.h			\
 	src/numeric_item_impl.hpp		\
 	src/storage.cpp				\
 	src/storage_error.cpp			\
