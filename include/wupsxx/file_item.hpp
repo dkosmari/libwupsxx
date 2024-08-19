@@ -21,6 +21,7 @@ namespace wups::config {
     class file_item : public var_item<std::filesystem::path> {
 
         std::size_t max_width;
+        std::vector<std::string> extensions;
         std::vector<std::filesystem::directory_entry> entries;
         std::size_t current_idx;
         bool variable_is_dir;
@@ -30,14 +31,16 @@ namespace wups::config {
         file_item(const std::string& label,
                   std::filesystem::path& variable,
                   const std::filesystem::path& default_value,
-                  std::size_t max_width = 30);
+                  std::size_t max_width = 40,
+                  const std::vector<std::string>& extensions = {});
 
         static
         std::unique_ptr<file_item>
         create(const std::string& label,
                std::filesystem::path& variable,
                const std::filesystem::path& default_value,
-               std::size_t max_width = 30);
+               std::size_t max_width = 40,
+               const std::vector<std::string>& extensions = {});
 
 
         virtual int get_display(char* buf, std::size_t size) const override;

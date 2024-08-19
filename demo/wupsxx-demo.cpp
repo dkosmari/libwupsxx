@@ -107,6 +107,7 @@ namespace cfg {
     std::string text;
 
     std::filesystem::path some_file;
+    std::filesystem::path plugin_file;
 
     namespace foo {
 
@@ -139,6 +140,7 @@ namespace cfg {
             STORE(int_value_2);
             STORE(text);
             STORE(some_file);
+            STORE(plugin_file);
             // TODO: handle nested elements
 
             wups::storage::save();
@@ -169,6 +171,7 @@ namespace cfg {
             LOAD(int_value_2, 0);
             LOAD(text, "The quick brown fox jumps over the lazy dog.");
             LOAD(some_file, "fs:/vol/external01");
+            LOAD(plugin_file, "fs:/vol/external01/wiiu/environments/aroma/plugins");
         }
         catch (std::exception& e) {
             LOG("exception caught: %s\n", e.what());
@@ -244,6 +247,14 @@ menu_open(WUPSConfigCategoryHandle root_handle)
         root.add(wups::config::file_item::create("Some file",
                                                  cfg::some_file,
                                                  "fs:/vol/external01"));
+
+        // A file item for plugin files.
+        root.add(wups::config::file_item::create("Plugin file",
+                                                 cfg::plugin_file,
+                                                 "fs:/vol/external01/wiiu/environments/aroma/plugins",
+                                                 30,
+                                                 {".wps"}));
+
 
 #if 0
         {

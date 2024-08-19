@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <locale>
 #include <ranges>
+#include <set>
 #include <utility>              // move()
 
 #include "wupsxx/file_item.hpp"
@@ -21,6 +22,26 @@ namespace wups::config {
 
 
     namespace {
+
+
+        char
+        upper_char(char c)
+        {
+            if (c >= 'a' && c <= 'z')
+                return c - ('a' - 'A');
+            return c;
+        }
+
+
+        std::string
+        upper(const std::string& s)
+        {
+            std::string result = s;
+            for (auto& c : result)
+                c = upper_char(c);
+            return result;
+        }
+
 
         char32_t
         upper_uchar(char32_t c)
@@ -132,21 +153,32 @@ namespace wups::config {
     file_item::file_item(const std::string& label,
                          std::filesystem::path& variable,
                          const std::filesystem::path& default_value,
-                         std::size_t max_width) :
+                         std::size_t max_width,
+                         const std::vector<std::string>& extensions) :
         var_item{label, variable, default_value},
         max_width{max_width},
+        extensions{extensions},
         current_idx{0},
         variable_is_dir{is_directory(variable)}
-    {}
+    {
+        // Convert all extensions to upper-case.
+        for (auto& ext : this->extensions)
+            for (char& c : ext)
+                c = upper_char(c);
+        // and sort them.
+        std::ranges::sort(this->extensions);
+    }
 
 
     std::unique_ptr<file_item>
     file_item::create(const std::string& label,
                       std::filesystem::path& variable,
                       const std::filesystem::path& default_value,
-                      std::size_t max_width)
+                      std::size_t max_width,
+                      const std::vector<std::string>& extensions)
     {
-        return std::make_unique<file_item>(label, variable, default_value, max_width);
+        return std::make_unique<file_item>(label, variable, default_value,
+                                           max_width, extensions);
     }
 
 
@@ -269,9 +301,17 @@ namespace wups::config {
             if (!is_directory(dirname))
                 return;
 
+
             std::vector<std::filesystem::directory_entry> new_entries;
-            for (auto& entry : std::filesystem::directory_iterator{dirname})
-                new_entries.push_back(entry);
+            for (auto& entry : std::filesystem::directory_iterator{dirname}) {
+                if (!extensions.empty() && entry.is_regular_file()) {
+                    // Apply filtering by extension.
+                    std::string ext = upper(entry.path().extension().string());
+                    if (std::ranges::binary_search(extensions, ext))
+                        new_entries.push_back(entry);
+                } else
+                    new_entries.push_back(entry);
+            }
 
             // Don't enter empty directories, there's nothing to select.
             if (new_entries.empty())
