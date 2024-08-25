@@ -10,6 +10,8 @@
 
 #include "wupsxx/color_item.hpp"
 
+#include "cafe_glyphs.h"
+
 
 namespace wups::config {
 
@@ -49,12 +51,30 @@ namespace wups::config {
     color_item::get_focused_display(char* buf, std::size_t size)
         const
     {
+        const unsigned max_edit_idx = has_alpha ? 3 : 2;
+        const char* left_right = CAFE_GLYPH_BTN_LEFT_RIGHT;
+        if (edit_idx == 0)
+            left_right = CAFE_GLYPH_BTN_RIGHT;
+        if (edit_idx >= max_edit_idx)
+            left_right = CAFE_GLYPH_BTN_LEFT;
+
+        auto channel = variable[edit_idx];
+        const char* up_down = CAFE_GLYPH_BTN_UP_DOWN;
+        if (channel == 0)
+            up_down = CAFE_GLYPH_BTN_UP;
+        if (channel >= 0xff)
+            up_down = CAFE_GLYPH_BTN_DOWN;
+
         auto s = to_string(variable, has_alpha);
         const char* left_bracket = "[";
         const char* right_bracket = "]";
         s.insert(1 + 2 + edit_idx * 2, right_bracket);
         s.insert(1 + 0 + edit_idx * 2, left_bracket);
-        std::snprintf(buf, size, "%s", s.c_str());
+        std::snprintf(buf, size,
+                      "%s %s %s",
+                      left_right,
+                      s.c_str(),
+                      up_down);
         return 0;
     }
 
