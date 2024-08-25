@@ -75,10 +75,23 @@ namespace wups::config {
         var_item::on_focus_changed();
 
         if (has_focus()) {
+            // disable TV Remote while we read button combos
+            VPADSetTVMenuInvalid(VPAD_CHAN_0, true);
             // start reading combo when focused
             pressed_anything = false;
             reading_combo = true;
             variable = {};
+        } else {
+            // enable TV Remote when we lose focus
+            VPADSetTVMenuInvalid(VPAD_CHAN_0, false);
+            // if the combo is empty, set variable back to monostate
+            if (holds_alternative<vpad_combo>(variable) &&
+                get<vpad_combo>(variable).buttons == 0)
+                variable = {};
+            if (holds_alternative<wpad_combo>(variable) &&
+                get<wpad_combo>(variable).core_buttons == 0 &&
+                get<wpad_combo>(variable).ext_buttons == 0)
+                variable = {};
         }
     }
 

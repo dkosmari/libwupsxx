@@ -506,7 +506,11 @@ namespace wups::config {
         operator ()(const vpad_combo& vc)
             const
         {
-            return vpad_combo_to_glyph(vc.buttons);
+            string prefix = CAFE_GLYPH_GAMEPAD " ";
+            string result = vpad_combo_to_glyph(vc.buttons);
+            if (!result.empty())
+                return prefix + result;
+            return result;
         }
 
 
@@ -514,24 +518,31 @@ namespace wups::config {
         operator ()(const wpad_combo& wc)
             const
         {
+            string prefix = CAFE_GLYPH_WIIMOTE " ";
             string result = wpad_core_combo_to_glyph(wc.core_buttons);
 
             switch (wc.ext) {
             case WPAD_EXT_NUNCHUK:
             case WPAD_EXT_MPLUS_NUNCHUK:
-                return concat(result,
-                              wpad_nunchuk_combo_to_glyph(wc.ext_buttons));
+                result = concat(result,
+                                wpad_nunchuk_combo_to_glyph(wc.ext_buttons));
+                break;
             case WPAD_EXT_CLASSIC:
             case WPAD_EXT_MPLUS_CLASSIC:
-                return concat(result,
-                              wpad_classic_combo_to_glyph(wc.ext_buttons));
+                result = concat(result,
+                                wpad_classic_combo_to_glyph(wc.ext_buttons));
+                break;
             case WPAD_EXT_PRO_CONTROLLER:
-                return concat(result,
-                              wpad_pro_combo_to_glyph(wc.ext_buttons));
+                result = concat(result,
+                                wpad_pro_combo_to_glyph(wc.ext_buttons));
+                break;
             default:
-                return result;
+                ;
             }
 
+            if (!result.empty())
+                return prefix + result;
+            return result;
         }
 
     };
