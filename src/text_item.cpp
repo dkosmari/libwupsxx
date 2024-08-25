@@ -11,13 +11,13 @@
 
 #include "wupsxx/text_item.hpp"
 
-#include "nintendo_glyphs.h"
+#include "cafe_glyphs.h"
 
 
 namespace {
 
-    const std::string left_glyph = NIN_GLYPH_BTN_DPAD_LEFT " ";
-    const std::string right_glyph = " " NIN_GLYPH_BTN_DPAD_RIGHT;
+    const std::string left_glyph = CAFE_GLYPH_BTN_LEFT " ";
+    const std::string right_glyph = " " CAFE_GLYPH_BTN_RIGHT;
 
 }
 
@@ -143,8 +143,8 @@ namespace wups::config {
     }
 
 
-    FocusChange
-    text_item::on_input(const SimplePadData& input)
+    focus_status
+    text_item::on_input(const simple_pad_data& input)
     {
         // Only process inputs if text is not fully visible.
         if (text.size() > max_width) {

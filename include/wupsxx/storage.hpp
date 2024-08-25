@@ -16,6 +16,7 @@
 
 #include <wups/storage.h>
 
+#include "button_combo.hpp"
 #include "color.hpp"
 #include "duration.hpp"
 #include "storage_error.hpp"
@@ -59,6 +60,11 @@ namespace wups::storage {
     load<std::filesystem::path>(const std::string& key);
 
 
+    template<>
+    std::expected<config::button_combo, storage_error>
+    load<config::button_combo>(const std::string& key);
+
+
 
     template<typename T>
     void
@@ -85,6 +91,10 @@ namespace wups::storage {
 
     void
     store(const std::string& key, const std::filesystem::path& p);
+
+
+    void
+    store(const std::string& key, const config::button_combo& bc);
 
 
 

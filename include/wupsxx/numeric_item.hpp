@@ -50,7 +50,7 @@ namespace wups::config {
 
         virtual int get_focused_display(char* buf, std::size_t size) const override;
 
-        virtual FocusChange on_input(const SimplePadData& input) override;
+        virtual focus_status on_input(const simple_pad_data& input) override;
 
     };
 

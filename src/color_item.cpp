@@ -59,8 +59,8 @@ namespace wups::config {
     }
 
 
-    FocusChange
-    color_item::on_input(const SimplePadData& input)
+    focus_status
+    color_item::on_input(const simple_pad_data& input)
     {
         const unsigned max_edit_idx = has_alpha ? 3 : 2;
 

@@ -51,7 +51,7 @@ namespace wups::config {
 
         virtual void restore() override;
 
-        virtual FocusChange on_input(const SimplePadData& input) override;
+        virtual focus_status on_input(const simple_pad_data& input) override;
 
 
     private:

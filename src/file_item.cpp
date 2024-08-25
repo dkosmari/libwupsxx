@@ -15,7 +15,7 @@
 
 #include "wupsxx/file_item.hpp"
 
-#include "nintendo_glyphs.h"
+#include "cafe_glyphs.h"
 
 
 namespace wups::config {
@@ -211,23 +211,23 @@ namespace wups::config {
         bool variable_is_root = is_sd_root(variable);
 
         if (variable_is_dir && variable_is_root)
-            left = NIN_GLYPH_BTN_DPAD_RIGHT;
+            left = CAFE_GLYPH_BTN_RIGHT;
         else if (variable_is_dir)
-            left = NIN_GLYPH_BTN_DPAD_LEFT_RIGHT;
+            left = CAFE_GLYPH_BTN_LEFT_RIGHT;
         else if (variable_is_root)
             left = blank; // should never happen, root is dir
         else // !root && !dir
-            left = NIN_GLYPH_BTN_DPAD_LEFT;
+            left = CAFE_GLYPH_BTN_LEFT;
 
         bool has_prev = current_idx > 0;
         bool has_next = current_idx + 1 < entries.size();
 
         if (has_prev && has_next)
-            right = NIN_GLYPH_BTN_DPAD_UP_DOWN;
+            right = CAFE_GLYPH_BTN_UP_DOWN;
         else if (has_prev)
-            right = NIN_GLYPH_BTN_DPAD_UP;
+            right = CAFE_GLYPH_BTN_UP;
         else if (has_next)
-            right = NIN_GLYPH_BTN_DPAD_DOWN;
+            right = CAFE_GLYPH_BTN_DOWN;
         else
             right = blank;
 
@@ -264,8 +264,8 @@ namespace wups::config {
     }
 
 
-    FocusChange
-    file_item::on_input(const SimplePadData& input)
+    focus_status
+    file_item::on_input(const simple_pad_data& input)
     {
         if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_UP))
             navigate_prev();

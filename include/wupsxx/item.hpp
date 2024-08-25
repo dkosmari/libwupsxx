@@ -12,28 +12,16 @@
 #include <cstddef>              // size_t
 #include <string>
 
-#include <wups.h>
+#include <wups/config/WUPSConfigItem.h>
+
+#include "input.hpp"
 
 
 namespace wups::config {
 
-
-    struct SimplePadData : WUPSConfigSimplePadData {
-
-        WUPS_CONFIG_SIMPLE_INPUT buttons_repeat;
-
-
-        SimplePadData(const WUPSConfigSimplePadData& base) noexcept;
-
-
-        bool pressed_or_repeated(unsigned mask) const noexcept;
-
-    };
-
-
-    enum class FocusChange {
-        Keep,
-        Lose,
+    enum class focus_status {
+        keep,
+        lose,
     };
 
 
@@ -69,9 +57,9 @@ namespace wups::config {
 
         virtual void on_close();
 
-        virtual FocusChange on_input(const SimplePadData& input);
+        virtual focus_status on_input(const simple_pad_data& input);
 
-        virtual FocusChange on_input(const WUPSConfigComplexPadData& input);
+        virtual focus_status on_input(const complex_pad_data& input);
 
 
         bool has_focus() const noexcept;

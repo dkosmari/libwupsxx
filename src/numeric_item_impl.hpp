@@ -19,7 +19,7 @@
 
 #include "wupsxx/duration.hpp" // make to_string() overload visible
 
-#include "nintendo_glyphs.h"
+#include "cafe_glyphs.h"
 
 
 namespace wups::config {
@@ -74,11 +74,11 @@ namespace wups::config {
         const char* fast_left = "";
         const char* fast_right = "";
         if (variable > min_value) {
-            slow_left = NIN_GLYPH_BTN_DPAD_LEFT " ";
-            fast_left = NIN_GLYPH_BTN_L;
+            slow_left = CAFE_GLYPH_BTN_LEFT " ";
+            fast_left = CAFE_GLYPH_BTN_L;
         } if (variable < max_value) {
-            slow_right = " " NIN_GLYPH_BTN_DPAD_RIGHT;
-            fast_right = NIN_GLYPH_BTN_R;
+            slow_right = " " CAFE_GLYPH_BTN_RIGHT;
+            fast_right = CAFE_GLYPH_BTN_R;
         }
         using std::to_string;
         using wups::config::to_string;
@@ -95,8 +95,8 @@ namespace wups::config {
 
 
     template<typename T>
-    FocusChange
-    numeric_item<T>::on_input(const SimplePadData& input)
+    focus_status
+    numeric_item<T>::on_input(const simple_pad_data& input)
     {
         if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_LEFT))
             variable -= slow_increment;

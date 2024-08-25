@@ -36,6 +36,17 @@ namespace wups::storage {
     }
 
 
+    template<>
+    std::expected<config::button_combo, storage_error>
+    load<config::button_combo>(const std::string& key)
+    {
+        auto res = load<std::string>(key);
+        if (!res)
+            return std::unexpected{res.error()};
+        return config::button_combo_from_string(*res);
+    }
+
+
     void
     store(const std::string& key, const config::color& c)
     {
@@ -47,6 +58,13 @@ namespace wups::storage {
     store(const std::string& key, const std::filesystem::path& p)
     {
         store<std::string>(key, p);
+    }
+
+
+    void
+    store(const std::string& key, const config::button_combo& bc)
+    {
+        store<std::string>(key, to_string(bc));
     }
 
 

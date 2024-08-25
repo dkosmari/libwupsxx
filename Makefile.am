@@ -22,6 +22,8 @@ noinst_LIBRARIES = src/libwupsxx.a
 
 src_libwupsxx_a_SOURCES = 			\
 	include/wupsxx/bool_item.hpp		\
+	include/wupsxx/button_combo.hpp		\
+	include/wupsxx/button_combo_item.hpp	\
 	include/wupsxx/category.hpp		\
 	include/wupsxx/color.hpp		\
 	include/wupsxx/color_item.hpp		\
@@ -29,14 +31,18 @@ src_libwupsxx_a_SOURCES = 			\
 	include/wupsxx/duration.hpp		\
 	include/wupsxx/duration_items.hpp	\
 	include/wupsxx/file_item.hpp		\
+	include/wupsxx/input.hpp		\
 	include/wupsxx/int_item.hpp		\
 	include/wupsxx/item.hpp			\
 	include/wupsxx/numeric_item.hpp		\
-	include/wupsxx/storage_error.hpp	\
 	include/wupsxx/storage.hpp		\
+	include/wupsxx/storage_error.hpp	\
 	include/wupsxx/text_item.hpp		\
 	include/wupsxx/var_item.hpp 		\
 	src/bool_item.cpp			\
+	src/button_combo.cpp			\
+	src/button_combo_item.cpp		\
+	src/cafe_glyphs.h			\
 	src/category.cpp			\
 	src/color.cpp				\
 	src/color_item.cpp			\
@@ -44,9 +50,9 @@ src_libwupsxx_a_SOURCES = 			\
 	src/duration.cpp			\
 	src/duration_items.cpp			\
 	src/file_item.cpp			\
+	src/input.cpp				\
 	src/int_item.cpp			\
 	src/item.cpp				\
-	src/nintendo_glyphs.h			\
 	src/numeric_item_impl.hpp		\
 	src/storage.cpp				\
 	src/storage_error.cpp			\

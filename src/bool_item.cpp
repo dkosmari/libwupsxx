@@ -11,7 +11,7 @@
 
 #include "wupsxx/bool_item.hpp"
 
-#include "nintendo_glyphs.h"
+#include "cafe_glyphs.h"
 
 
 namespace wups::config {
@@ -58,15 +58,15 @@ namespace wups::config {
 
         std::snprintf(buf, size,
                       "%s %s %s",
-                      NIN_GLYPH_BTN_DPAD_LEFT,
+                      CAFE_GLYPH_BTN_LEFT,
                       str,
-                      NIN_GLYPH_BTN_DPAD_RIGHT);
+                      CAFE_GLYPH_BTN_RIGHT);
         return 0;
     }
 
 
-    FocusChange
-    bool_item::on_input(const SimplePadData& input)
+    focus_status
+    bool_item::on_input(const simple_pad_data& input)
     {
         // Allow toggling with left or right.
         if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_LEFT | WUPS_CONFIG_BUTTON_RIGHT))

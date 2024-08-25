@@ -41,7 +41,7 @@ namespace wups::config {
 
         virtual bool on_focus_request(bool new_focus) const override;
 
-        virtual FocusChange on_input(const SimplePadData& input) override;
+        virtual focus_status on_input(const simple_pad_data& input) override;
 
     };
 

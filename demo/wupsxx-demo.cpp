@@ -19,6 +19,7 @@
 #include <wups.h>
 
 #include <wupsxx/bool_item.hpp>
+#include <wupsxx/button_combo_item.hpp>
 #include <wupsxx/category.hpp>
 #include <wupsxx/color_item.hpp>
 #include <wupsxx/duration_items.hpp> // note, plural
@@ -49,6 +50,10 @@ using namespace std::literals;
 
 // This type has .r, .g, .b, .a members, and a to_string() function.
 using wups::config::color;
+
+
+// Used to store button combo shortcuts.
+using wups::config::button_combo;
 
 
 struct log_manager {
@@ -109,6 +114,11 @@ namespace cfg {
     std::filesystem::path some_file;
     std::filesystem::path plugin_file;
 
+
+    button_combo shortcut1;
+    button_combo shortcut2;
+
+
     namespace foo {
 
         bool enabled;
@@ -141,6 +151,8 @@ namespace cfg {
             STORE(text);
             STORE(some_file);
             STORE(plugin_file);
+            STORE(shortcut1);
+            STORE(shortcut2);
             // TODO: handle nested elements
 
             wups::storage::save();
@@ -172,6 +184,8 @@ namespace cfg {
             LOAD(text, "The quick brown fox jumps over the lazy dog.");
             LOAD(some_file, "fs:/vol/external01");
             LOAD(plugin_file, "fs:/vol/external01/wiiu/environments/aroma/plugins");
+            LOAD(shortcut1, (wups::config::button_combo{}));
+            LOAD(shortcut2, (wups::config::vpad_combo{VPAD_BUTTON_A | VPAD_BUTTON_Y}));
         }
         catch (std::exception& e) {
             LOG("exception caught: %s\n", e.what());
@@ -248,12 +262,20 @@ menu_open(WUPSConfigCategoryHandle root_handle)
                                                  cfg::some_file,
                                                  "fs:/vol/external01"));
 
-        // A file item for plugin files.
+        // A file item for plugin files: only .wps extensions.
         root.add(wups::config::file_item::create("Plugin file",
                                                  cfg::plugin_file,
                                                  "fs:/vol/external01/wiiu/environments/aroma/plugins",
                                                  30,
                                                  {".wps"}));
+
+
+        root.add(wups::config::button_combo_item::create("Shortcut1",
+                                                         cfg::shortcut1));
+
+        root.add(wups::config::button_combo_item::create("Shortcut2",
+                                                         cfg::shortcut2,
+                                                         wups::config::vpad_combo{VPAD_BUTTON_A | VPAD_BUTTON_Y}));
 
 
 #if 0

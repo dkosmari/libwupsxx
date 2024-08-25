@@ -67,8 +67,8 @@ namespace wups::config {
 
 
         // Check if confirming with A, then clear previous_value
-        FocusChange
-        on_input(const SimplePadData& input)
+        focus_status
+        on_input(const simple_pad_data& input)
             override
         {
             if (input.buttons_d & WUPS_CONFIG_BUTTON_A)
@@ -76,6 +76,10 @@ namespace wups::config {
 
             return item::on_input(input);
         }
+
+        // don't hide item::on_input
+        using item::on_input;
+
 
     };
 

@@ -6,41 +6,25 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <array>
-#include <chrono>
 #include <cstdio>               // snprintf()
 
 #include <whb/log.h>
+
+#include <wups/config_api.h>
 
 #include "wupsxx/item.hpp"
 
 #include "wupsxx/config_error.hpp"
 
 
-using namespace std::literals;
-
-
 #define REPORT_ERROR(e) \
-    WHBLogPrintf("[libwupsxx] error in %s: %s\n", __PRETTY_FUNCTION__, e.what())
+    WHBLogPrintf("[libwupsxx] error in %s(): %s\n", __func__, e.what())
 
 
 namespace wups::config {
 
-    // SimplePadData
-
-    SimplePadData::SimplePadData(const WUPSConfigSimplePadData& base)
-        noexcept :
-        WUPSConfigSimplePadData{base},
-        buttons_repeat{}
-    {}
-
-
-    bool
-    SimplePadData::pressed_or_repeated(unsigned mask)
-        const noexcept
-    {
-        return (buttons_d | buttons_repeat) & mask;
-    }
+    // Constant used by both input functions:
+    // How long a button must be held until it's in a "repeat" state.
 
 
     namespace glue {
@@ -136,33 +120,9 @@ namespace wups::config {
                     return;
                 }
 
-                // Here we implement a "repeat" function.
-                using clock = std::chrono::steady_clock;
-                using time_point = clock::time_point;
+                simple_pad_data sinput{input};
 
-                constexpr auto repeat_delay = 500ms;
-                static std::array<time_point, 16> pressed_time{}; // zero-initialized
-                auto now = clock::now();
-
-                unsigned repeat = 0;
-                for (unsigned b = 0; b < 16; ++b) {
-                    unsigned mask = 1u << b;
-                    if (input.buttons_d & mask)
-                        pressed_time[b] = now;
-
-                    if (input.buttons_h & mask)
-                        // if button was held long enough, flag it as being on a repeat state
-                        if (now - pressed_time[b] >= repeat_delay)
-                            repeat |= mask;
-
-                    if (input.buttons_r & mask)
-                        pressed_time[b] = {};
-                }
-
-                SimplePadData sinput = input;
-                sinput.buttons_repeat = static_cast<WUPS_CONFIG_SIMPLE_INPUT>(repeat);
-
-                if (it->on_input(sinput) == FocusChange::Lose)
+                if (it->on_input(sinput) == focus_status::lose)
                     it->set_focus(false);
             }
             catch (std::exception& e) {
@@ -172,17 +132,20 @@ namespace wups::config {
         }
 
 
+
         void
         on_input_ex(void* ctx, WUPSConfigComplexPadData input)
             noexcept
         {
             auto it = static_cast<item*>(ctx);
             try {
-                // TODO: implement "repeat" functionality for extended input too
+                // don't handle focus-in from extended input, use simple input for that
                 if (!it->has_focus())
                     return;
 
-                if (it->on_input(input) == FocusChange::Lose)
+                complex_pad_data cinput{input};
+
+                if (it->on_input(cinput) == focus_status::lose)
                     it->set_focus(false);
             }
             catch (std::exception& e) {
@@ -297,24 +260,24 @@ namespace wups::config {
     {}
 
 
-    FocusChange
-    item::on_input(const SimplePadData& input)
+    focus_status
+    item::on_input(const simple_pad_data& input)
     {
         if (input.buttons_d & WUPS_CONFIG_BUTTON_X)
             restore();
 
         // either A or B make it lose focus, confirming or canceling
         if (input.buttons_d & (WUPS_CONFIG_BUTTON_A | WUPS_CONFIG_BUTTON_B))
-            return FocusChange::Lose;
+            return focus_status::lose;
 
-        return FocusChange::Keep;
+        return focus_status::keep;
     }
 
 
-    FocusChange
-    item::on_input(const WUPSConfigComplexPadData& /*input*/)
+    focus_status
+    item::on_input(const complex_pad_data& /*input*/)
     {
-        return FocusChange::Keep;
+        return focus_status::keep;
     }
 
 
