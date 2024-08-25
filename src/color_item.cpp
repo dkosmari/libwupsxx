@@ -6,11 +6,19 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <array>
 #include <cstdio>
+#include <optional>
+#include <ranges>
 
 #include "wupsxx/color_item.hpp"
 
 #include "cafe_glyphs.h"
+
+
+using std::array;
+using std::views::enumerate;
+using std::optional;
 
 
 namespace wups::config {
@@ -21,6 +29,7 @@ namespace wups::config {
                            bool has_alpha) :
         var_item{label, variable, default_value},
         has_alpha{has_alpha},
+        mode{mode_t::rgb},
         edit_idx{0}
     {}
 
@@ -37,12 +46,77 @@ namespace wups::config {
     }
 
 
+
+    namespace {
+
+        std::string
+        get_rgb_str(color c,
+                    bool has_alpha,
+                    optional<unsigned> edit_idx = {})
+        {
+            auto make_comp_str = [=](unsigned idx,
+                                     const std::string& label)
+                -> std::string
+            {
+                if (edit_idx && *edit_idx == idx)
+                    return label + "[" + std::to_string(c[idx]) + "]";
+                else
+                    return label + std::to_string(c[idx]);
+            };
+
+            std::string result = has_alpha ? "rgba(" : "rgb(";
+            for (auto [idx, label] : enumerate(array{"", ", ", ", "}))
+                result += make_comp_str(idx, label);
+
+            if (has_alpha)
+                result += make_comp_str(3, ", ");
+
+            return result + ")";
+        }
+
+
+        std::string
+        comp_to_hex(std::uint8_t val)
+        {
+            char buf[3];
+            std::snprintf(buf, sizeof buf, "%02X", unsigned{val});
+            return buf;
+        }
+
+
+        std::string
+        get_hex_str(color c,
+                    bool has_alpha,
+                    optional<unsigned> edit_idx = {})
+        {
+            const unsigned num_components = has_alpha ? 4 : 3;
+            std::string result = "#";
+            for (unsigned idx = 0; idx < num_components; ++idx)
+                if (edit_idx && *edit_idx == idx)
+                    result += "[" + comp_to_hex(c[idx]) + "]";
+                else
+                    result += comp_to_hex(c[idx]);
+            return result;
+        }
+
+
+    } // namespace
+
+
     int
     color_item::get_display(char* buf, std::size_t size)
         const
     {
-        auto s = to_string(variable, has_alpha);
-        std::snprintf(buf, size, "%s", s.c_str());
+        std::string str;
+        switch (mode) {
+        case mode_t::rgb:
+            str = get_rgb_str(variable, has_alpha);
+            break;
+        case mode_t::hex:
+            str = get_hex_str(variable, has_alpha);
+            break;
+        }
+        std::snprintf(buf, size, "%s", str.c_str());
         return 0;
     }
 
@@ -55,26 +129,31 @@ namespace wups::config {
         const char* left_right = CAFE_GLYPH_BTN_LEFT_RIGHT;
         if (edit_idx == 0)
             left_right = CAFE_GLYPH_BTN_RIGHT;
-        if (edit_idx >= max_edit_idx)
+        if (edit_idx == max_edit_idx)
             left_right = CAFE_GLYPH_BTN_LEFT;
 
-        auto channel = variable[edit_idx];
         const char* up_down = CAFE_GLYPH_BTN_UP_DOWN;
-        if (channel == 0)
+        if (variable[edit_idx] == 0)
             up_down = CAFE_GLYPH_BTN_UP;
-        if (channel >= 0xff)
+        if (variable[edit_idx] == 0xff)
             up_down = CAFE_GLYPH_BTN_DOWN;
 
-        auto s = to_string(variable, has_alpha);
-        const char* left_bracket = "[";
-        const char* right_bracket = "]";
-        s.insert(1 + 2 + edit_idx * 2, right_bracket);
-        s.insert(1 + 0 + edit_idx * 2, left_bracket);
+        std::string str;
+        switch (mode) {
+        case mode_t::rgb:
+            str = get_rgb_str(variable, has_alpha, edit_idx);
+            break;
+        case mode_t::hex:
+            str = get_hex_str(variable, has_alpha, edit_idx);
+            break;
+        }
+
         std::snprintf(buf, size,
                       "%s %s %s",
                       left_right,
-                      s.c_str(),
+                      str.c_str(),
                       up_down);
+
         return 0;
     }
 
@@ -84,13 +163,22 @@ namespace wups::config {
     {
         const unsigned max_edit_idx = has_alpha ? 3 : 2;
 
-        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_LEFT | WUPS_CONFIG_BUTTON_L))
+        if (input.buttons_d & WUPS_CONFIG_BUTTON_Y) {
+            if (mode == mode_t::rgb)
+                mode = mode_t::hex;
+            else
+                mode = mode_t::rgb;
+        }
+
+        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_LEFT)) {
             if (edit_idx > 0)
                 --edit_idx;
+        }
 
-        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_RIGHT | WUPS_CONFIG_BUTTON_R))
+        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_RIGHT)) {
             if (edit_idx < max_edit_idx)
                 ++edit_idx;
+        }
 
         auto& channel = variable[edit_idx];
 

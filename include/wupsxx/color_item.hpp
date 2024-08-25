@@ -19,7 +19,13 @@ namespace wups::config {
 
     class color_item : public var_item<color> {
 
+        enum class mode_t {
+            rgb,
+            hex
+        };
+
         bool has_alpha;
+        mode_t mode;
         unsigned edit_idx;
 
     public:

@@ -213,11 +213,11 @@ menu_open(WUPSConfigCategoryHandle root_handle)
 
 
         // A color item, only RGB
-        root.add(wups::config::color_item::create("Foreground (RGB)",
+        root.add(wups::config::color_item::create("Foreground",
                                                   cfg::foreground, color{0xff, 0x40, 0x80}));
 
         // Another color item, RGBA
-        root.add(wups::config::color_item::create("Background (RGBA)",
+        root.add(wups::config::color_item::create("Background",
                                                   cfg::background, color{0xaa, 0xbb, 0xcc, 0xdd},
                                                   true));
 
