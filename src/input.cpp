@@ -59,6 +59,7 @@ namespace wups::config {
             WUPS_CONFIG_BUTTON_MINUS,
         };
 
+
         constexpr array vpad_button_list{
             VPAD_BUTTON_A,
             VPAD_BUTTON_B,
@@ -101,8 +102,11 @@ namespace wups::config {
             WPAD_BUTTON_B,
             WPAD_BUTTON_A,
             WPAD_BUTTON_MINUS,
+            // Don't include nunchuk in core buttons
+            /*
             WPAD_BUTTON_Z,
             WPAD_BUTTON_C,
+            */
             WPAD_BUTTON_HOME,
         };
 
@@ -173,8 +177,7 @@ namespace wups::config {
             WPAD_PRO_STICK_R_EMULATION_RIGHT,
         };
 
-
-    }
+    } // namespace
 
 
     // simple_pad_data

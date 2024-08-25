@@ -193,8 +193,11 @@ namespace wups::config {
             ENTRY1(B),
             ENTRY1(A),
             ENTRY1(MINUS),
+            // Don't include nunchuk in core buttons.
+            /*
             ENTRY2(Z),
             ENTRY2(C),
+            */
             ENTRY1(HOME),
         };
 
