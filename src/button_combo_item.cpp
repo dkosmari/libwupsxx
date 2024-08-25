@@ -93,7 +93,14 @@ namespace wups::config {
         if (reading_combo)
             return focus_status::keep;
 
-        // let var_item/item classes handle confirm/cancel/reset with A/B/X
+        // We handle reset-to-default here: always confirm and lose focus.
+        if (input.buttons_d & WUPS_CONFIG_BUTTON_X) {
+            confirm_change();
+            restore();
+            return focus_status::lose;
+        }
+
+        // let var_item/item classes handle confirm/cancel with A/B
         return var_item::on_input(input);
     }
 

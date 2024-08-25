@@ -57,6 +57,13 @@ namespace wups::config {
         }
 
 
+        void
+        confirm_change()
+        {
+            previous_value.reset();
+        }
+
+
         virtual
         void
         restore()
@@ -72,7 +79,7 @@ namespace wups::config {
             override
         {
             if (input.buttons_d & WUPS_CONFIG_BUTTON_A)
-                previous_value.reset(); // we're confirming, nothing to restore
+                confirm_change();
 
             return item::on_input(input);
         }
