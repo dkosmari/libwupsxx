@@ -80,14 +80,23 @@ namespace wups::config {
         } else {
             // enable TV Remote when we lose focus
             VPADSetTVMenuInvalid(VPAD_CHAN_0, false);
-            // if the combo is empty, set variable back to monostate
-            if (holds_alternative<vpad_combo>(variable) &&
-                get<vpad_combo>(variable).buttons == 0)
-                variable = {};
-            if (holds_alternative<wpad_combo>(variable) &&
-                get<wpad_combo>(variable).core_buttons == 0 &&
-                get<wpad_combo>(variable).ext_buttons == 0)
-                variable = {};
+
+            if (holds_alternative<vpad_combo>(variable)) {
+                auto& combo = get<vpad_combo>(variable);
+                // if the combo is empty, set variable back to monostate
+                if (combo.buttons == 0)
+                    variable = {};
+            }
+
+            if (holds_alternative<wpad_combo>(variable)) {
+                auto& combo = get<wpad_combo>(variable);
+                // if no ext button was used, reset the ext field to core
+                if (combo.ext_buttons == 0)
+                    combo.ext = WPAD_EXT_CORE;
+                // if the combo is empty, set variable back to monostate
+                if (combo.core_buttons == 0 && combo.ext_buttons == 0)
+                    variable = {};
+            }
         }
     }
 
