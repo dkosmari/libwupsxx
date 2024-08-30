@@ -52,7 +52,7 @@ namespace wups::config {
 
 
     template<typename T>
-    int
+    void
     numeric_item<T>::get_display(char* buf, std::size_t size)
         const
     {
@@ -60,12 +60,11 @@ namespace wups::config {
         using wups::config::to_string;
         std::string str = to_string(variable);
         ::strlcpy(buf, str.c_str(), size);
-        return 0;
     }
 
 
     template<typename T>
-    int
+    void
     numeric_item<T>::get_focused_display(char* buf, std::size_t size)
         const
     {
@@ -90,7 +89,6 @@ namespace wups::config {
                       str.c_str(),
                       slow_right,
                       fast_right);
-        return 0;
     }
 
 

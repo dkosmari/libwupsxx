@@ -43,9 +43,9 @@ namespace wups::config {
                const std::vector<std::string>& extensions = {});
 
 
-        virtual int get_display(char* buf, std::size_t size) const override;
+        virtual void get_display(char* buf, std::size_t size) const override;
 
-        virtual int get_focused_display(char* buf, std::size_t size) const override;
+        virtual void get_focused_display(char* buf, std::size_t size) const override;
 
         virtual void on_focus_changed() override;
 

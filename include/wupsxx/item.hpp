@@ -20,18 +20,28 @@
 namespace wups::config {
 
     enum class focus_status {
-        keep,
         lose,
+        keep,
+        keep_and_switch,
+    };
+
+
+    enum class input_mode {
+        simple,
+        switch_to_complex,
+        complex
     };
 
 
     class item {
 
         WUPSConfigItemHandle handle;
-
         bool focused;
 
     public:
+
+        input_mode current_mode;
+
 
         item(const std::string& label);
 
@@ -44,9 +54,9 @@ namespace wups::config {
         void release() noexcept;
 
 
-        virtual int get_display(char* buf, std::size_t size) const;
+        virtual void get_display(char* buf, std::size_t size) const;
 
-        virtual int get_focused_display(char* buf, std::size_t size) const;
+        virtual void get_focused_display(char* buf, std::size_t size) const;
 
         // return `true` if item allows the focus change to occur
         virtual bool on_focus_request(bool new_focus) const;

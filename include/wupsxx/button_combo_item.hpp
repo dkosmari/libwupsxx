@@ -20,8 +20,13 @@ namespace wups::config {
 
     class button_combo_item : public var_item<button_combo> {
 
-        bool pressed_anything;
-        bool reading_combo;
+        enum class state_t {
+            waiting,
+            reading,
+            confirming
+        };
+
+        state_t state;
 
     public:
 
@@ -36,9 +41,9 @@ namespace wups::config {
                const button_combo& default_value = {});
 
 
-        virtual int get_display(char* buf, std::size_t size) const override;
+        virtual void get_display(char* buf, std::size_t size) const override;
 
-        virtual int get_focused_display(char* buf, std::size_t size) const override;
+        virtual void get_focused_display(char* buf, std::size_t size) const override;
 
         virtual void on_focus_changed() override;
 

@@ -35,7 +35,8 @@ namespace wups::config {
         {
             try {
                 auto it = static_cast<const item*>(ctx);
-                return it->get_display(buf, size);
+                it->get_display(buf, size);
+                return 0;
             }
             catch (std::exception& e) {
                 REPORT_ERROR(e);
@@ -51,9 +52,10 @@ namespace wups::config {
             try {
                 auto it = static_cast<const item*>(ctx);
                 if (it->has_focus())
-                    return it->get_focused_display(buf, size);
+                    it->get_focused_display(buf, size);
                 else
-                    return it->get_display(buf, size);
+                    it->get_display(buf, size);
+                return 0;
             }
             catch (std::exception& e) {
                 REPORT_ERROR(e);
@@ -120,17 +122,27 @@ namespace wups::config {
                     return;
                 }
 
-                simple_pad_data sinput{input};
+                if (it->current_mode != input_mode::simple)
+                    return;
 
-                if (it->on_input(sinput) == focus_status::lose)
+                simple_pad_data sinput{input};
+                auto res = it->on_input(sinput);
+                switch (res) {
+                case focus_status::lose:
                     it->set_focus(false);
+                    break;
+                case focus_status::keep:
+                    break;
+                case focus_status::keep_and_switch:
+                    it->current_mode = input_mode::switch_to_complex;
+                    break;
+                }
             }
             catch (std::exception& e) {
                 REPORT_ERROR(e);
                 it->set_focus(false);
             }
         }
-
 
 
         void
@@ -143,10 +155,28 @@ namespace wups::config {
                 if (!it->has_focus())
                     return;
 
+                if (it->current_mode == input_mode::switch_to_complex) {
+                    // ignore this input, only finish switching over
+                    it->current_mode = input_mode::complex;
+                    return;
+                }
+
+                if (it->current_mode != input_mode::complex)
+                    return;
+
                 complex_pad_data cinput{input};
 
-                if (it->on_input(cinput) == focus_status::lose)
+                auto res = it->on_input(cinput);
+                switch (res) {
+                case focus_status::lose:
                     it->set_focus(false);
+                    break;
+                case focus_status::keep:
+                    break;
+                case focus_status::keep_and_switch:
+                    it->current_mode = input_mode::simple;
+                    break;
+                }
             }
             catch (std::exception& e) {
                 REPORT_ERROR(e);
@@ -178,7 +208,8 @@ namespace wups::config {
 
 
     item::item(const std::string& label) :
-        focused{false}
+        focused{false},
+        current_mode{input_mode::simple}
     {
         WUPSConfigAPIItemOptionsV2 options {
             .displayName = label.c_str(),
@@ -218,22 +249,21 @@ namespace wups::config {
     }
 
 
-    int
+    void
     item::get_display(char* buf,
                       std::size_t size)
         const
     {
         std::snprintf(buf, size, "NOT IMPLEMENTED");
-        return 0;
     }
 
 
-    int
+    void
     item::get_focused_display(char* buf,
                               std::size_t size)
         const
     {
-        return get_display(buf, size);
+        get_display(buf, size);
     }
 
 
@@ -295,8 +325,11 @@ namespace wups::config {
         if (focused == new_focus)
             return;
 
+        // allow derived class to refuse changing focus
         if (on_focus_request(new_focus)) {
             focused = new_focus;
+            if (focused) // always enter focus on simple mode
+                current_mode = input_mode::simple;
             on_focus_changed();
         }
     }

@@ -182,7 +182,7 @@ namespace wups::config {
     }
 
 
-    int
+    void
     file_item::get_display(char* buf, std::size_t size)
         const
     {
@@ -196,11 +196,10 @@ namespace wups::config {
                       "%s%s",
                       variable_str.c_str(),
                       dir_indicator);
-        return 0;
     }
 
 
-    int
+    void
     file_item::get_focused_display(char* buf, std::size_t size)
         const
     {
@@ -242,7 +241,6 @@ namespace wups::config {
                       variable_str.c_str(),
                       dir_indicator,
                       right.c_str());
-        return 0;
     }
 
 

@@ -103,19 +103,11 @@ namespace wups::config {
             WPAD_BUTTON_A,
             WPAD_BUTTON_MINUS,
             // Don't include nunchuk in core buttons
-            /*
-            WPAD_BUTTON_Z,
-            WPAD_BUTTON_C,
-            */
             WPAD_BUTTON_HOME,
         };
 
 
         constexpr array wpad_nunchuk_button_list{
-            WPAD_NUNCHUK_STICK_EMULATION_LEFT,
-            WPAD_NUNCHUK_STICK_EMULATION_RIGHT,
-            WPAD_NUNCHUK_STICK_EMULATION_DOWN,
-            WPAD_NUNCHUK_STICK_EMULATION_UP,
             WPAD_NUNCHUK_BUTTON_Z,
             WPAD_NUNCHUK_BUTTON_C,
         };
@@ -137,14 +129,6 @@ namespace wups::config {
             WPAD_CLASSIC_BUTTON_L,
             WPAD_CLASSIC_BUTTON_DOWN,
             WPAD_CLASSIC_BUTTON_RIGHT,
-            WPAD_CLASSIC_STICK_L_EMULATION_LEFT,
-            WPAD_CLASSIC_STICK_L_EMULATION_RIGHT,
-            WPAD_CLASSIC_STICK_L_EMULATION_DOWN,
-            WPAD_CLASSIC_STICK_L_EMULATION_UP,
-            WPAD_CLASSIC_STICK_R_EMULATION_LEFT,
-            WPAD_CLASSIC_STICK_R_EMULATION_RIGHT,
-            WPAD_CLASSIC_STICK_R_EMULATION_DOWN,
-            WPAD_CLASSIC_STICK_R_EMULATION_UP,
         };
 
 
@@ -167,14 +151,6 @@ namespace wups::config {
             WPAD_PRO_BUTTON_RIGHT,
             WPAD_PRO_BUTTON_STICK_R,
             WPAD_PRO_BUTTON_STICK_L,
-            WPAD_PRO_STICK_L_EMULATION_UP,
-            WPAD_PRO_STICK_L_EMULATION_DOWN,
-            WPAD_PRO_STICK_L_EMULATION_LEFT,
-            WPAD_PRO_STICK_L_EMULATION_RIGHT,
-            WPAD_PRO_STICK_R_EMULATION_UP,
-            WPAD_PRO_STICK_R_EMULATION_DOWN,
-            WPAD_PRO_STICK_R_EMULATION_LEFT,
-            WPAD_PRO_STICK_R_EMULATION_RIGHT,
         };
 
     } // namespace
@@ -291,7 +267,7 @@ namespace wups::config {
                 if (now - pressed >= repeat_delay)
                     kpad_core_repeat[w] |= button;
 
-            if (status.release & button)
+            if ((status.release & button) || !(status.hold & button))
                 pressed = {};
         }
 
@@ -336,7 +312,7 @@ namespace wups::config {
                 if (now - pressed >= repeat_delay)
                     kpad_ext_repeat[w] |= button;
 
-            if (status.release & button)
+            if (status.release & button || !(status.hold & button))
                 pressed = {};
         }
     }
@@ -362,7 +338,7 @@ namespace wups::config {
                 if (now - pressed >= repeat_delay)
                     kpad_ext_repeat[w] |= button;
 
-            if (status.release & button)
+            if (status.release & button || !(status.hold & button))
                 pressed = {};
         }
     }
@@ -388,7 +364,7 @@ namespace wups::config {
                 if (now - pressed >= repeat_delay)
                     kpad_ext_repeat[w] |= button;
 
-            if (status.release & button)
+            if (status.release & button || !(status.hold & button))
                 pressed = {};
         }
     }

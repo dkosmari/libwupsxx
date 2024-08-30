@@ -29,9 +29,9 @@ namespace wups::config {
         // combination of WPAD_BUTTON_* values.
         std::uint32_t core_buttons = 0;
 
-        WPADExtensionType ext = WPAD_EXT_CORE;
+        uint8_t ext = WPAD_EXT_CORE;
 
-        // combination of WPAD_*_BUTTON, depends on ext
+        // combination of WPAD_*_BUTTON_*, depends on ext
         std::uint32_t ext_buttons = 0;
     };
 

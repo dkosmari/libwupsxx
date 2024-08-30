@@ -8,7 +8,7 @@
 
 #include <cstdio>
 
-#include <whb/log.h>
+// #include <whb/log.h> // DEBUG
 
 #include "wupsxx/button_combo_item.hpp"
 
@@ -22,8 +22,7 @@ namespace wups::config {
                                          button_combo& variable,
                                          const button_combo& default_value) :
         var_item{label, variable, default_value},
-        pressed_anything{false},
-        reading_combo{false}
+        state{state_t::waiting}
     {}
 
 
@@ -36,36 +35,35 @@ namespace wups::config {
     }
 
 
-    int
+    void
     button_combo_item::get_display(char* buf, std::size_t size)
         const
     {
         std::string str = to_glyph(variable);
         std::snprintf(buf, size, "%s", str.c_str());
-        return 0;
     }
 
 
-    int
+    void
     button_combo_item::get_focused_display(char* buf, std::size_t size)
         const
     {
-        if (reading_combo) {
-            std::string str = to_glyph(variable);
-
-            if (str.empty())
-                str = "(waiting for buttons...)";
-
-            std::snprintf(buf, size, "%s", str.c_str());
-        } else {
+        switch (state) {
+        case state_t::waiting:
+            std::snprintf(buf, size, "(waiting for buttons...)");
+            break;
+        case state_t::reading:
+            std::snprintf(buf, size, "%s (reading...)",
+                          to_glyph(variable).c_str());
+            break;
+        case state_t::confirming:
             std::snprintf(buf, size,
-                          "%s=confirm, %s=cancel, %s=default",
+                          "(%s=confirm   %s=cancel   %s=default)",
                           CAFE_GLYPH_BTN_A,
                           CAFE_GLYPH_BTN_B,
-                          CAFE_GLYPH_BTN_X);
+                          CAFE_GLYPH_BTN_X "/" CAFE_GLYPH_WIIMOTE_BTN_2);
+            break;
         }
-
-        return 0;
     }
 
 
@@ -77,10 +75,9 @@ namespace wups::config {
         if (has_focus()) {
             // disable TV Remote while we read button combos
             VPADSetTVMenuInvalid(VPAD_CHAN_0, true);
-            // start reading combo when focused
-            pressed_anything = false;
-            reading_combo = true;
             variable = {};
+            state = state_t::waiting;
+            current_mode = input_mode::switch_to_complex;
         } else {
             // enable TV Remote when we lose focus
             VPADSetTVMenuInvalid(VPAD_CHAN_0, false);
@@ -99,11 +96,11 @@ namespace wups::config {
     focus_status
     button_combo_item::on_input(const simple_pad_data& input)
     {
-        if (input.buttons_d)
-            pressed_anything = true;
+        if (state == state_t::waiting)
+            return focus_status::keep_and_switch; // let complex input handle waiting
 
-        // ignore simple inputs when reading the combo
-        if (reading_combo)
+        // sanity check, snould not be here until we're in the confirming state
+        if (state != state_t::confirming)
             return focus_status::keep;
 
         // We handle reset-to-default here: always confirm and lose focus.
@@ -121,27 +118,17 @@ namespace wups::config {
     focus_status
     button_combo_item::on_input(const complex_pad_data& input)
     {
-        // ignore complex input when not reading combo
-        if (!reading_combo)
+        if (state != state_t::waiting && state != state_t::reading)
             return focus_status::keep;
 
-        /*
-         * Track if we are still reading the combo input:
-         *
-         * - If user never pressed anything since focusing the item,
-         *   keep reading the combo.
-         *
-         * - If user already pressed something, stop reading as soon as all buttons are
-         *   released.
-         */
-        reading_combo = !pressed_anything;
-
-        using std::get;
+        unsigned total_held = 0;
 
         if (input.vpad.vpadError == VPAD_READ_SUCCESS) {
             auto& status = input.vpad.data;
+            if (status.trigger && state == state_t::waiting)
+                state = state_t::reading;
             if (status.hold) {
-                reading_combo = true;
+                ++total_held;
                 if (input.vpad_repeat) {
                     if (!holds_alternative<vpad_combo>(variable))
                         variable = vpad_combo{};
@@ -151,11 +138,17 @@ namespace wups::config {
         }
 
 
-        auto ensure_var_is_wpad = [this]() -> wpad_combo&
+        auto ensure_var_is_wpad = [this](uint8_t ext) -> wpad_combo&
         {
             if (!holds_alternative<wpad_combo>(variable))
                 variable = wpad_combo{};
-            return get<wpad_combo>(variable);
+            auto& var = get<wpad_combo>(variable);
+            // if extension changed, clear out the buttons
+            if (var.ext != ext) {
+                var.ext = ext;
+                var.ext_buttons = 0;
+            }
+            return var;
         };
 
 
@@ -167,10 +160,12 @@ namespace wups::config {
                 auto& core_repeat = input.kpad_core_repeat[w];
                 auto& ext_repeat = input.kpad_ext_repeat[w];
 
+                if (status.trigger && state == state_t::waiting)
+                    state = state_t::reading;
                 if (status.hold) {
-                    reading_combo = true;
+                    ++total_held;
                     if (core_repeat) {
-                        auto & var = ensure_var_is_wpad();
+                        auto & var = ensure_var_is_wpad(status.extensionType);
                         var.core_buttons |= core_repeat;
                     }
                 }
@@ -178,32 +173,35 @@ namespace wups::config {
                 switch (status.extensionType) {
                 case WPAD_EXT_NUNCHUK:
                 case WPAD_EXT_MPLUS_NUNCHUK:
+                    if (status.nunchuk.trigger && state == state_t::waiting)
+                        state = state_t::reading;
                     if (status.nunchuk.hold) {
-                        reading_combo = true;
+                        ++total_held;
                         if (ext_repeat) {
-                            auto& var = ensure_var_is_wpad();
-                            var.ext = static_cast<WPADExtensionType>(status.extensionType);
+                            auto& var = ensure_var_is_wpad(status.extensionType);
                             var.ext_buttons |= ext_repeat;
                         }
                     }
                     break;
                 case WPAD_EXT_CLASSIC:
                 case WPAD_EXT_MPLUS_CLASSIC:
+                    if (status.classic.trigger && state == state_t::waiting)
+                        state = state_t::reading;
                     if (status.classic.hold) {
-                        reading_combo = true;
+                        ++total_held;
                         if (ext_repeat) {
-                            auto& var = ensure_var_is_wpad();
-                            var.ext = static_cast<WPADExtensionType>(status.extensionType);
+                            auto& var = ensure_var_is_wpad(status.extensionType);
                             var.ext_buttons |= ext_repeat;
                         }
                     }
                     break;
                 case WPAD_EXT_PRO_CONTROLLER:
+                    if (status.pro.trigger && state == state_t::waiting)
+                        state = state_t::reading;
                     if (status.pro.hold) {
-                        reading_combo = true;
+                        ++total_held;
                         if (ext_repeat) {
-                            auto& var = ensure_var_is_wpad();
-                            var.ext = static_cast<WPADExtensionType>(status.extensionType);
+                            auto& var = ensure_var_is_wpad(status.extensionType);
                             var.ext_buttons |= ext_repeat;
                         }
                     }
@@ -212,12 +210,13 @@ namespace wups::config {
 
             } // if kpad[w] is valid
 
-        }
+        } // for each wiimote
 
-        /*
-         * If no button is being held anywhere, reading_combo remains false,
-         * so we switch to the simple input handler.
-         */
+        if (total_held == 0 && state == state_t::reading) {
+            // user released all buttons after entering reading mode
+            state = state_t::confirming;
+            return focus_status::keep_and_switch; // use simple input now
+        }
 
         return focus_status::keep;
     }

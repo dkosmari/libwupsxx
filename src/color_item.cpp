@@ -103,7 +103,7 @@ namespace wups::config {
     } // namespace
 
 
-    int
+    void
     color_item::get_display(char* buf, std::size_t size)
         const
     {
@@ -117,11 +117,10 @@ namespace wups::config {
             break;
         }
         std::snprintf(buf, size, "%s", str.c_str());
-        return 0;
     }
 
 
-    int
+    void
     color_item::get_focused_display(char* buf, std::size_t size)
         const
     {
@@ -153,8 +152,6 @@ namespace wups::config {
                       left_right,
                       str.c_str(),
                       up_down);
-
-        return 0;
     }
 
 

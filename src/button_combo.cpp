@@ -83,60 +83,48 @@ namespace wups::config {
         };
 
 
-#define ENTRY1(x)                           \
-        vpad_button_entry{                  \
-            VPAD_BUTTON_ ## x,              \
-            "VPAD_BUTTON_" #x,              \
-            CAFE_GLYPH_GAMEPAD_BTN_ ## x    \
-        }
+#define E(x, y, z) vpad_button_entry{x, y, z}
+        const auto vpad_button_entries = {
+            E(VPAD_BUTTON_L,       "VPAD_BUTTON_L",       CAFE_GLYPH_GAMEPAD_BTN_L),
+            E(VPAD_BUTTON_R,       "VPAD_BUTTON_R",       CAFE_GLYPH_GAMEPAD_BTN_R),
+            E(VPAD_BUTTON_ZL,      "VPAD_BUTTON_ZL",      CAFE_GLYPH_GAMEPAD_BTN_ZL),
+            E(VPAD_BUTTON_ZR,      "VPAD_BUTTON_ZR",      CAFE_GLYPH_GAMEPAD_BTN_ZR),
+            E(VPAD_BUTTON_UP,      "VPAD_BUTTON_UP",      CAFE_GLYPH_GAMEPAD_BTN_UP),
+            E(VPAD_BUTTON_DOWN,    "VPAD_BUTTON_DOWN",    CAFE_GLYPH_GAMEPAD_BTN_DOWN),
+            E(VPAD_BUTTON_LEFT,    "VPAD_BUTTON_LEFT",    CAFE_GLYPH_GAMEPAD_BTN_LEFT),
+            E(VPAD_BUTTON_RIGHT,   "VPAD_BUTTON_RIGHT",   CAFE_GLYPH_GAMEPAD_BTN_RIGHT),
+            E(VPAD_BUTTON_A,       "VPAD_BUTTON_A",       CAFE_GLYPH_GAMEPAD_BTN_A),
+            E(VPAD_BUTTON_B,       "VPAD_BUTTON_B",       CAFE_GLYPH_GAMEPAD_BTN_B),
+            E(VPAD_BUTTON_X,       "VPAD_BUTTON_X",       CAFE_GLYPH_GAMEPAD_BTN_X),
+            E(VPAD_BUTTON_Y,       "VPAD_BUTTON_Y",       CAFE_GLYPH_GAMEPAD_BTN_Y),
+            E(VPAD_BUTTON_PLUS,    "VPAD_BUTTON_PLUS",    CAFE_GLYPH_GAMEPAD_BTN_PLUS),
+            E(VPAD_BUTTON_MINUS,   "VPAD_BUTTON_MINUS",   CAFE_GLYPH_GAMEPAD_BTN_MINUS),
+            E(VPAD_BUTTON_STICK_L, "VPAD_BUTTON_STICK_L", CAFE_GLYPH_GAMEPAD_BTN_STICK_L),
+            E(VPAD_BUTTON_STICK_R, "VPAD_BUTTON_STICK_R", CAFE_GLYPH_GAMEPAD_BTN_STICK_R),
+            E(VPAD_BUTTON_HOME,    "VPAD_BUTTON_HOME",    CAFE_GLYPH_GAMEPAD_BTN_HOME),
+            E(VPAD_BUTTON_TV,      "VPAD_BUTTON_TV",      CAFE_GLYPH_GAMEPAD_BTN_TV),
+            E(VPAD_BUTTON_SYNC,    "VPAD_BUTTON_SYNC",    "SYNC"),
 
-#define ENTRY2(x, y)            \
-        vpad_button_entry{      \
-            VPAD_BUTTON_ ## x,  \
-            "VPAD_BUTTON_" #x,  \
-            y                   \
-        }
+            E(VPAD_STICK_L_EMULATION_UP,    "VPAD_STICK_L_EMULATION_UP",
+              CAFE_GLYPH_GAMEPAD_STICK_L CAFE_GLYPH_ARROW_UP),
+            E(VPAD_STICK_L_EMULATION_DOWN,  "VPAD_STICK_L_EMULATION_DOWN",
+              CAFE_GLYPH_GAMEPAD_STICK_L CAFE_GLYPH_ARROW_DOWN),
+            E(VPAD_STICK_L_EMULATION_LEFT,  "VPAD_STICK_L_EMULATION_LEFT",
+              CAFE_GLYPH_GAMEPAD_STICK_L CAFE_GLYPH_ARROW_LEFT),
+            E(VPAD_STICK_L_EMULATION_RIGHT, "VPAD_STICK_L_EMULATION_RIGHT",
+              CAFE_GLYPH_GAMEPAD_STICK_L CAFE_GLYPH_ARROW_RIGHT),
 
-#define ENTRY3(x, y)                                                \
-        vpad_button_entry{                                          \
-            VPAD_STICK_ ## x ## _EMULATION_ ## y,                   \
-            "VPAD_STICK_" #x "_EMULATION_" #y,                      \
-            CAFE_GLYPH_GAMEPAD_STICK_ ## x CAFE_GLYPH_ARROW_ ## y   \
-        }
+            E(VPAD_STICK_R_EMULATION_UP,    "VPAD_STICK_R_EMULATION_UP",
+              CAFE_GLYPH_GAMEPAD_STICK_R CAFE_GLYPH_ARROW_UP),
+            E(VPAD_STICK_R_EMULATION_DOWN,  "VPAD_STICK_R_EMULATION_DOWN",
+              CAFE_GLYPH_GAMEPAD_STICK_R CAFE_GLYPH_ARROW_DOWN),
+            E(VPAD_STICK_R_EMULATION_LEFT,  "VPAD_STICK_R_EMULATION_LEFT",
+              CAFE_GLYPH_GAMEPAD_STICK_R CAFE_GLYPH_ARROW_LEFT),
+            E(VPAD_STICK_R_EMULATION_RIGHT, "VPAD_STICK_R_EMULATION_RIGHT",
+              CAFE_GLYPH_GAMEPAD_STICK_R CAFE_GLYPH_ARROW_RIGHT),
 
-        const array vpad_button_entries{
-            ENTRY1(A),
-            ENTRY1(B),
-            ENTRY1(X),
-            ENTRY1(Y),
-            ENTRY1(LEFT),
-            ENTRY1(RIGHT),
-            ENTRY1(UP),
-            ENTRY1(DOWN),
-            ENTRY1(ZL),
-            ENTRY1(ZR),
-            ENTRY1(L),
-            ENTRY1(R),
-            ENTRY1(PLUS),
-            ENTRY1(MINUS),
-            ENTRY1(HOME),
-            ENTRY2(SYNC, "SYNC"),
-            ENTRY1(STICK_R),
-            ENTRY1(STICK_L),
-            ENTRY1(TV),
-            ENTRY3(R, LEFT),
-            ENTRY3(R, RIGHT),
-            ENTRY3(R, UP),
-            ENTRY3(R, DOWN),
-            ENTRY3(L, LEFT),
-            ENTRY3(L, RIGHT),
-            ENTRY3(L, UP),
-            ENTRY3(L, DOWN),
         };
-
-#undef ENTRY1
-#undef ENTRY2
-#undef ENTRY3
+#undef E
 
 
         string
@@ -168,41 +156,22 @@ namespace wups::config {
         };
 
 
-#define ENTRY1(x)                           \
-        wpad_core_button_entry{             \
-            WPAD_BUTTON_ ## x,              \
-            "WPAD_BUTTON_" #x,              \
-            CAFE_GLYPH_WIIMOTE_BTN_ ## x    \
-        }
-
-#define ENTRY2(x)                           \
-        wpad_core_button_entry{             \
-            WPAD_BUTTON_ ## x,              \
-            "WPAD_BUTTON_" #x,              \
-            CAFE_GLYPH_NUNCHUK_BTN_ ## x    \
-        }
-
-        const array wpad_core_button_entries{
-            ENTRY1(LEFT),
-            ENTRY1(RIGHT),
-            ENTRY1(DOWN),
-            ENTRY1(UP),
-            ENTRY1(PLUS),
-            ENTRY1(2),
-            ENTRY1(1),
-            ENTRY1(B),
-            ENTRY1(A),
-            ENTRY1(MINUS),
-            // Don't include nunchuk in core buttons.
-            /*
-            ENTRY2(Z),
-            ENTRY2(C),
-            */
-            ENTRY1(HOME),
+        // Note: don't include nunchuk in core buttons.
+#define E(x, y, z) wpad_core_button_entry{ x, y, z }
+        const auto wpad_core_button_entries = {
+            E(WPAD_BUTTON_UP,    "WPAD_BUTTON_UP",    CAFE_GLYPH_WIIMOTE_BTN_UP),
+            E(WPAD_BUTTON_DOWN,  "WPAD_BUTTON_DOWN",  CAFE_GLYPH_WIIMOTE_BTN_DOWN),
+            E(WPAD_BUTTON_LEFT,  "WPAD_BUTTON_LEFT",  CAFE_GLYPH_WIIMOTE_BTN_LEFT),
+            E(WPAD_BUTTON_RIGHT, "WPAD_BUTTON_RIGHT", CAFE_GLYPH_WIIMOTE_BTN_RIGHT),
+            E(WPAD_BUTTON_A,     "WPAD_BUTTON_A",     CAFE_GLYPH_WIIMOTE_BTN_A),
+            E(WPAD_BUTTON_B,     "WPAD_BUTTON_B",     CAFE_GLYPH_WIIMOTE_BTN_B),
+            E(WPAD_BUTTON_MINUS, "WPAD_BUTTON_MINUS", CAFE_GLYPH_WIIMOTE_BTN_MINUS),
+            E(WPAD_BUTTON_HOME,  "WPAD_BUTTON_HOME",  CAFE_GLYPH_WIIMOTE_BTN_HOME),
+            E(WPAD_BUTTON_PLUS,  "WPAD_BUTTON_PLUS",  CAFE_GLYPH_WIIMOTE_BTN_PLUS),
+            E(WPAD_BUTTON_1,     "WPAD_BUTTON_1",     CAFE_GLYPH_WIIMOTE_BTN_1),
+            E(WPAD_BUTTON_2,     "WPAD_BUTTON_2",     CAFE_GLYPH_WIIMOTE_BTN_2),
         };
-
-#undef ENTRY1
-#undef ENTRY2
+#undef E
 
 
         string
@@ -227,39 +196,19 @@ namespace wups::config {
         }
 
 
-
         struct wpad_nunchuk_button_entry {
             WPADNunchukButton button;
             const char* name;
             const char* glyph;
         };
 
-
-#define ENTRY1(x)                           \
-        wpad_nunchuk_button_entry{          \
-            WPAD_NUNCHUK_BUTTON_ ## x,      \
-            "WPAD_NUNCHUK_BUTTON_" #x,      \
-            CAFE_GLYPH_NUNCHUK_BTN_ ## x    \
-        }
-
-#define ENTRY2(x)                                           \
-        wpad_nunchuk_button_entry{                          \
-            WPAD_NUNCHUK_STICK_EMULATION_ ## x,             \
-            "WPAD_NUNCHUK_STICK_EMULATION_" #x ,            \
-            CAFE_GLYPH_NUNCHUK_STICK CAFE_GLYPH_ARROW_ ## x \
-        }
-
-        const array wpad_nunchuk_button_entries{
-            ENTRY1(Z),
-            ENTRY1(C),
-            ENTRY2(LEFT),
-            ENTRY2(RIGHT),
-            ENTRY2(DOWN),
-            ENTRY2(UP),
+        // Note: no emulated buttons
+#define E(x, y, z) wpad_nunchuk_button_entry{ x, y, z }
+        const array wpad_nunchuk_button_entries = {
+            E(WPAD_NUNCHUK_BUTTON_Z, "WPAD_NUNCHUK_BUTTON_Z", CAFE_GLYPH_NUNCHUK_BTN_Z),
+            E(WPAD_NUNCHUK_BUTTON_C, "WPAD_NUNCHUK_BUTTON_C", CAFE_GLYPH_NUNCHUK_BTN_C),
         };
-
-#undef ENTRY1
-#undef ENTRY2
+#undef E
 
 
         string
@@ -290,49 +239,26 @@ namespace wups::config {
             const char* glyph;
         };
 
-#define ENTRY1(x)                           \
-        wpad_classic_button_entry{          \
-            WPAD_CLASSIC_BUTTON_ ## x,      \
-            "WPAD_CLASSIC_BUTTON_" #x,      \
-            CAFE_GLYPH_CLASSIC_BTN_ ## x    \
-        }
-
-#define ENTRY2(x, y)                                                \
-        wpad_classic_button_entry{                                  \
-            WPAD_CLASSIC_STICK_ ## x ## _EMULATION_ ## y,           \
-           "WPAD_CLASSIC_STICK_" #x "_EMULATION_" #y,               \
-            CAFE_GLYPH_CLASSIC_STICK_ ## x CAFE_GLYPH_ARROW_ ## y   \
-        }
-
-
-        const array wpad_classic_button_entries{
-            ENTRY1(UP),
-            ENTRY1(LEFT),
-            ENTRY1(ZR),
-            ENTRY1(X),
-            ENTRY1(A),
-            ENTRY1(Y),
-            ENTRY1(B),
-            ENTRY1(ZL),
-            ENTRY1(R),
-            ENTRY1(PLUS),
-            ENTRY1(HOME),
-            ENTRY1(MINUS),
-            ENTRY1(L),
-            ENTRY1(DOWN),
-            ENTRY1(RIGHT),
-            ENTRY2(L, LEFT),
-            ENTRY2(L, RIGHT),
-            ENTRY2(L, DOWN),
-            ENTRY2(L, UP),
-            ENTRY2(R, LEFT),
-            ENTRY2(R, RIGHT),
-            ENTRY2(R, DOWN),
-            ENTRY2(R, UP),
+        // Note: no emulated buttons
+#define E(x, y, z) wpad_classic_button_entry{x, y, z}
+        const auto wpad_classic_button_entries = {
+            E(WPAD_CLASSIC_BUTTON_L,     "WPAD_CLASSIC_BUTTON_L",     CAFE_GLYPH_CLASSIC_BTN_L),
+            E(WPAD_CLASSIC_BUTTON_R,     "WPAD_CLASSIC_BUTTON_R",     CAFE_GLYPH_CLASSIC_BTN_R),
+            E(WPAD_CLASSIC_BUTTON_ZL,    "WPAD_CLASSIC_BUTTON_ZL",    CAFE_GLYPH_CLASSIC_BTN_ZL),
+            E(WPAD_CLASSIC_BUTTON_ZR,    "WPAD_CLASSIC_BUTTON_ZR",    CAFE_GLYPH_CLASSIC_BTN_ZR),
+            E(WPAD_CLASSIC_BUTTON_UP,    "WPAD_CLASSIC_BUTTON_UP",    CAFE_GLYPH_CLASSIC_BTN_UP),
+            E(WPAD_CLASSIC_BUTTON_DOWN,  "WPAD_CLASSIC_BUTTON_DOWN",  CAFE_GLYPH_CLASSIC_BTN_DOWN),
+            E(WPAD_CLASSIC_BUTTON_LEFT,  "WPAD_CLASSIC_BUTTON_LEFT",  CAFE_GLYPH_CLASSIC_BTN_LEFT),
+            E(WPAD_CLASSIC_BUTTON_RIGHT, "WPAD_CLASSIC_BUTTON_RIGHT", CAFE_GLYPH_CLASSIC_BTN_RIGHT),
+            E(WPAD_CLASSIC_BUTTON_MINUS, "WPAD_CLASSIC_BUTTON_MINUS", CAFE_GLYPH_CLASSIC_BTN_MINUS),
+            E(WPAD_CLASSIC_BUTTON_HOME,  "WPAD_CLASSIC_BUTTON_HOME",  CAFE_GLYPH_CLASSIC_BTN_HOME),
+            E(WPAD_CLASSIC_BUTTON_PLUS,  "WPAD_CLASSIC_BUTTON_PLUS",  CAFE_GLYPH_CLASSIC_BTN_PLUS),
+            E(WPAD_CLASSIC_BUTTON_A,     "WPAD_CLASSIC_BUTTON_A",     CAFE_GLYPH_CLASSIC_BTN_A),
+            E(WPAD_CLASSIC_BUTTON_B,     "WPAD_CLASSIC_BUTTON_B",     CAFE_GLYPH_CLASSIC_BTN_B),
+            E(WPAD_CLASSIC_BUTTON_X,     "WPAD_CLASSIC_BUTTON_X",     CAFE_GLYPH_CLASSIC_BTN_X),
+            E(WPAD_CLASSIC_BUTTON_Y,     "WPAD_CLASSIC_BUTTON_Y",     CAFE_GLYPH_CLASSIC_BTN_Y),
         };
-
-#undef ENTRY1
-#undef ENTRY2
+#undef E
 
 
         string
@@ -363,60 +289,28 @@ namespace wups::config {
             const char* glyph;
         };
 
-
-#define ENTRY1(x)                       \
-        wpad_pro_button_entry{          \
-            WPAD_PRO_BUTTON_ ## x,      \
-            "WPAD_PRO_BUTTON_" #x,      \
-            CAFE_GLYPH_PRO_BTN_ ## x    \
-        }
-
-#define ENTRY2(x)                       \
-        wpad_pro_button_entry{          \
-            WPAD_PRO_TRIGGER_ ## x,     \
-            "WPAD_PRO_TRIGGER_" #x,     \
-            CAFE_GLYPH_PRO_BTN_ ##x,    \
-        }
-
-#define ENTRY3(x, y)                                            \
-        wpad_pro_button_entry{                                  \
-            WPAD_PRO_STICK_ ## x ## _EMULATION_ ## y,           \
-            "WPAD_PRO_STICK_" #x "_EMULATION_" #y,              \
-            CAFE_GLYPH_PRO_STICK_ ## x CAFE_GLYPH_ARROW_ ## y   \
-        }
-
-
-        const array wpad_pro_button_entries{
-            ENTRY1(UP),
-            ENTRY1(DOWN),
-            ENTRY1(LEFT),
-            ENTRY1(RIGHT),
-            ENTRY1(A),
-            ENTRY1(B),
-            ENTRY1(X),
-            ENTRY1(Y),
-            ENTRY1(MINUS),
-            ENTRY1(HOME),
-            ENTRY1(PLUS),
-            ENTRY1(STICK_L),
-            ENTRY1(STICK_R),
-            ENTRY2(L),
-            ENTRY2(R),
-            ENTRY2(ZL),
-            ENTRY2(ZR),
-            ENTRY3(L, UP),
-            ENTRY3(L, DOWN),
-            ENTRY3(L, LEFT),
-            ENTRY3(L, RIGHT),
-            ENTRY3(R, UP),
-            ENTRY3(R, DOWN),
-            ENTRY3(R, LEFT),
-            ENTRY3(R, RIGHT),
+        // Note: no emulated buttons.
+#define E(x, y, z) wpad_pro_button_entry{ x, y, z }
+        const auto wpad_pro_button_entries = {
+            E(WPAD_PRO_TRIGGER_L,      "WPAD_PRO_TRIGGER_L",      CAFE_GLYPH_PRO_BTN_L),
+            E(WPAD_PRO_TRIGGER_R,      "WPAD_PRO_TRIGGER_R",      CAFE_GLYPH_PRO_BTN_R),
+            E(WPAD_PRO_TRIGGER_ZL,     "WPAD_PRO_TRIGGER_ZL",     CAFE_GLYPH_PRO_BTN_ZL),
+            E(WPAD_PRO_TRIGGER_ZR,     "WPAD_PRO_TRIGGER_ZR",     CAFE_GLYPH_PRO_BTN_ZR),
+            E(WPAD_PRO_BUTTON_UP,      "WPAD_PRO_BUTTON_UP",      CAFE_GLYPH_PRO_BTN_UP),
+            E(WPAD_PRO_BUTTON_DOWN,    "WPAD_PRO_BUTTON_DOWN",    CAFE_GLYPH_PRO_BTN_DOWN),
+            E(WPAD_PRO_BUTTON_LEFT,    "WPAD_PRO_BUTTON_LEFT",    CAFE_GLYPH_PRO_BTN_LEFT),
+            E(WPAD_PRO_BUTTON_RIGHT,   "WPAD_PRO_BUTTON_RIGHT",   CAFE_GLYPH_PRO_BTN_RIGHT),
+            E(WPAD_PRO_BUTTON_MINUS,   "WPAD_PRO_BUTTON_MINUS",   CAFE_GLYPH_PRO_BTN_MINUS),
+            E(WPAD_PRO_BUTTON_HOME,    "WPAD_PRO_BUTTON_HOME",    CAFE_GLYPH_PRO_BTN_HOME),
+            E(WPAD_PRO_BUTTON_PLUS,    "WPAD_PRO_BUTTON_PLUS",    CAFE_GLYPH_PRO_BTN_PLUS),
+            E(WPAD_PRO_BUTTON_A,       "WPAD_PRO_BUTTON_A",       CAFE_GLYPH_PRO_BTN_A),
+            E(WPAD_PRO_BUTTON_B,       "WPAD_PRO_BUTTON_B",       CAFE_GLYPH_PRO_BTN_B),
+            E(WPAD_PRO_BUTTON_X,       "WPAD_PRO_BUTTON_X",       CAFE_GLYPH_PRO_BTN_X),
+            E(WPAD_PRO_BUTTON_Y,       "WPAD_PRO_BUTTON_Y",       CAFE_GLYPH_PRO_BTN_Y),
+            E(WPAD_PRO_BUTTON_STICK_L, "WPAD_PRO_BUTTON_STICK_L", CAFE_GLYPH_PRO_BTN_STICK_L),
+            E(WPAD_PRO_BUTTON_STICK_R, "WPAD_PRO_BUTTON_STICK_R", CAFE_GLYPH_PRO_BTN_STICK_R),
         };
-
-#undef ENTRY1
-#undef ENTRY2
-#undef ENTRY3
+#undef E
 
 
         string

@@ -35,9 +35,9 @@ namespace wups::config {
                std::size_t max_width = 50);
 
 
-        virtual int get_display(char* buf, std::size_t size) const override;
+        virtual void get_display(char* buf, std::size_t size) const override;
 
-        virtual int get_focused_display(char* buf, std::size_t size) const override;
+        virtual void get_focused_display(char* buf, std::size_t size) const override;
 
         virtual bool on_focus_request(bool new_focus) const override;
 

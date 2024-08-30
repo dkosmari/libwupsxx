@@ -40,28 +40,25 @@ namespace wups::config {
     }
 
 
-    int
+    void
     bool_item::get_display(char* buf, std::size_t size)
         const
     {
         std::snprintf(buf, size, "%s",
                       variable ? true_str.c_str() : false_str.c_str());
-        return 0;
     }
 
 
-    int
+    void
     bool_item::get_focused_display(char* buf, std::size_t size)
         const
     {
         const char* str = variable ? true_str.c_str() : false_str.c_str();
-
         std::snprintf(buf, size,
                       "%s %s %s",
                       CAFE_GLYPH_BTN_LEFT,
                       str,
                       CAFE_GLYPH_BTN_RIGHT);
-        return 0;
     }
 
 

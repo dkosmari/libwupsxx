@@ -42,7 +42,7 @@ namespace wups::config {
     }
 
 
-    int
+    void
     text_item::get_display(char* buf,
                            std::size_t size)
         const
@@ -56,7 +56,7 @@ namespace wups::config {
         if (width >= text.size()) {
             // Easy case: text fits, just show it all.
             std::snprintf(buf, size, "%s", text.c_str());
-            return 0;
+            return;
         }
 
         const char* ellipsis = "…";
@@ -65,7 +65,7 @@ namespace wups::config {
         if (first > 0)
             prefix = ellipsis;
         if (width < prefix.size()) // sanity check
-            return -1;
+            return;
         width -= prefix.size();
 
         std::size_t last = first + width;
@@ -73,7 +73,7 @@ namespace wups::config {
         if (last < text.size())
             suffix = ellipsis;
         if (width < suffix.size()) // sanity check
-            return -1;
+            return;
         width -= suffix.size();
 
         std::string slice = text.substr(first, width);
@@ -83,12 +83,10 @@ namespace wups::config {
                       prefix.c_str(),
                       slice.c_str(),
                       suffix.c_str());
-
-        return 0;
     }
 
 
-    int
+    void
     text_item::get_focused_display(char* buf,
                                    std::size_t size)
         const
@@ -102,14 +100,14 @@ namespace wups::config {
         if (width >= text.size()) {
             // Easy case: text fits, just show it all.
             std::snprintf(buf, size, "%s", text.c_str());
-            return 0;
+            return;
         }
 
         std::string prefix;
         if (first > 0)
             prefix = left_glyph;
         if (width < prefix.size()) // sanity check
-            return -1;
+            return;
         width -= prefix.size();
 
         std::size_t last = first + width;
@@ -117,7 +115,7 @@ namespace wups::config {
         if (last < text.size())
             suffix = right_glyph;
         if (width < suffix.size()) // sanity check
-            return -1;
+            return;
         width -= suffix.size();
 
         std::string slice = text.substr(first, width);
@@ -127,8 +125,6 @@ namespace wups::config {
                       prefix.c_str(),
                       slice.c_str(),
                       suffix.c_str());
-
-        return 0;
     }
 
 
