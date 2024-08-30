@@ -22,13 +22,13 @@ namespace wups::config {
     enum class focus_status {
         lose,
         keep,
-        keep_and_switch,
+        change_input,
     };
 
 
     enum class input_mode {
         simple,
-        switch_to_complex,
+        to_complex,
         complex
     };
 
@@ -37,11 +37,9 @@ namespace wups::config {
 
         WUPSConfigItemHandle handle;
         bool focused;
-
-    public:
-
         input_mode current_mode;
 
+    public:
 
         item(const std::string& label);
 
@@ -76,6 +74,9 @@ namespace wups::config {
 
         virtual void set_focus(bool new_focus);
 
+
+        input_mode get_input_mode() const noexcept;
+        void set_input_mode(input_mode mode) noexcept;
 
         friend class category;
 

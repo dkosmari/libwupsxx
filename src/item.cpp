@@ -122,7 +122,7 @@ namespace wups::config {
                     return;
                 }
 
-                if (it->current_mode != input_mode::simple)
+                if (it->get_input_mode() != input_mode::simple)
                     return;
 
                 simple_pad_data sinput{input};
@@ -133,8 +133,8 @@ namespace wups::config {
                     break;
                 case focus_status::keep:
                     break;
-                case focus_status::keep_and_switch:
-                    it->current_mode = input_mode::switch_to_complex;
+                case focus_status::change_input:
+                    it->set_input_mode(input_mode::to_complex);
                     break;
                 }
             }
@@ -155,17 +155,16 @@ namespace wups::config {
                 if (!it->has_focus())
                     return;
 
-                if (it->current_mode == input_mode::switch_to_complex) {
-                    // ignore this input, only finish switching over
-                    it->current_mode = input_mode::complex;
+                if (it->get_input_mode() == input_mode::to_complex) {
+                    // ignore this input, will process the next one
+                    it->set_input_mode(input_mode::complex);
                     return;
                 }
 
-                if (it->current_mode != input_mode::complex)
+                if (it->get_input_mode() != input_mode::complex)
                     return;
 
                 complex_pad_data cinput{input};
-
                 auto res = it->on_input(cinput);
                 switch (res) {
                 case focus_status::lose:
@@ -173,8 +172,8 @@ namespace wups::config {
                     break;
                 case focus_status::keep:
                     break;
-                case focus_status::keep_and_switch:
-                    it->current_mode = input_mode::simple;
+                case focus_status::change_input:
+                    it->set_input_mode(input_mode::simple);
                     break;
                 }
             }
@@ -332,6 +331,22 @@ namespace wups::config {
                 current_mode = input_mode::simple;
             on_focus_changed();
         }
+    }
+
+
+    input_mode
+    item::get_input_mode()
+        const noexcept
+    {
+        return current_mode;
+    }
+
+
+    void
+    item::set_input_mode(input_mode mode)
+        noexcept
+    {
+        current_mode = mode;
     }
 
 

@@ -77,7 +77,6 @@ namespace wups::config {
             VPADSetTVMenuInvalid(VPAD_CHAN_0, true);
             variable = {};
             state = state_t::waiting;
-            current_mode = input_mode::switch_to_complex;
         } else {
             // enable TV Remote when we lose focus
             VPADSetTVMenuInvalid(VPAD_CHAN_0, false);
@@ -97,7 +96,7 @@ namespace wups::config {
     button_combo_item::on_input(const simple_pad_data& input)
     {
         if (state == state_t::waiting)
-            return focus_status::keep_and_switch; // let complex input handle waiting
+            return focus_status::change_input; // let complex input handle waiting
 
         // sanity check, snould not be here until we're in the confirming state
         if (state != state_t::confirming)
@@ -215,7 +214,7 @@ namespace wups::config {
         if (total_held == 0 && state == state_t::reading) {
             // user released all buttons after entering reading mode
             state = state_t::confirming;
-            return focus_status::keep_and_switch; // use simple input now
+            return focus_status::change_input; // use simple input now
         }
 
         return focus_status::keep;
