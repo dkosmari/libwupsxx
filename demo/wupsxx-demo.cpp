@@ -398,11 +398,12 @@ DECL_FUNCTION(int32_t,
     // Note: when proc mode is loose, all button samples are identical to the most recent
     const int32_t num_samples = VPADGetButtonProcMode(channel) ? result : 1;
     for (int32_t idx = num_samples - 1; idx >= 0; --idx) {
-        wups::config::update_vpad(channel, status + idx);
-        if (wups::config::was_triggered(channel, cfg::shortcut1))
-            activate_shortcut1();
-        if (wups::config::was_triggered(channel, cfg::shortcut2))
-            activate_shortcut2();
+        if (wups::config::vpad_update(channel, status[idx])) {
+            if (wups::config::vpad_triggered(channel, cfg::shortcut1))
+                activate_shortcut1();
+            if (wups::config::vpad_triggered(channel, cfg::shortcut2))
+                activate_shortcut2();
+        }
     }
 
     return result;
@@ -417,11 +418,12 @@ DECL_FUNCTION(void,
               WPADStatus* status)
 {
     real_WPADRead(channel, status);
-    wups::config::update_wpad(channel, status);
-    if (wups::config::was_triggered(channel, cfg::shortcut1))
-        activate_shortcut1();
-    if (wups::config::was_triggered(channel, cfg::shortcut2))
-        activate_shortcut2();
+    if (wups::config::wpad_update(channel, status)) {
+        if (wups::config::wpad_triggered(channel, cfg::shortcut1))
+            activate_shortcut1();
+        if (wups::config::wpad_triggered(channel, cfg::shortcut2))
+            activate_shortcut2();
+    }
 }
 
 WUPS_MUST_REPLACE(WPADRead, WUPS_LOADER_LIBRARY_PADSCORE, WPADRead);

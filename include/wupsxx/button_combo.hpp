@@ -76,14 +76,21 @@ namespace wups::config {
     // helper functions for detecting vpad/wpad combos
 
     // Call this from your VPADRead() hook.
-    void update_vpad(VPADChan channel, const VPADStatus* status) noexcept;
+    // Return true if no error.
+    [[nodiscard]]
+    bool vpad_update(VPADChan channel, const VPADStatus& status) noexcept;
 
     // Call this from your WPADRead() hook.
-    void update_wpad(WPADChan channel, const WPADStatus* status) noexcept;
+    // Return true if not error.
+    [[nodiscard]]
+    bool wpad_update(WPADChan channel, const WPADStatus* status) noexcept;
 
 
-    bool was_triggered(VPADChan channel, const button_combo& combo) noexcept;
-    bool was_triggered(WPADChan channel, const button_combo& combo) noexcept;
+    [[nodiscard]]
+    bool vpad_triggered(VPADChan channel, const button_combo& combo) noexcept;
+
+    [[nodiscard]]
+    bool wpad_triggered(WPADChan channel, const button_combo& combo) noexcept;
 
 
 } // namespace wups::config

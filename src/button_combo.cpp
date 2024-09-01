@@ -761,32 +761,35 @@ namespace wups::config {
     } // namespace
 
 
-    void
-    update_vpad(VPADChan chan,
-                const VPADStatus* status)
+    bool
+    vpad_update(VPADChan chan,
+                const VPADStatus& status)
         noexcept
     {
         unsigned idx = chan;
         if (idx >= vpad_states.size())
-            return;
-        vpad_states[idx].hold    = status->hold;
-        vpad_states[idx].trigger = status->trigger;
-        vpad_states[idx].release = status->release;
+            return false;
+        if (status.error)
+            return false;
+        vpad_states[idx].hold    = status.hold;
+        vpad_states[idx].trigger = status.trigger;
+        vpad_states[idx].release = status.release;
+        return true;
     }
 
 
-    void
-    update_wpad(WPADChan channel,
+    bool
+    wpad_update(WPADChan channel,
                 const WPADStatus* status)
         noexcept
     {
         if (channel >= wpad_states.size())
-            return;
+            return false;
         if (!status)
-            return;
+            return false;
 
         if (status->error)
-            return;
+            return false;
 
         WPADDataFormat fmt = WPADGetDataFormat(channel);
 
@@ -839,6 +842,7 @@ namespace wups::config {
 
         }
 
+        return true;
     }
 
 
@@ -953,8 +957,8 @@ namespace wups::config {
 
 
     bool
-    was_triggered(VPADChan channel,
-                  const button_combo& combo)
+    vpad_triggered(VPADChan channel,
+                   const button_combo& combo)
         noexcept
     {
         if (!holds_alternative<vpad_buttons>(combo))
@@ -976,8 +980,8 @@ namespace wups::config {
 
 
     bool
-    was_triggered(WPADChan channel,
-                  const button_combo& combo)
+    wpad_triggered(WPADChan channel,
+                   const button_combo& combo)
         noexcept
     {
         if (!holds_alternative<wpad_buttons>(combo))
