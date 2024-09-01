@@ -56,7 +56,8 @@ src_libwupsxx_a_SOURCES = 			\
 	src/numeric_item_impl.hpp		\
 	src/storage.cpp				\
 	src/storage_error.cpp			\
-	src/text_item.cpp
+	src/text_item.cpp			\
+	src/wpad_status.h
 
 
 .PHONY: company run

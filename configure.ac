@@ -26,7 +26,11 @@ AX_APPEND_COMPILE_FLAGS([-std=c++23], [CXX])
 
 AC_ARG_ENABLE([demo],
               [AS_HELP_STRING([--enable-demo],
-                              [Build the libwupsxx-demo plugin.])])
+                              [Build the libwupsxx-demo plugin.])],
+              [
+                  AS_IF([test x$enableval = xyes],
+                        [WIIU_WUMS_CHECK_LIBNOTIFICATIONS])
+              ])
 AM_CONDITIONAL([BUILD_DEMO], [test x$enable_demo = xyes])
 
 

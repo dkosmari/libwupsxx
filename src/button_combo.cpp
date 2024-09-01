@@ -9,12 +9,15 @@
 #include <array>
 #include <stdexcept>
 #include <string_view>
+#include <utility>              // pair<>
 #include <vector>
 
 
 #include "wupsxx/button_combo.hpp"
 
 #include "cafe_glyphs.h"
+
+#include "wpad_status.h"
 
 
 using std::array;
@@ -26,6 +29,7 @@ namespace wups::config {
 
 
     namespace {
+
         string
         concat(const string& a,
                const string& b,
@@ -74,6 +78,18 @@ namespace wups::config {
             return result;
         }
 
+
+        // return a reference to a variant entry, initialized if necessary
+        template<typename T,
+                 typename... Ts>
+        T&
+        get_init(std::variant<Ts...>& v)
+            noexcept
+        {
+            if (!holds_alternative<T>(v))
+                v = T{};
+            return get<T>(v);
+        }
 
 
         struct vpad_button_entry {
@@ -150,7 +166,7 @@ namespace wups::config {
 
 
         struct wpad_core_button_entry {
-            WPADButton button;
+            uint16_t button;
             const char* name;
             const char* glyph;
         };
@@ -175,7 +191,7 @@ namespace wups::config {
 
 
         string
-        wpad_core_combo_to_string(uint32_t combo)
+        wpad_core_combo_to_string(uint16_t combo)
         {
             string result;
             for (auto e : wpad_core_button_entries)
@@ -186,7 +202,7 @@ namespace wups::config {
 
 
         string
-        wpad_core_combo_to_glyph(uint32_t combo)
+        wpad_core_combo_to_glyph(uint16_t combo)
         {
             string result;
             for (auto e : wpad_core_button_entries)
@@ -197,7 +213,7 @@ namespace wups::config {
 
 
         struct wpad_nunchuk_button_entry {
-            WPADNunchukButton button;
+            uint16_t button;
             const char* name;
             const char* glyph;
         };
@@ -212,7 +228,7 @@ namespace wups::config {
 
 
         string
-        wpad_nunchuk_combo_to_string(uint32_t combo)
+        wpad_nunchuk_combo_to_string(uint16_t combo)
         {
             string result;
             for (auto e : wpad_nunchuk_button_entries)
@@ -223,7 +239,7 @@ namespace wups::config {
 
 
         string
-        wpad_nunchuk_combo_to_glyph(uint32_t combo)
+        wpad_nunchuk_combo_to_glyph(uint16_t combo)
         {
             string result;
             for (auto e : wpad_nunchuk_button_entries)
@@ -234,7 +250,7 @@ namespace wups::config {
 
 
         struct wpad_classic_button_entry {
-            WPADClassicButton button;
+            uint16_t button;
             const char* name;
             const char* glyph;
         };
@@ -262,7 +278,7 @@ namespace wups::config {
 
 
         string
-        wpad_classic_combo_to_string(uint32_t combo)
+        wpad_classic_combo_to_string(uint16_t combo)
         {
             string result;
             for (auto e : wpad_classic_button_entries)
@@ -273,7 +289,7 @@ namespace wups::config {
 
 
         string
-        wpad_classic_combo_to_glyph(uint32_t combo)
+        wpad_classic_combo_to_glyph(uint16_t combo)
         {
             string result;
             for (auto e : wpad_classic_button_entries)
@@ -284,7 +300,7 @@ namespace wups::config {
 
 
         struct wpad_pro_button_entry {
-            WPADProButton button;
+            uint32_t button;
             const char* name;
             const char* glyph;
         };
@@ -335,7 +351,8 @@ namespace wups::config {
         }
 
 
-        struct to_string_visitor {
+
+        struct wpad_ext_buttons_to_string_visitor {
 
             string
             operator ()(std::monostate)
@@ -345,33 +362,53 @@ namespace wups::config {
             }
 
             string
-            operator ()(const vpad_combo& vc)
+            operator ()(const wpad_nunchuk_buttons& nb)
                 const
             {
-                return vpad_combo_to_string(vc.buttons);
+                return wpad_nunchuk_combo_to_string(nb.buttons);
             }
 
             string
-            operator ()(const wpad_combo& wc)
+            operator ()(const wpad_classic_buttons& cb)
                 const
             {
-                string result = wpad_core_combo_to_string(wc.core_buttons);
+                return wpad_classic_combo_to_string(cb.buttons);
+            }
 
-                switch (wc.ext) {
-                case WPAD_EXT_NUNCHUK:
-                case WPAD_EXT_MPLUS_NUNCHUK:
-                    return concat(result,
-                                  wpad_nunchuk_combo_to_string(wc.ext_buttons));
-                case WPAD_EXT_CLASSIC:
-                case WPAD_EXT_MPLUS_CLASSIC:
-                    return concat(result,
-                                  wpad_classic_combo_to_string(wc.ext_buttons));
-                case WPAD_EXT_PRO_CONTROLLER:
-                    return concat(result,
-                                  wpad_pro_combo_to_string(wc.ext_buttons));
-                default:
-                    return result;
-                }
+            string
+            operator ()(const wpad_pro_buttons& pb)
+                const
+            {
+                return wpad_pro_combo_to_string(pb.buttons);
+            }
+
+        };
+
+
+        struct button_combo_to_string_visitor {
+
+            string
+            operator ()(std::monostate)
+                const
+            {
+                return {};
+            }
+
+            string
+            operator ()(const vpad_buttons& vb)
+                const
+            {
+                return vpad_combo_to_string(vb.buttons);
+            }
+
+            string
+            operator ()(const wpad_buttons& wb)
+                const
+            {
+                string core = wpad_core_combo_to_string(wb.core.buttons);
+                string ext = visit(wpad_ext_buttons_to_string_visitor{},
+                                   wb.ext);
+                return concat(core, ext);
             }
 
         };
@@ -382,11 +419,45 @@ namespace wups::config {
     string
     to_string(const button_combo& bc)
     {
-        return visit(to_string_visitor{}, bc);
+        return visit(button_combo_to_string_visitor{},
+                     bc);
     }
 
 
-    struct to_glyph_visitor {
+    struct wpad_ext_buttons_to_glyph_visitor {
+
+        string
+        operator ()(std::monostate)
+            const
+        {
+            return {};
+        }
+
+        string
+        operator ()(const wpad_nunchuk_buttons& nb)
+            const
+        {
+            return wpad_nunchuk_combo_to_glyph(nb.buttons);
+        }
+
+        string
+        operator ()(const wpad_classic_buttons& cb)
+            const
+        {
+            return wpad_classic_combo_to_glyph(cb.buttons);
+        }
+
+        string
+        operator ()(const wpad_pro_buttons& pb)
+            const
+        {
+            return wpad_pro_combo_to_glyph(pb.buttons);
+        }
+
+    };
+
+
+    struct button_combo_to_glyph_visitor {
 
         string
         operator ()(std::monostate)
@@ -397,46 +468,28 @@ namespace wups::config {
 
 
         string
-        operator ()(const vpad_combo& vc)
+        operator ()(const vpad_buttons& vb)
             const
         {
-            string prefix = CAFE_GLYPH_GAMEPAD " ";
-            string result = vpad_combo_to_glyph(vc.buttons);
-            if (!result.empty())
-                return prefix + result;
-            return result;
+            string result = vpad_combo_to_glyph(vb.buttons);
+            if (result.empty())
+                return {};
+            return CAFE_GLYPH_GAMEPAD " " + result;
+
         }
 
 
         string
-        operator ()(const wpad_combo& wc)
+        operator ()(const wpad_buttons& wb)
             const
         {
-            string prefix = CAFE_GLYPH_WIIMOTE " ";
-            string result = wpad_core_combo_to_glyph(wc.core_buttons);
-
-            switch (wc.ext) {
-            case WPAD_EXT_NUNCHUK:
-            case WPAD_EXT_MPLUS_NUNCHUK:
-                result = concat(result,
-                                wpad_nunchuk_combo_to_glyph(wc.ext_buttons));
-                break;
-            case WPAD_EXT_CLASSIC:
-            case WPAD_EXT_MPLUS_CLASSIC:
-                result = concat(result,
-                                wpad_classic_combo_to_glyph(wc.ext_buttons));
-                break;
-            case WPAD_EXT_PRO_CONTROLLER:
-                result = concat(result,
-                                wpad_pro_combo_to_glyph(wc.ext_buttons));
-                break;
-            default:
-                ;
-            }
-
-            if (!result.empty())
-                return prefix + result;
-            return result;
+            string core = wpad_core_combo_to_glyph(wb.core.buttons);
+            string ext = visit(wpad_ext_buttons_to_glyph_visitor{},
+                               wb.ext);
+            string combined = concat(core, ext);
+            if (combined.empty())
+                return {};
+            return CAFE_GLYPH_WIIMOTE " " + combined;
         }
 
     };
@@ -445,7 +498,8 @@ namespace wups::config {
     string
     to_glyph(const button_combo& bc)
     {
-        return visit(to_glyph_visitor{}, bc);
+        return visit(button_combo_to_glyph_visitor{},
+                     bc);
     }
 
 
@@ -474,14 +528,14 @@ namespace wups::config {
             throw std::runtime_error{"invalid token detected"};
 
         if (num_vpad) {
-            vpad_combo combo{};
+            vpad_buttons vb{};
             for (auto token : tokens)
                 for (auto entry : vpad_button_entries)
                     if (entry.name == token)
-                        combo.buttons |= entry.button;
-            return combo;
+                        vb.buttons |= entry.button;
+            return vb;
         } else {
-            wpad_combo combo{};
+            wpad_buttons wb{};
             unsigned num_nunchuk = 0;
             unsigned num_classic = 0;
             unsigned num_pro = 0;
@@ -491,30 +545,30 @@ namespace wups::config {
                 if (token.starts_with("WPAD_BUTTON_"))
                     for (auto entry : wpad_core_button_entries)
                         if (entry.name == token)
-                            combo.core_buttons |= entry.button;
+                            wb.core.buttons |= entry.button;
 
                 if (token.starts_with("WPAD_NUNCHUK_")) {
-                    combo.ext = WPAD_EXT_NUNCHUK;
+                    auto& nunchuk = get_init<wpad_nunchuk_buttons>(wb.ext);
                     ++num_nunchuk;
                     for (auto entry : wpad_nunchuk_button_entries)
                         if (entry.name == token)
-                            combo.ext_buttons |= entry.button;
+                            nunchuk.buttons |= entry.button;
                 }
 
                 if (token.starts_with("WPAD_CLASSIC_")) {
-                    combo.ext = WPAD_EXT_CLASSIC;
+                    auto& classic = get_init<wpad_classic_buttons>(wb.ext);
                     ++num_classic;
                     for (auto entry : wpad_classic_button_entries)
                         if (entry.name == token)
-                            combo.ext_buttons |= entry.button;
+                            classic.buttons |= entry.button;
                 }
 
                 if (token.starts_with("WPAD_PRO_")) {
-                    combo.ext = WPAD_EXT_PRO_CONTROLLER;
+                    auto& pro = get_init<wpad_pro_buttons>(wb.ext);
                     ++num_pro;
                     for (auto entry : wpad_pro_button_entries)
                         if (entry.name == token)
-                            combo.ext_buttons |= entry.button;
+                            pro.buttons |= entry.button;
                 }
 
                 unsigned num_extensions = 0;
@@ -527,8 +581,424 @@ namespace wups::config {
                 if (num_extensions > 1)
                     throw std::runtime_error{"cannot mix multiple extensions in combo"};
             }
-            return combo;
+            return wb;
         }
+    }
+
+
+
+    namespace {
+
+        struct state16 {
+            uint16_t hold    = 0;
+            uint16_t trigger = 0;
+            uint16_t release = 0;
+        };
+
+        struct state32 {
+            uint32_t hold = 0;
+            uint32_t trigger = 0;
+            uint32_t release = 0;
+        };
+
+
+        struct vpad_state : state32 {};
+
+        array<vpad_state, 2> vpad_states;
+
+
+        struct wpad_core_state    : state16 {};
+        struct wpad_nunchuk_state : state16 {};
+        struct wpad_classic_state : state16 {};
+        struct wpad_pro_state     : state32 {};
+
+
+        struct wpad_state {
+            wpad_core_state core;
+
+            std::variant<std::monostate,
+                         wpad_nunchuk_state,
+                         wpad_classic_state,
+                         wpad_pro_state> ext;
+        };
+
+
+        array<wpad_state, 7> wpad_states;
+
+
+        template<typename T>
+        std::pair<T, T>
+        calc_trigger_release(T old_hold, T new_hold)
+            noexcept
+        {
+            uint16_t diff    = old_hold ^ new_hold;
+            uint16_t trigger = diff & new_hold;
+            uint16_t release = diff & old_hold;
+            return {trigger, release};
+        }
+
+
+        constexpr uint16_t wpad_core_mask =
+                      WPAD_BUTTON_LEFT | WPAD_BUTTON_RIGHT |
+                      WPAD_BUTTON_DOWN | WPAD_BUTTON_UP |
+                      WPAD_BUTTON_PLUS | WPAD_BUTTON_MINUS |
+                      WPAD_BUTTON_A | WPAD_BUTTON_B |
+                      WPAD_BUTTON_1 | WPAD_BUTTON_2 |
+                      WPAD_BUTTON_HOME;
+
+        constexpr uint16_t wpad_nunchuk_mask = WPAD_BUTTON_Z | WPAD_BUTTON_C;
+
+
+        void
+        update_wpad_core_common(WPADChan channel,
+                                const WPADStatus& status)
+            noexcept
+        {
+            auto& core = wpad_states[channel].core;
+
+            uint16_t old_hold = core.hold;
+            uint16_t new_hold = status.buttons & wpad_core_mask;
+
+            auto [trigger, release] = calc_trigger_release(old_hold, new_hold);
+
+            core.hold    = new_hold;
+            core.trigger = trigger;
+            core.release = release;
+        }
+
+
+        void
+        update_wpad_core(WPADChan channel,
+                         const WPADStatus* status)
+            noexcept
+        {
+            update_wpad_core_common(channel, *status);
+            wpad_states[channel].ext = {};
+        }
+
+
+        void
+        update_wpad_nunchuk(WPADChan channel,
+                            const WPADNunchukStatus* status)
+            noexcept
+        {
+            update_wpad_core_common(channel, status->core);
+
+            auto& nunchuk = get_init<wpad_nunchuk_state>(wpad_states[channel].ext);
+
+            uint16_t old_hold = nunchuk.hold;
+            uint16_t new_hold = status->core.buttons & wpad_nunchuk_mask;
+
+            auto [trigger, release] = calc_trigger_release(old_hold, new_hold);
+
+            nunchuk.hold    = new_hold;
+            nunchuk.trigger = trigger;
+            nunchuk.release = release;
+        }
+
+
+        void
+        update_wpad_classic(WPADChan channel,
+                            const WPADClassicStatus* status)
+            noexcept
+        {
+            update_wpad_core_common(channel, status->core);
+
+            auto& classic = get_init<wpad_classic_state>(wpad_states[channel].ext);
+
+            uint16_t old_hold = classic.hold;
+            uint16_t new_hold = status->ext.buttons;
+
+            auto [trigger, release] = calc_trigger_release(old_hold, new_hold);
+
+            classic.hold    = new_hold;
+            classic.trigger = trigger;
+            classic.release = release;
+        }
+
+
+        void
+        update_wpad_pro(WPADChan channel,
+                        const WPADProStatus* status)
+            noexcept
+        {
+            wpad_states[channel].core = {};
+
+            auto& pro = get_init<wpad_pro_state>(wpad_states[channel].ext);
+
+            uint32_t old_hold = pro.hold;
+            uint32_t new_hold = status->ext.buttons;
+
+            auto [trigger, release] = calc_trigger_release(old_hold, new_hold);
+
+            pro.hold    = new_hold;
+            pro.trigger = trigger;
+            pro.release = release;
+        }
+
+
+        void
+        update_wpad_mplus(WPADChan channel,
+                          const WPADMPlusStatus* status)
+            noexcept
+        {
+            switch (status->core.extensionType) {
+            case WPAD_EXT_MPLUS:
+                update_wpad_core(channel,
+                                 reinterpret_cast<const WPADStatus*>(status));
+                break;
+            case WPAD_EXT_MPLUS_NUNCHUK:
+                update_wpad_nunchuk(channel,
+                                    reinterpret_cast<const WPADNunchukStatus*>(status));
+                break;
+            case WPAD_EXT_MPLUS_CLASSIC:
+                update_wpad_classic(channel,
+                                    reinterpret_cast<const WPADClassicStatus*>(status));
+                break;
+            }
+        }
+
+    } // namespace
+
+
+    void
+    update_vpad(VPADChan chan,
+                const VPADStatus* status)
+        noexcept
+    {
+        unsigned idx = chan;
+        if (idx >= vpad_states.size())
+            return;
+        vpad_states[idx].hold    = status->hold;
+        vpad_states[idx].trigger = status->trigger;
+        vpad_states[idx].release = status->release;
+    }
+
+
+    void
+    update_wpad(WPADChan channel,
+                const WPADStatus* status)
+        noexcept
+    {
+        if (channel >= wpad_states.size())
+            return;
+        if (!status)
+            return;
+
+        if (status->error)
+            return;
+
+        WPADDataFormat fmt = WPADGetDataFormat(channel);
+
+        switch (fmt) {
+
+        case WPAD_FMT_CORE:
+        case WPAD_FMT_CORE_ACC:
+        case WPAD_FMT_CORE_ACC_DPD:
+            update_wpad_core(channel, status);
+            break;
+
+        case WPAD_FMT_NUNCHUK:
+        case WPAD_FMT_NUNCHUK_ACC:
+        case WPAD_FMT_NUNCHUK_ACC_DPD:
+            update_wpad_nunchuk(channel,
+                                reinterpret_cast<const WPADNunchukStatus*>(status));
+            break;
+
+        case WPAD_FMT_CLASSIC:
+        case WPAD_FMT_CLASSIC_ACC:
+        case WPAD_FMT_CLASSIC_ACC_DPD:
+        case WPAD_FMT_GUITAR:
+        case WPAD_FMT_DRUM:
+        case WPAD_FMT_TAIKO:
+            update_wpad_classic(channel,
+                                reinterpret_cast<const WPADClassicStatus*>(status));
+            break;
+
+        case WPAD_FMT_CORE_ACC_DPD_FULL:
+            // TODO: not implemented
+            break;
+
+        case WPAD_FMT_TRAIN:
+            // ?
+            break;
+
+        case WPAD_FMT_BALANCE_BOARD:
+            // TODO: not implemented
+            break;
+
+        case WPAD_FMT_MPLUS:
+            update_wpad_mplus(channel,
+                              reinterpret_cast<const WPADMPlusStatus*>(status));
+            break;
+
+        case WPAD_FMT_PRO_CONTROLLER:
+            update_wpad_pro(channel,
+                            reinterpret_cast<const WPADProStatus*>(status));
+            break;
+
+        }
+
+    }
+
+
+    // Returns true if a wpad state extension has no buttons held down
+    struct wpad_state_ext_is_clear_visitor {
+        bool operator ()(std::monostate) const
+        { return true; }
+
+        bool operator ()(const wpad_nunchuk_state& ns) const
+        { return ns.hold == 0; }
+
+        bool operator ()(const wpad_classic_state& cs) const
+        { return cs.hold == 0; }
+
+        bool operator ()(const wpad_pro_state& ps) const
+        { return ps.hold == 0; }
+    };
+
+
+    struct wpad_combo_ext_check_visitor {
+
+        const wpad_state& state;
+        const bool core_triggered;
+
+        wpad_combo_ext_check_visitor(const wpad_state& st,
+                                     bool ct)
+            noexcept :
+            state(st),
+            core_triggered{ct}
+        {}
+
+        // when wpad combo uses no extension buttons
+        bool
+        operator ()(std::monostate)
+            const noexcept
+        {
+            // if no extension is plugged in, match depends on the core test
+            if (!holds_alternative<std::monostate>(state.ext))
+                return core_triggered;
+
+            // there is an extension plugged in, ensure its buttons are all unpressed
+            if (visit(wpad_state_ext_is_clear_visitor{},
+                      state.ext))
+                return core_triggered; // match depends on the core test
+
+            // otherwise, at least one extension button is pressed: no match
+            return false;
+        }
+
+        // when wpad combo has nunchuk buttons
+        bool
+        operator ()(const wpad_nunchuk_buttons& nb)
+            const noexcept
+        {
+            if (!holds_alternative<wpad_nunchuk_state>(state.ext))
+                return false;
+
+            auto& ns = get<wpad_nunchuk_state>(state.ext);
+            // fail early if buttons don't match
+            if (ns.hold != nb.buttons)
+                return false;
+
+            // if the trigger happened on the core, there's a match
+            if (core_triggered)
+                return true;
+
+            // otherwise the trigger must happen in the extension
+            return ns.trigger & nb.buttons;
+        }
+
+        // when wpad combo has classic buttons
+        bool
+        operator ()(const wpad_classic_buttons& cb)
+            const noexcept
+        {
+            if (!holds_alternative<wpad_classic_state>(state.ext))
+                return false;
+
+            auto& cs = get<wpad_classic_state>(state.ext);
+            // fail early if buttons don't match
+            if (cs.hold != cb.buttons)
+                return false;
+
+            // if the trigger happened on the core, there's a match
+            if (core_triggered)
+                return true;
+
+            // otherwise the trigger must happen in the extension
+            return cs.trigger & cb.buttons;
+        }
+
+        // when wpad combo is pro buttons
+        bool
+        operator ()(const wpad_pro_buttons& pb)
+            const noexcept
+        {
+            if (!holds_alternative<wpad_pro_state>(state.ext))
+                return false;
+
+            auto ps = get<wpad_pro_state>(state.ext);
+            // fail early if buttons don't match
+            if (ps.hold != pb.buttons)
+                return false;
+
+            // ignore core match
+
+            // otherwise the trigger must happen in the extension
+            return ps.trigger & pb.buttons;
+        }
+
+    }; // struct wpad_combo_ext_check_visitor
+
+
+    bool
+    was_triggered(VPADChan channel,
+                  const button_combo& combo)
+        noexcept
+    {
+        if (!holds_alternative<vpad_buttons>(combo))
+            return false;
+
+        if (channel < 0 || channel >= vpad_states.size())
+            return false;
+
+        const auto& state = vpad_states[channel];
+        auto& vb = get<vpad_buttons>(combo);
+
+        // Test 1: hold must be equal to combo
+        if (state.hold != vb.buttons)
+            return false;
+
+        // Test 2: at least one triggered button must match combo
+        return state.trigger & vb.buttons;
+    }
+
+
+    bool
+    was_triggered(WPADChan channel,
+                  const button_combo& combo)
+        noexcept
+    {
+        if (!holds_alternative<wpad_buttons>(combo))
+            return false;
+
+        if (channel < 0 || channel >= wpad_states.size())
+            return false;
+
+        const auto& state = wpad_states[channel];
+        auto& wb = get<wpad_buttons>(combo);
+
+        // Test 1: core hold must be equal to core combo
+        if (state.core.hold != wb.core.buttons)
+            return false;
+
+        // Test 1.1: check if a core button was the trigger
+        bool core_triggered = state.core.trigger & wb.core.buttons;
+
+        // Test 2: check if the extension matches the combo
+        return visit(wpad_combo_ext_check_visitor{state, core_triggered},
+                     wb.ext);
     }
 
 

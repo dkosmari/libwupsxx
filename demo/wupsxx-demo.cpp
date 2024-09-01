@@ -12,11 +12,14 @@
 #include <string>
 #include <utility>              // move()
 
+#include <padscore/wpad.h>
+#include <vpad/input.h>
 #include <whb/log.h>
 #include <whb/log_module.h>
 #include <whb/log_udp.h>
 
 #include <wups.h>
+#include <notifications/notifications.h>
 
 #include <wupsxx/bool_item.hpp>
 #include <wupsxx/button_combo_item.hpp>
@@ -89,7 +92,8 @@ std::optional<log_manager> app_log_mgr;
     WHBLogPrintf("[" PLUGIN_FILE_NAME "] %s:%d/%s(): " msg,     \
                  __FILE__,                                      \
                  __LINE__,                                      \
-                 __func__,                                      \
+                 __func__                                       \
+                 __VA_OPT__(,)                                  \
                  __VA_ARGS__)
 
 
@@ -185,7 +189,7 @@ namespace cfg {
             LOAD(some_file, "fs:/vol/external01");
             LOAD(plugin_file, "fs:/vol/external01/wiiu/environments/aroma/plugins");
             LOAD(shortcut1, (wups::config::button_combo{}));
-            LOAD(shortcut2, (wups::config::vpad_combo{VPAD_BUTTON_A | VPAD_BUTTON_Y}));
+            LOAD(shortcut2, (wups::config::vpad_buttons{VPAD_BUTTON_B | VPAD_BUTTON_Y}));
         }
         catch (std::exception& e) {
             LOG("exception caught: %s\n", e.what());
@@ -275,7 +279,7 @@ menu_open(WUPSConfigCategoryHandle root_handle)
 
         root.add(wups::config::button_combo_item::create("Shortcut2",
                                                          cfg::shortcut2,
-                                                         wups::config::vpad_combo{VPAD_BUTTON_A | VPAD_BUTTON_Y}));
+                                                         wups::config::vpad_buttons{VPAD_BUTTON_B | VPAD_BUTTON_Y}));
 
 
 #if 0
@@ -332,6 +336,8 @@ INITIALIZE_PLUGIN()
 {
     log_manager log_guard;
 
+    NotificationModule_InitLibrary();
+
     // This name is shown in the config menu.
     WUPSConfigAPIOptionsV1 options{ .name = PLUGIN_NAME };
     auto status = WUPSConfigAPI_Init(options, menu_open, menu_close);
@@ -340,6 +346,12 @@ INITIALIZE_PLUGIN()
     } else {
         cfg::load();
     }
+}
+
+
+DEINITIALIZE_PLUGIN()
+{
+    NotificationModule_DeInitLibrary();
 }
 
 
@@ -353,3 +365,63 @@ ON_APPLICATION_ENDS()
 {
     app_log_mgr.reset();
 }
+
+
+
+void
+activate_shortcut1()
+{
+    LOG("activated shortcut1\n");
+    NotificationModule_AddInfoNotification("activated shortcut1");
+}
+
+
+void
+activate_shortcut2()
+{
+    LOG("activated shortcut2\n");
+    NotificationModule_AddInfoNotification("activated shortcut2");
+}
+
+
+DECL_FUNCTION(int32_t,
+              VPADRead,
+              VPADChan channel,
+              VPADStatus* status,
+              uint32_t count,
+              VPADReadError* error)
+{
+    auto result = real_VPADRead(channel, status, count, error);
+    if (result <= 0)
+        return result;
+
+    // Note: when proc mode is loose, all button samples are identical to the most recent
+    const int32_t num_samples = VPADGetButtonProcMode(channel) ? result : 1;
+    for (int32_t idx = num_samples - 1; idx >= 0; --idx) {
+        wups::config::update_vpad(channel, status + idx);
+        if (wups::config::was_triggered(channel, cfg::shortcut1))
+            activate_shortcut1();
+        if (wups::config::was_triggered(channel, cfg::shortcut2))
+            activate_shortcut2();
+    }
+
+    return result;
+}
+
+WUPS_MUST_REPLACE(VPADRead, WUPS_LOADER_LIBRARY_VPAD, VPADRead);
+
+
+DECL_FUNCTION(void,
+              WPADRead,
+              WPADChan channel,
+              WPADStatus* status)
+{
+    real_WPADRead(channel, status);
+    wups::config::update_wpad(channel, status);
+    if (wups::config::was_triggered(channel, cfg::shortcut1))
+        activate_shortcut1();
+    if (wups::config::was_triggered(channel, cfg::shortcut2))
+        activate_shortcut2();
+}
+
+WUPS_MUST_REPLACE(WPADRead, WUPS_LOADER_LIBRARY_PADSCORE, WPADRead);

@@ -67,6 +67,26 @@ namespace wups::config {
     }
 
 
+    namespace {
+
+        // Returns true if an extension has no button set
+        struct wpad_ext_buttons_is_clear_visitor {
+            bool operator ()(std::monostate) const
+            { return true; }
+
+            bool operator ()(const wpad_nunchuk_buttons& ns) const
+            { return ns.buttons == 0; }
+
+            bool operator ()(const wpad_classic_buttons& cs) const
+            { return cs.buttons == 0; }
+
+            bool operator ()(const wpad_pro_buttons& ps) const
+            { return ps.buttons == 0; }
+        };
+
+    } // namespace
+
+
     void
     button_combo_item::on_focus_changed()
     {
@@ -81,20 +101,21 @@ namespace wups::config {
             // enable TV Remote when we lose focus
             VPADSetTVMenuInvalid(VPAD_CHAN_0, false);
 
-            if (holds_alternative<vpad_combo>(variable)) {
-                auto& combo = get<vpad_combo>(variable);
+            if (holds_alternative<vpad_buttons>(variable)) {
+                auto& combo = get<vpad_buttons>(variable);
                 // if the combo is empty, set variable back to monostate
                 if (combo.buttons == 0)
                     variable = {};
             }
 
-            if (holds_alternative<wpad_combo>(variable)) {
-                auto& combo = get<wpad_combo>(variable);
-                // if no ext button was used, reset the ext field to core
-                if (combo.ext_buttons == 0)
-                    combo.ext = WPAD_EXT_CORE;
-                // if the combo is empty, set variable back to monostate
-                if (combo.core_buttons == 0 && combo.ext_buttons == 0)
+            if (holds_alternative<wpad_buttons>(variable)) {
+                auto& combo = get<wpad_buttons>(variable);
+                // if no ext button was used, reset ext back to monostate
+                if (visit(wpad_ext_buttons_is_clear_visitor{},
+                          combo.ext))
+                    combo.ext = {};
+                // if core combo is empty and no extension, set variable back to monostate
+                if (combo.core.buttons == 0 && holds_alternative<std::monostate>(combo.ext))
                     variable = {};
             }
         }
@@ -123,6 +144,23 @@ namespace wups::config {
     }
 
 
+    namespace {
+
+        // return a reference to a variant entry, initialized if necessary
+        template<typename T,
+                 typename... Ts>
+        T&
+        get_init(std::variant<Ts...>& v)
+            noexcept
+        {
+            if (!holds_alternative<T>(v))
+                v = T{};
+            return get<T>(v);
+        }
+
+    } // namespace
+
+
     focus_status
     button_combo_item::on_input(const complex_pad_data& input)
     {
@@ -138,26 +176,11 @@ namespace wups::config {
             if (status.hold) {
                 ++total_held;
                 if (input.vpad_repeat) {
-                    if (!holds_alternative<vpad_combo>(variable))
-                        variable = vpad_combo{};
-                    get<vpad_combo>(variable).buttons |= input.vpad_repeat;
+                    auto& combo = get_init<vpad_buttons>(variable);
+                    combo.buttons |= input.vpad_repeat;
                 }
             }
         }
-
-
-        auto ensure_var_is_wpad = [this](uint8_t ext) -> wpad_combo&
-        {
-            if (!holds_alternative<wpad_combo>(variable))
-                variable = wpad_combo{};
-            auto& var = get<wpad_combo>(variable);
-            // if extension changed, clear out the buttons
-            if (var.ext != ext) {
-                var.ext = ext;
-                var.ext_buttons = 0;
-            }
-            return var;
-        };
 
 
         for (unsigned w = 0; w < 7; ++w) {
@@ -168,17 +191,28 @@ namespace wups::config {
                 auto& core_repeat = input.kpad_core_repeat[w];
                 auto& ext_repeat = input.kpad_ext_repeat[w];
 
+                // Handle core buttons here, it's common to all extensions
                 if (status.trigger && state == state_t::waiting)
                     state = state_t::reading;
                 if (status.hold) {
                     ++total_held;
                     if (core_repeat) {
-                        auto & var = ensure_var_is_wpad(status.extensionType);
-                        var.core_buttons |= core_repeat;
+                        auto& combo = get_init<wpad_buttons>(variable);
+                        combo.core.buttons |= core_repeat;
                     }
                 }
 
                 switch (status.extensionType) {
+
+                case WPAD_EXT_CORE:
+                case WPAD_EXT_MPLUS:
+                    if (core_repeat) {
+                        // user is trying to set combo from wiimote with no ext
+                        auto& combo = get_init<wpad_buttons>(variable);
+                        combo.ext = {}; // clear the extension in the combo
+                    }
+                    break;
+
                 case WPAD_EXT_NUNCHUK:
                 case WPAD_EXT_MPLUS_NUNCHUK:
                     if (status.nunchuk.trigger && state == state_t::waiting)
@@ -186,11 +220,13 @@ namespace wups::config {
                     if (status.nunchuk.hold) {
                         ++total_held;
                         if (ext_repeat) {
-                            auto& var = ensure_var_is_wpad(status.extensionType);
-                            var.ext_buttons |= ext_repeat;
+                            auto& combo = get_init<wpad_buttons>(variable);
+                            auto& xcombo = get_init<wpad_nunchuk_buttons>(combo.ext);
+                            xcombo.buttons |= ext_repeat;
                         }
                     }
                     break;
+
                 case WPAD_EXT_CLASSIC:
                 case WPAD_EXT_MPLUS_CLASSIC:
                     if (status.classic.trigger && state == state_t::waiting)
@@ -198,22 +234,28 @@ namespace wups::config {
                     if (status.classic.hold) {
                         ++total_held;
                         if (ext_repeat) {
-                            auto& var = ensure_var_is_wpad(status.extensionType);
-                            var.ext_buttons |= ext_repeat;
+                            auto& combo = get_init<wpad_buttons>(variable);
+                            auto& xcombo = get_init<wpad_classic_buttons>(combo.ext);
+                            xcombo.buttons |= ext_repeat;
                         }
                     }
                     break;
+
                 case WPAD_EXT_PRO_CONTROLLER:
                     if (status.pro.trigger && state == state_t::waiting)
                         state = state_t::reading;
                     if (status.pro.hold) {
                         ++total_held;
                         if (ext_repeat) {
-                            auto& var = ensure_var_is_wpad(status.extensionType);
-                            var.ext_buttons |= ext_repeat;
+                            auto& combo = get_init<wpad_buttons>(variable);
+                            auto& xcombo = get_init<wpad_pro_buttons>(combo.ext);
+                            xcombo.buttons |= ext_repeat;
+                            // Note: core buttons are not reported, so clear them out
+                            combo.core.buttons = 0;
                         }
                     }
                     break;
+
                 } // switch (status.extensionType)
 
             } // if kpad[w] is valid
