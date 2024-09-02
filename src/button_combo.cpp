@@ -589,41 +589,10 @@ namespace wups::config {
 
     namespace {
 
-        struct state16 {
-            uint16_t hold    = 0;
-            uint16_t trigger = 0;
-            uint16_t release = 0;
-        };
-
-        struct state32 {
-            uint32_t hold = 0;
-            uint32_t trigger = 0;
-            uint32_t release = 0;
-        };
-
-
-        struct vpad_state : state32 {};
+        struct vpad_state : detail::button_state_32 {};
 
         array<vpad_state, 2> vpad_states;
-
-
-        struct wpad_core_state    : state16 {};
-        struct wpad_nunchuk_state : state16 {};
-        struct wpad_classic_state : state16 {};
-        struct wpad_pro_state     : state32 {};
-
-
-        struct wpad_state {
-            wpad_core_state core;
-
-            std::variant<std::monostate,
-                         wpad_nunchuk_state,
-                         wpad_classic_state,
-                         wpad_pro_state> ext;
-        };
-
-
-        array<wpad_state, 7> wpad_states;
+        array<wpad_button_state, 7> wpad_states;
 
 
         template<typename T>
@@ -684,7 +653,7 @@ namespace wups::config {
         {
             update_wpad_core_common(channel, status->core);
 
-            auto& nunchuk = get_init<wpad_nunchuk_state>(wpad_states[channel].ext);
+            auto& nunchuk = get_init<wpad_nunchuk_button_state>(wpad_states[channel].ext);
 
             uint16_t old_hold = nunchuk.hold;
             uint16_t new_hold = status->core.buttons & wpad_nunchuk_mask;
@@ -704,7 +673,7 @@ namespace wups::config {
         {
             update_wpad_core_common(channel, status->core);
 
-            auto& classic = get_init<wpad_classic_state>(wpad_states[channel].ext);
+            auto& classic = get_init<wpad_classic_button_state>(wpad_states[channel].ext);
 
             uint16_t old_hold = classic.hold;
             uint16_t new_hold = status->ext.buttons;
@@ -724,7 +693,7 @@ namespace wups::config {
         {
             wpad_states[channel].core = {};
 
-            auto& pro = get_init<wpad_pro_state>(wpad_states[channel].ext);
+            auto& pro = get_init<wpad_pro_button_state>(wpad_states[channel].ext);
 
             uint32_t old_hold = pro.hold;
             uint32_t new_hold = status->ext.buttons;
@@ -847,27 +816,27 @@ namespace wups::config {
 
 
     // Returns true if a wpad state extension has no buttons held down
-    struct wpad_state_ext_is_clear_visitor {
+    struct wpad_button_state_ext_is_clear_visitor {
         bool operator ()(std::monostate) const
         { return true; }
 
-        bool operator ()(const wpad_nunchuk_state& ns) const
+        bool operator ()(const wpad_nunchuk_button_state& ns) const
         { return ns.hold == 0; }
 
-        bool operator ()(const wpad_classic_state& cs) const
+        bool operator ()(const wpad_classic_button_state& cs) const
         { return cs.hold == 0; }
 
-        bool operator ()(const wpad_pro_state& ps) const
+        bool operator ()(const wpad_pro_button_state& ps) const
         { return ps.hold == 0; }
     };
 
 
     struct wpad_combo_ext_check_visitor {
 
-        const wpad_state& state;
+        const wpad_button_state& state;
         const bool core_triggered;
 
-        wpad_combo_ext_check_visitor(const wpad_state& st,
+        wpad_combo_ext_check_visitor(const wpad_button_state& st,
                                      bool ct)
             noexcept :
             state(st),
@@ -884,7 +853,7 @@ namespace wups::config {
                 return core_triggered;
 
             // there is an extension plugged in, ensure its buttons are all unpressed
-            if (visit(wpad_state_ext_is_clear_visitor{},
+            if (visit(wpad_button_state_ext_is_clear_visitor{},
                       state.ext))
                 return core_triggered; // match depends on the core test
 
@@ -897,10 +866,10 @@ namespace wups::config {
         operator ()(const wpad_nunchuk_buttons& nb)
             const noexcept
         {
-            if (!holds_alternative<wpad_nunchuk_state>(state.ext))
+            if (!holds_alternative<wpad_nunchuk_button_state>(state.ext))
                 return false;
 
-            auto& ns = get<wpad_nunchuk_state>(state.ext);
+            auto& ns = get<wpad_nunchuk_button_state>(state.ext);
             // fail early if buttons don't match
             if (ns.hold != nb.buttons)
                 return false;
@@ -918,10 +887,10 @@ namespace wups::config {
         operator ()(const wpad_classic_buttons& cb)
             const noexcept
         {
-            if (!holds_alternative<wpad_classic_state>(state.ext))
+            if (!holds_alternative<wpad_classic_button_state>(state.ext))
                 return false;
 
-            auto& cs = get<wpad_classic_state>(state.ext);
+            auto& cs = get<wpad_classic_button_state>(state.ext);
             // fail early if buttons don't match
             if (cs.hold != cb.buttons)
                 return false;
@@ -939,10 +908,10 @@ namespace wups::config {
         operator ()(const wpad_pro_buttons& pb)
             const noexcept
         {
-            if (!holds_alternative<wpad_pro_state>(state.ext))
+            if (!holds_alternative<wpad_pro_button_state>(state.ext))
                 return false;
 
-            auto ps = get<wpad_pro_state>(state.ext);
+            auto ps = get<wpad_pro_button_state>(state.ext);
             // fail early if buttons don't match
             if (ps.hold != pb.buttons)
                 return false;
@@ -1003,6 +972,15 @@ namespace wups::config {
         // Test 2: check if the extension matches the combo
         return visit(wpad_combo_ext_check_visitor{state, core_triggered},
                      wb.ext);
+    }
+
+
+    const wpad_button_state&
+    wpad_get_button_state(WPADChan channel)
+    {
+        if (channel < 0 || channel >= wpad_states.size())
+            throw std::invalid_argument{"invalid wpad channel"};
+        return wpad_states[channel];
     }
 
 

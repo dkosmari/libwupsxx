@@ -73,7 +73,8 @@ namespace wups::config {
     button_combo button_combo_from_string(const std::string& str);
 
 
-    // helper functions for detecting vpad/wpad combos
+
+    // Utility functions for detecting vpad/wpad combos
 
     // Call this from your VPADRead() hook.
     // Return true if no error.
@@ -91,6 +92,48 @@ namespace wups::config {
 
     [[nodiscard]]
     bool wpad_triggered(WPADChan channel, const button_combo& combo) noexcept;
+
+
+
+    // Utility functions to track wpad trigger/release status, since the WPAD* API doesn't
+    // do it.
+
+    namespace detail {
+
+        struct button_state_16 {
+            std::uint16_t hold    = 0;
+            std::uint16_t trigger = 0;
+            std::uint16_t release = 0;
+        };
+
+        struct button_state_32 {
+            std::uint32_t hold    = 0;
+            std::uint32_t trigger = 0;
+            std::uint32_t release = 0;
+        };
+
+    } // namespace detail
+
+
+    struct wpad_core_button_state    : detail::button_state_16 {};
+    struct wpad_nunchuk_button_state : detail::button_state_16 {};
+    struct wpad_classic_button_state : detail::button_state_16 {};
+    struct wpad_pro_button_state     : detail::button_state_32 {};
+
+    using wpad_ext_button_state = std::variant<std::monostate,
+                                               wpad_nunchuk_button_state,
+                                               wpad_classic_button_state,
+                                               wpad_pro_button_state>;
+
+    struct wpad_button_state {
+        wpad_core_button_state core;
+        wpad_ext_button_state  ext;
+    };
+
+
+    // Retrieve the button state as it's tracked internally to detect combos.
+    [[nodiscard]]
+    const wpad_button_state& wpad_get_button_state(WPADChan channel);
 
 
 } // namespace wups::config
