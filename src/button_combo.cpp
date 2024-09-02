@@ -608,15 +608,25 @@ namespace wups::config {
 
 
         constexpr uint16_t wpad_core_mask =
-                      WPAD_BUTTON_LEFT | WPAD_BUTTON_RIGHT |
-                      WPAD_BUTTON_DOWN | WPAD_BUTTON_UP |
-                      WPAD_BUTTON_PLUS | WPAD_BUTTON_MINUS |
-                      WPAD_BUTTON_A | WPAD_BUTTON_B |
-                      WPAD_BUTTON_1 | WPAD_BUTTON_2 |
-                      WPAD_BUTTON_HOME;
+            WPAD_BUTTON_UP   | WPAD_BUTTON_DOWN  |
+            WPAD_BUTTON_LEFT | WPAD_BUTTON_RIGHT |
+            WPAD_BUTTON_PLUS | WPAD_BUTTON_MINUS |
+            WPAD_BUTTON_A    | WPAD_BUTTON_B     |
+            WPAD_BUTTON_1    | WPAD_BUTTON_2     |
+            WPAD_BUTTON_HOME;
 
         constexpr uint16_t wpad_nunchuk_mask = WPAD_BUTTON_Z | WPAD_BUTTON_C;
 
+        constexpr uint32_t wpad_pro_mask =
+            WPAD_PRO_BUTTON_UP      | WPAD_PRO_BUTTON_DOWN    |
+            WPAD_PRO_BUTTON_LEFT    | WPAD_PRO_BUTTON_RIGHT   |
+            WPAD_PRO_TRIGGER_L      | WPAD_PRO_TRIGGER_R      |
+            WPAD_PRO_TRIGGER_ZL     | WPAD_PRO_TRIGGER_ZR     |
+            WPAD_PRO_BUTTON_A       | WPAD_PRO_BUTTON_B       |
+            WPAD_PRO_BUTTON_X       | WPAD_PRO_BUTTON_Y       |
+            WPAD_PRO_BUTTON_PLUS    | WPAD_PRO_BUTTON_MINUS   |
+            WPAD_PRO_BUTTON_STICK_L | WPAD_PRO_BUTTON_STICK_R |
+            WPAD_PRO_BUTTON_HOME;
 
         void
         update_wpad_core_common(WPADChan channel,
@@ -696,7 +706,7 @@ namespace wups::config {
             auto& pro = get_init<wpad_pro_button_state>(wpad_states[channel].ext);
 
             uint32_t old_hold = pro.hold;
-            uint32_t new_hold = status->ext.buttons;
+            uint32_t new_hold = status->ext.buttons & wpad_pro_mask;
 
             auto [trigger, release] = calc_trigger_release(old_hold, new_hold);
 
