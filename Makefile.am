@@ -31,9 +31,11 @@ src_libwupsxx_a_SOURCES = 			\
 	include/wupsxx/duration.hpp		\
 	include/wupsxx/duration_items.hpp	\
 	include/wupsxx/file_item.hpp		\
+	include/wupsxx/init.hpp			\
 	include/wupsxx/input.hpp		\
 	include/wupsxx/int_item.hpp		\
 	include/wupsxx/item.hpp			\
+	include/wupsxx/logger.hpp		\
 	include/wupsxx/numeric_item.hpp		\
 	include/wupsxx/storage.hpp		\
 	include/wupsxx/storage_error.hpp	\
@@ -50,9 +52,11 @@ src_libwupsxx_a_SOURCES = 			\
 	src/duration.cpp			\
 	src/duration_items.cpp			\
 	src/file_item.cpp			\
+	src/init.cpp				\
 	src/input.cpp				\
 	src/int_item.cpp			\
 	src/item.cpp				\
+	src/logger.cpp				\
 	src/numeric_item_impl.hpp		\
 	src/storage.cpp				\
 	src/storage_error.cpp			\
