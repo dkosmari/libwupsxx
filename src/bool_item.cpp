@@ -11,7 +11,7 @@
 
 #include "wupsxx/bool_item.hpp"
 
-#include "cafe_glyphs.h"
+#include "wupsxx/cafe_glyphs.h"
 
 
 namespace wups::config {

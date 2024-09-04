@@ -15,7 +15,7 @@
 
 #include "wupsxx/button_combo.hpp"
 
-#include "cafe_glyphs.h"
+#include "wupsxx/cafe_glyphs.h"
 
 #include "wpad_status.h"
 

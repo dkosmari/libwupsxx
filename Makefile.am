@@ -24,6 +24,8 @@ src_libwupsxx_a_SOURCES = 			\
 	include/wupsxx/bool_item.hpp		\
 	include/wupsxx/button_combo.hpp		\
 	include/wupsxx/button_combo_item.hpp	\
+	include/wupsxx/button_item.hpp		\
+	include/wupsxx/cafe_glyphs.h		\
 	include/wupsxx/category.hpp		\
 	include/wupsxx/color.hpp		\
 	include/wupsxx/color_item.hpp		\
@@ -44,7 +46,7 @@ src_libwupsxx_a_SOURCES = 			\
 	src/bool_item.cpp			\
 	src/button_combo.cpp			\
 	src/button_combo_item.cpp		\
-	src/cafe_glyphs.h			\
+	src/button_item.cpp			\
 	src/category.cpp			\
 	src/color.cpp				\
 	src/color_item.cpp			\

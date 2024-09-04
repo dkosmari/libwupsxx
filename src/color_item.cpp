@@ -13,7 +13,7 @@
 
 #include "wupsxx/color_item.hpp"
 
-#include "cafe_glyphs.h"
+#include "wupsxx/cafe_glyphs.h"
 
 
 using std::array;

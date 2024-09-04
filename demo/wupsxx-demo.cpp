@@ -10,6 +10,7 @@
 #include <filesystem>
 #include <optional>
 #include <string>
+#include <thread>
 #include <utility>              // move()
 
 #include <padscore/wpad.h>
@@ -23,6 +24,7 @@
 
 #include <wupsxx/bool_item.hpp>
 #include <wupsxx/button_combo_item.hpp>
+#include <wupsxx/button_item.hpp>
 #include <wupsxx/category.hpp>
 #include <wupsxx/color_item.hpp>
 #include <wupsxx/duration_items.hpp> // note, plural
@@ -159,6 +161,106 @@ namespace cfg {
 }
 
 
+
+// Example of a button item that blocks when activated, and finishes immediately.
+
+struct press_counter_item : wups::config::button_item {
+
+    unsigned counter = 0;
+
+    press_counter_item() :
+        button_item{"A button counter"}
+    {}
+
+
+    static
+    std::unique_ptr<press_counter_item>
+    create()
+    {
+        return std::make_unique<press_counter_item>();
+    }
+
+
+    void
+    on_started()
+        override
+    {
+        ++counter;
+        status_msg = "Pressed " + std::to_string(counter) + " times";
+        // Note: we immediately set to the finished state.
+        current_state = state::finished;
+    }
+
+};
+
+
+// An example of a button that does something in a background thread.
+
+struct wait_5_seconds_item : wups::config::button_item {
+
+    std::jthread worker_thread;
+
+
+    wait_5_seconds_item() :
+        button_item{"Press to wait 5 seconds"}
+    {}
+
+
+    static
+    std::unique_ptr<wait_5_seconds_item>
+    create()
+    {
+        return std::make_unique<wait_5_seconds_item>();
+    }
+
+
+    void
+    on_started()
+        override
+    {
+        status_msg = "Waiting 5 seconds...";
+
+        // Note: we launch a thread that takes in a std::stop_token
+        worker_thread = std::jthread{[this](std::stop_token token)
+        {
+            using clock = std::chrono::steady_clock;
+            auto time_start = clock::now();
+
+            while (clock::now() - time_start < 5s) {
+                if (token.stop_requested())
+                    break;
+
+                std::this_thread::sleep_for(100ms);
+            }
+            // Note: Always mark the state as finished.
+            // Note: button_item::current_state is atomic.
+            // Note: Do this on every exit path out of the thread.
+            current_state = state::finished;
+        }};
+    }
+
+
+    void
+    on_finished()
+        override
+    {
+        worker_thread.join();
+        status_msg = "Finished";
+    }
+
+
+    void
+    on_cancel()
+        override
+    {
+        status_msg = "Canceling...";
+        if (worker_thread.joinable())
+            worker_thread.request_stop();
+    }
+
+};
+
+
 void
 menu_open(wups::config::category& root)
 {
@@ -239,6 +341,10 @@ menu_open(wups::config::category& root)
                                        cfg::shortcut2,
                                        vpad_buttons{VPAD_BUTTON_B | VPAD_BUTTON_Y}));
 
+
+    root.add(press_counter_item::create());
+
+    root.add(wait_5_seconds_item::create());
 
 #if 0
     {
