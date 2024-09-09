@@ -39,17 +39,22 @@ namespace wups::config {
         bool focused;
         input_mode current_mode;
 
-    public:
+    protected:
 
         item(const std::string& label);
 
         // Disallow moving, since the callbacks store the `this` pointer.
         item(item&&) = delete;
 
+    public:
+
         virtual ~item();
 
         // Gives up ownership of the handle.
         void release() noexcept;
+
+        // Destruction started from within WUPS.
+        void on_delete() noexcept;
 
 
         virtual void get_display(char* buf, std::size_t size) const;
@@ -61,7 +66,7 @@ namespace wups::config {
 
         virtual void on_focus_changed();
 
-        virtual void restore();
+        virtual void restore_default();
 
         virtual void on_close();
 

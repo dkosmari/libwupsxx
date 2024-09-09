@@ -47,7 +47,7 @@ namespace wups::config {
                            std::size_t size)
         const
     {
-        // TODO: process this in std::u32string
+        // TODO: process this in std::u32string?
 
         // Note: `buf` is a C string, it needs a null terminator at the end,
         // so the effective `width` is one less than `size`.
@@ -162,9 +162,14 @@ namespace wups::config {
 
             if (input.buttons_d & WUPS_CONFIG_BUTTON_R)
                 first = max_first;
-        }
 
-        return item::on_input(input);
+            // handle loss of focus when pressing A or B
+            if (input.buttons_d & (WUPS_CONFIG_BUTTON_A | WUPS_CONFIG_BUTTON_B))
+                return focus_status::lose;
+
+            return focus_status::keep;
+        } else
+            return focus_status::lose; // should not be reachable
     }
 
 } // namespace wups::config

@@ -128,18 +128,18 @@ namespace wups::config {
         if (state == state_t::waiting)
             return focus_status::change_input; // let complex input handle waiting
 
-        // sanity check, snould not be here until we're in the confirming state
+        // sanity check, should not be here until we're in the confirming state
         if (state != state_t::confirming)
             return focus_status::keep;
 
-        // We handle reset-to-default here: always confirm and lose focus.
+        // We handle restore-default here: always confirm and lose focus.
         if (input.buttons_d & WUPS_CONFIG_BUTTON_X) {
+            restore_default();
             confirm_change();
-            restore();
             return focus_status::lose;
         }
 
-        // let var_item/item classes handle confirm/cancel with A/B
+        // let var_item class handle confirm/cancel with A/B
         return var_item::on_input(input);
     }
 

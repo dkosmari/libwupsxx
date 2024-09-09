@@ -320,6 +320,10 @@ menu_open(wups::config::category& root)
                                cfg::text,
                                30));
 
+    // Short text, not scrollable, not focusable.
+    root.add(text_item::create("Short Text",
+                               "FooBar"));
+
 
     // A file item
     root.add(file_item::create("Some file",
@@ -345,6 +349,13 @@ menu_open(wups::config::category& root)
     root.add(press_counter_item::create());
 
     root.add(wait_5_seconds_item::create());
+
+
+    {
+        // this tests that wups::item can be safely destroyed manually
+        auto dummy = text_item::create("Dummy", "Nothing");
+    }
+
 
 #if 0
     {

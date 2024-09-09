@@ -24,10 +24,9 @@ namespace wups::config {
     protected:
 
         T& variable;
-        std::optional<T> previous_value;
+        std::optional<T> old_value;
         const T default_value;
 
-    public:
 
         var_item(const std::string& label,
                  T& variable,
@@ -38,60 +37,82 @@ namespace wups::config {
         {}
 
 
-        // save or restore previous value of variable
+        virtual
+        bool
+        on_focus_request(bool /*new_focus*/)
+            const override
+        {
+            return true;
+        }
+
+
         virtual
         void
         on_focus_changed()
             override
         {
-            if (has_focus()) {
-                // gained focus, save the current value
-                previous_value = variable;
-            } else {
-                // lost focus, restore previous_value if it exists
-                if (previous_value) {
-                    variable = *previous_value;
-                    previous_value.reset();
-                }
-            }
+            if (has_focus())
+                old_value = variable;
+            else
+                old_value.reset();
         }
 
 
         void
         confirm_change()
         {
-            previous_value.reset();
+            old_value.reset();
+        }
+
+
+        void
+        cancel_change()
+        {
+            if (old_value)
+                variable = *old_value;
+            old_value.reset();
         }
 
 
         virtual
         void
-        restore()
+        restore_default()
             override
         {
             variable = default_value;
         }
 
 
-        // Check if confirming with A, then clear previous_value
+        // Handle confirm/cancel with A/B buttons.
         focus_status
         on_input(const simple_pad_data& input)
             override
         {
-            if (input.buttons_d & WUPS_CONFIG_BUTTON_A)
-                confirm_change();
+            if (input.buttons_d & WUPS_CONFIG_BUTTON_X) {
+                this->restore_default();
+                return focus_status::lose;
+            }
 
-            return item::on_input(input);
+            if (input.buttons_d & WUPS_CONFIG_BUTTON_B) {
+                this->cancel_change();
+                return focus_status::lose;
+            }
+
+            if (input.buttons_d & WUPS_CONFIG_BUTTON_A) {
+                this->confirm_change();
+                return focus_status::lose;
+            }
+
+            return focus_status::keep;
         }
+
 
         // don't hide item::on_input
         using item::on_input;
 
-
     };
 
-}
-
+} // namespace wups::config
 
 
 #endif

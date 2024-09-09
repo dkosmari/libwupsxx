@@ -205,7 +205,7 @@ namespace wups::config {
     {
         std::string left;
         std::string right;
-        const char* const blank = "　";
+        const char* const blank = CAFE_GLYPH_BTN_DPAD;
 
         bool variable_is_root = is_sd_root(variable);
 
@@ -254,9 +254,9 @@ namespace wups::config {
 
 
     void
-    file_item::restore()
+    file_item::restore_default()
     {
-        var_item::restore();
+        var_item::restore_default();
         // we must update variable_is_dir.
         variable_is_dir = is_directory(variable);
     }

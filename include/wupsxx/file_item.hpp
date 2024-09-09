@@ -49,7 +49,7 @@ namespace wups::config {
 
         virtual void on_focus_changed() override;
 
-        virtual void restore() override;
+        virtual void restore_default() override;
 
         virtual focus_status on_input(const simple_pad_data& input) override;
 

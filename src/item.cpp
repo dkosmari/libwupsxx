@@ -99,8 +99,7 @@ namespace wups::config {
         {
             try {
                 auto it = static_cast<item*>(ctx);
-                it->release(); // don't destroy the handle, it's already happening
-                delete it;
+                it->on_delete();
             }
             catch (std::exception& e) {
                 REPORT_ERROR(e);
@@ -196,14 +195,14 @@ namespace wups::config {
         {
             try {
                 auto it = static_cast<item*>(ctx);
-                it->restore();
+                it->restore_default();
             }
             catch (std::exception& e) {
                 REPORT_ERROR(e);
             }
         }
 
-    } // namespace dispatchers
+    } // namespace glue
 
 
     item::item(const std::string& label) :
@@ -235,8 +234,14 @@ namespace wups::config {
 
     item::~item()
     {
-        if (handle.handle)
-            WUPSConfigAPI_Item_Destroy(handle);
+        if (handle.handle) {
+            /* How to get here:
+             *   - Destructor was called from user code.
+             */
+            auto h = handle;
+            release(); // this prevents WUPS API from looping back here
+            WUPSConfigAPI_Item_Destroy(h);
+        }
     }
 
 
@@ -245,6 +250,30 @@ namespace wups::config {
         noexcept
     {
         handle = {};
+    }
+
+
+    void
+    item::on_delete()
+        noexcept
+    {
+        if (!handle.handle) {
+            /* How to get here:
+             *   - user code destroyed wups::item;
+             *   - item::~item() sees a valid handle:
+             *     - calls release();
+             *     - calls WUPSConfigAPI_Item_Destroy();
+             *       - WUPS calls the on_delete() callback, ends up in here.
+             */
+            return;
+        } else {
+            /* How to get here:
+             *   - WUPS wants to destroy the item:
+             *     - calls on_delete() callback, ends up here.
+             */
+            release(); // this avoids calling WUPSConfigAPI_Item_Destroy() on the destructor.
+            delete this;
+        }
     }
 
 
@@ -270,7 +299,7 @@ namespace wups::config {
     item::on_focus_request(bool /*new_focus*/)
         const
     {
-        return true; // always allow changing focus state
+        return true;
     }
 
 
@@ -280,7 +309,7 @@ namespace wups::config {
 
 
     void
-    item::restore()
+    item::restore_default()
     {}
 
 
@@ -290,23 +319,16 @@ namespace wups::config {
 
 
     focus_status
-    item::on_input(const simple_pad_data& input)
+    item::on_input(const simple_pad_data& /*input*/)
     {
-        if (input.buttons_d & WUPS_CONFIG_BUTTON_X)
-            restore();
-
-        // either A or B make it lose focus, confirming or canceling
-        if (input.buttons_d & (WUPS_CONFIG_BUTTON_A | WUPS_CONFIG_BUTTON_B))
-            return focus_status::lose;
-
-        return focus_status::keep;
+        return focus_status::lose;
     }
 
 
     focus_status
     item::on_input(const complex_pad_data& /*input*/)
     {
-        return focus_status::keep;
+        return focus_status::lose;
     }
 
 
