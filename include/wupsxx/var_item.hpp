@@ -80,6 +80,7 @@ namespace wups::config {
             override
         {
             variable = default_value;
+            confirm_change();
         }
 
 
