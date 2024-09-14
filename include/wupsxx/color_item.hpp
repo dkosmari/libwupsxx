@@ -17,7 +17,7 @@
 
 namespace wups::config {
 
-    class color_item : public var_item<color> {
+    class color_item : public var_item<utils::color> {
 
         enum class mode_t {
             rgb,
@@ -31,15 +31,15 @@ namespace wups::config {
     public:
 
         color_item(const std::string& label,
-                   color& variable,
-                   color default_value,
+                   utils::color& variable,
+                   utils::color default_value,
                    bool has_alpha = false);
 
         static
         std::unique_ptr<color_item>
         create(const std::string& label,
-               color& variable,
-               color default_value,
+               utils::color& variable,
+               utils::color default_value,
                bool has_alpha = false);
 
 

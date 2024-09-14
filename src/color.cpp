@@ -12,7 +12,7 @@
 #include "wupsxx/color.hpp"
 
 
-namespace wups::config {
+namespace wups::utils {
 
     color::color(const std::string& str)
     {
@@ -77,4 +77,4 @@ namespace wups::config {
     }
 
 
-} // namespace wups::config
+} // namespace wups::utils

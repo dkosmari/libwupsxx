@@ -25,8 +25,8 @@ using std::string;
 using std::string_view;
 using std::uint32_t;
 
-namespace wups::config {
 
+namespace wups::utils {
 
     namespace {
 
@@ -994,4 +994,4 @@ namespace wups::config {
     }
 
 
-} // namespace wups::config
+} // namespace wups::utils

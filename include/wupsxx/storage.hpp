@@ -51,8 +51,8 @@ namespace wups::storage {
 
 
     template<>
-    std::expected<config::color, storage_error>
-    load<config::color>(const std::string& key);
+    std::expected<utils::color, storage_error>
+    load<utils::color>(const std::string& key);
 
 
     template<>
@@ -61,8 +61,8 @@ namespace wups::storage {
 
 
     template<>
-    std::expected<config::button_combo, storage_error>
-    load<config::button_combo>(const std::string& key);
+    std::expected<utils::button_combo, storage_error>
+    load<utils::button_combo>(const std::string& key);
 
 
 
@@ -86,7 +86,7 @@ namespace wups::storage {
 
 
     void
-    store(const std::string& key, const config::color& c);
+    store(const std::string& key, const utils::color& c);
 
 
     void
@@ -94,7 +94,7 @@ namespace wups::storage {
 
 
     void
-    store(const std::string& key, const config::button_combo& bc);
+    store(const std::string& key, const utils::button_combo& bc);
 
 
 

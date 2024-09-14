@@ -59,11 +59,12 @@ namespace logger = wups::logger;
 
 
 // This type has .r, .g, .b, .a members, and a to_string() function.
-using wups::config::color;
+using wups::utils::color;
 
 
 // Used to store button combo shortcuts.
-using wups::config::button_combo;
+using wups::utils::button_combo;
+using wups::utils::vpad_buttons;
 
 
 namespace cfg {
@@ -153,8 +154,8 @@ namespace cfg {
         LOAD(text, "The quick brown fox jumps over the lazy dog.");
         LOAD(some_file, "fs:/vol/external01");
         LOAD(plugin_file, "fs:/vol/external01/wiiu/environments/aroma/plugins");
-        LOAD(shortcut1, (wups::config::button_combo{}));
-        LOAD(shortcut2, (wups::config::vpad_buttons{VPAD_BUTTON_B | VPAD_BUTTON_Y}));
+        LOAD(shortcut1, (button_combo{}));
+        LOAD(shortcut2, (vpad_buttons{VPAD_BUTTON_B | VPAD_BUTTON_Y}));
 #undef LOAD
     }
 
@@ -460,10 +461,10 @@ DECL_FUNCTION(int32_t,
     // Note: when proc mode is loose, all button samples are identical to the most recent
     const int32_t num_samples = VPADGetButtonProcMode(channel) ? result : 1;
     for (int32_t idx = num_samples - 1; idx >= 0; --idx) {
-        if (wups::config::vpad_update(channel, status[idx])) {
-            if (wups::config::vpad_triggered(channel, cfg::shortcut1))
+        if (wups::utils::vpad_update(channel, status[idx])) {
+            if (wups::utils::vpad_triggered(channel, cfg::shortcut1))
                 activate_shortcut1();
-            if (wups::config::vpad_triggered(channel, cfg::shortcut2))
+            if (wups::utils::vpad_triggered(channel, cfg::shortcut2))
                 activate_shortcut2();
         }
     }
@@ -480,10 +481,10 @@ DECL_FUNCTION(void,
               WPADStatus* status)
 {
     real_WPADRead(channel, status);
-    if (wups::config::wpad_update(channel, status)) {
-        if (wups::config::wpad_triggered(channel, cfg::shortcut1))
+    if (wups::utils::wpad_update(channel, status)) {
+        if (wups::utils::wpad_triggered(channel, cfg::shortcut1))
             activate_shortcut1();
-        if (wups::config::wpad_triggered(channel, cfg::shortcut2))
+        if (wups::utils::wpad_triggered(channel, cfg::shortcut2))
             activate_shortcut2();
     }
 }

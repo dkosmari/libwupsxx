@@ -14,7 +14,7 @@
 #include <string>
 
 
-namespace wups::config {
+namespace wups::utils {
 
     struct color {
 
@@ -92,8 +92,6 @@ namespace wups::config {
 
     std::string to_string(color c, bool with_alpha = true, bool uppercase = true);
 
-
-} // namespace wups::config
-
+} // namespace wups::utils
 
 #endif

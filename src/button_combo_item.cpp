@@ -15,6 +15,14 @@
 #include "wupsxx/cafe_glyphs.h"
 
 
+using wups::utils::button_combo;
+using wups::utils::vpad_buttons;
+using wups::utils::wpad_buttons;
+using wups::utils::wpad_classic_buttons;
+using wups::utils::wpad_nunchuk_buttons;
+using wups::utils::wpad_pro_buttons;
+
+
 namespace wups::config {
 
 

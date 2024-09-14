@@ -18,7 +18,7 @@
 namespace wups::config {
 
 
-    class button_combo_item : public var_item<button_combo> {
+    class button_combo_item : public var_item<utils::button_combo> {
 
         enum class state_t {
             waiting,
@@ -31,14 +31,14 @@ namespace wups::config {
     public:
 
         button_combo_item(const std::string& label,
-                          button_combo& variable,
-                          const button_combo& default_value = {});
+                          utils::button_combo& variable,
+                          const utils::button_combo& default_value = {});
 
         static
         std::unique_ptr<button_combo_item>
         create(const std::string& label,
-               button_combo& variable,
-               const button_combo& default_value = {});
+               utils::button_combo& variable,
+               const utils::button_combo& default_value = {});
 
 
         virtual void get_display(char* buf, std::size_t size) const override;

@@ -20,7 +20,7 @@
 struct WPADStatus;
 
 
-namespace wups::config {
+namespace wups::utils {
 
     struct vpad_buttons {
         // combination of VPAD_BUTTON_* values.
@@ -136,6 +136,6 @@ namespace wups::config {
     const wpad_button_state& wpad_get_button_state(WPADChan channel);
 
 
-} // namespace wups::config
+} // namespace wups::utils
 
 #endif

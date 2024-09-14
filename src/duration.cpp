@@ -9,7 +9,7 @@
 #include "wupsxx/duration.hpp"
 
 
-namespace wups::config {
+namespace wups::utils {
 
     template<>
     std::string
@@ -50,4 +50,4 @@ namespace wups::config {
         return std::to_string(t.count()) + "d";
     }
 
-}
+} // namespace wups::utils

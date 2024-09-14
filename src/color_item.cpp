@@ -20,6 +20,8 @@ using std::array;
 using std::views::enumerate;
 using std::optional;
 
+using wups::utils::color;
+
 
 namespace wups::config {
 

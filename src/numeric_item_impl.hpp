@@ -57,7 +57,7 @@ namespace wups::config {
         const
     {
         using std::to_string;
-        using wups::config::to_string;
+        using wups::utils::to_string;
         std::string str = to_string(variable);
         ::strlcpy(buf, str.c_str(), size);
     }
@@ -80,7 +80,7 @@ namespace wups::config {
             fast_right = CAFE_GLYPH_BTN_R;
         }
         using std::to_string;
-        using wups::config::to_string;
+        using wups::utils::to_string;
         std::string str = to_string(variable);
         std::snprintf(buf, size,
                       "%s%s" "%s" "%s%s",
