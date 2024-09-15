@@ -78,12 +78,10 @@ namespace wups::utils {
 
     // Call this from your VPADRead() hook.
     // Return true if no error.
-    [[nodiscard]]
     bool vpad_update(VPADChan channel, const VPADStatus& status) noexcept;
 
     // Call this from your WPADRead() hook.
     // Return true if not error.
-    [[nodiscard]]
     bool wpad_update(WPADChan channel, const WPADStatus* status) noexcept;
 
 
