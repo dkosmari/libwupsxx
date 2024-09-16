@@ -222,6 +222,18 @@ namespace wups::utils {
                 ext{ext}
             {}
 
+            constexpr
+            button_set(const core::button_set& core)
+                noexcept:
+                core{core}
+            {}
+
+            constexpr
+            button_set(const ext_button_set& ext)
+                noexcept :
+                ext{ext}
+            {}
+
             button_set(const std::vector<std::string_view>& args);
         };
 
@@ -254,33 +266,8 @@ namespace wups::utils {
 
 
         struct button_state {
-
             core_button_state core;
             ext_button_state  ext;
-
-            constexpr
-            button_state() noexcept = default;
-
-            constexpr
-            button_state(const core_button_state& core)
-                noexcept:
-                core{core}
-            {}
-
-            constexpr
-            button_state(const core_button_state& core,
-                         const ext_button_state& ext)
-                noexcept :
-                core{core},
-                ext{ext}
-            {}
-
-            constexpr
-            button_state(const ext_button_state& ext)
-                noexcept :
-                ext{ext}
-            {}
-
         };
 
 
