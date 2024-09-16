@@ -43,7 +43,7 @@ namespace wups::storage {
         auto res = load<std::string>(key);
         if (!res)
             return std::unexpected{res.error()};
-        return utils::button_combo_from_string(*res);
+        return utils::button_combo{*res};
     }
 
 

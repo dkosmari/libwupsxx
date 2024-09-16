@@ -54,6 +54,12 @@ WUPS_USE_STORAGE(PLUGIN_FILE_NAME); // store config in libwupsxx-demo.json
 
 
 using namespace std::literals;
+using std::filesystem::path;
+using std::chrono::milliseconds;
+using std::chrono::seconds;
+using std::chrono::minutes;
+using std::chrono::hours;
+using std::string;
 
 namespace logger = wups::logger;
 
@@ -64,33 +70,60 @@ using wups::utils::color;
 
 // Used to store button combo shortcuts.
 using wups::utils::button_combo;
-using wups::utils::vpad_buttons;
+
+namespace vpad = wups::utils::vpad;
 
 
 namespace cfg {
 
-    bool bool_option_1;
-    bool bool_option_2;
+    namespace defaults {
 
-    color foreground;
-    color background;
+        bool bool_option_1 = true;
+        bool bool_option_2 = false;
 
-    std::chrono::milliseconds ms_value;
-    std::chrono::seconds s_value;
-    std::chrono::minutes min_value;
-    std::chrono::hours h_value;
+        color foreground = {0xff, 0x40, 0x80};
+        color background = {0xaa, 0xbb, 0xcc, 0xdd};
 
-    int int_value_1;
-    int int_value_2;
+        milliseconds ms_value = 10ms;
+        seconds s_value = 10s;
+        minutes min_value = 10min;
+        hours h_value = 10h;
 
-    std::string text;
+        int int_value_1 = 5;
+        int int_value_2 = 0;
 
-    std::filesystem::path some_file;
-    std::filesystem::path plugin_file;
+        string text = "The quick brown fox jumps over the lazy dog.";
+
+        path some_file = "fs:/vol/external01";
+        path plugin_file = "fs:/vol/external01/wiiu/environments/aroma/plugins";
+
+        button_combo shortcut1 = {};
+        button_combo shortcut2 = vpad::button_set{VPAD_BUTTON_B, VPAD_BUTTON_Y};
+
+    } // namespace cfg::defaults
 
 
-    button_combo shortcut1;
-    button_combo shortcut2;
+    bool bool_option_1 = defaults::bool_option_1;
+    bool bool_option_2 = defaults::bool_option_2;
+
+    color foreground = defaults::foreground;
+    color background = defaults::background;
+
+    milliseconds ms_value  = defaults::ms_value;
+    seconds      s_value   = defaults::s_value;
+    minutes      min_value = defaults::min_value;
+    hours        h_value   = defaults::h_value;
+
+    int int_value_1 = defaults::int_value_1;
+    int int_value_2 = defaults::int_value_2;
+
+    string text = defaults::text;
+
+    path some_file   = defaults::some_file;
+    path plugin_file = defaults::plugin_file;
+
+    button_combo shortcut1 = defaults::shortcut1;
+    button_combo shortcut2 = defaults::shortcut2;
 
 
     namespace foo {
@@ -140,22 +173,22 @@ namespace cfg {
     void
     load()
     {
-#define LOAD(x, d) wups::storage::load_or_init(#x, x, d)
-        LOAD(bool_option_1, true);
-        LOAD(bool_option_2, false);
-        LOAD(foreground, (color{0xff, 0x40, 0x80}));
-        LOAD(background, (color{0xaa, 0xbb, 0xcc, 0xdd}));
-        LOAD(ms_value, 10ms);
-        LOAD(s_value, 10s);
-        LOAD(min_value, 10min);
-        LOAD(h_value, 10h);
-        LOAD(int_value_1, 5);
-        LOAD(int_value_2, 0);
-        LOAD(text, "The quick brown fox jumps over the lazy dog.");
-        LOAD(some_file, "fs:/vol/external01");
-        LOAD(plugin_file, "fs:/vol/external01/wiiu/environments/aroma/plugins");
-        LOAD(shortcut1, (button_combo{}));
-        LOAD(shortcut2, (vpad_buttons{VPAD_BUTTON_B | VPAD_BUTTON_Y}));
+#define LOAD(x) wups::storage::load_or_init(#x, x, defaults::x)
+        LOAD(bool_option_1);
+        LOAD(bool_option_2);
+        LOAD(foreground);
+        LOAD(background);
+        LOAD(ms_value);
+        LOAD(s_value);
+        LOAD(min_value);
+        LOAD(h_value);
+        LOAD(int_value_1);
+        LOAD(int_value_2);
+        LOAD(text);
+        LOAD(some_file);
+        LOAD(plugin_file);
+        LOAD(shortcut1);
+        LOAD(shortcut2);
 #undef LOAD
     }
 
@@ -269,49 +302,59 @@ menu_open(wups::config::category& root)
 
     // A bool item, default=true, strings are true/false
     root.add(bool_item::create("Boolean option 1",
-                               cfg::bool_option_1, true));
+                               cfg::bool_option_1,
+                               cfg::defaults::bool_option_1));
 
     // Another bool item, default=false, strings are ■/□
     root.add(bool_item::create("Boolean option 2",
-                               cfg::bool_option_2, false,
+                               cfg::bool_option_2,
+                               cfg::defaults::bool_option_2,
                                "■", "□"));
 
 
     // A color item, only RGB
     root.add(color_item::create("Foreground",
-                                cfg::foreground, color{0xff, 0x40, 0x80}));
+                                cfg::foreground,
+                                cfg::defaults::foreground));
 
     // Another color item, RGBA
     root.add(color_item::create("Background",
-                                cfg::background, color{0xaa, 0xbb, 0xcc, 0xdd},
+                                cfg::background,
+                                cfg::defaults::background,
                                 true));
 
 
     // Some time duration items
     root.add(milliseconds_item::create("Duration (ms)",
-                                       cfg::ms_value, 10ms,
+                                       cfg::ms_value,
+                                       cfg::defaults::ms_value,
                                        0ms, 1000ms));
 
     root.add(seconds_item::create("Duration (s)",
-                                  cfg::s_value, 10s,
+                                  cfg::s_value,
+                                  cfg::defaults::s_value,
                                   0s, 1000s));
 
     root.add(minutes_item::create("Duration (min)",
-                                  cfg::min_value, 10min,
+                                  cfg::min_value,
+                                  cfg::defaults::min_value,
                                   0min, 1000min));
 
     root.add(hours_item::create("Duration (h)",
-                                cfg::h_value, 10h,
+                                cfg::h_value,
+                                cfg::defaults::h_value,
                                 0h, 1000h));
 
     // An int item
     root.add(int_item::create("Integer option 1",
-                              cfg::int_value_1, 5,
+                              cfg::int_value_1,
+                              cfg::defaults::int_value_1,
                               -100, 100));
 
     // Another int item, with custom increments
     root.add(int_item::create("Integer option 2",
-                              cfg::int_value_2, 0,
+                              cfg::int_value_2,
+                              cfg::defaults::int_value_2,
                               -1000, 1000,
                               100, 10));
 
@@ -329,22 +372,23 @@ menu_open(wups::config::category& root)
     // A file item
     root.add(file_item::create("Some file",
                                cfg::some_file,
-                               "fs:/vol/external01"));
+                               cfg::defaults::some_file));
 
     // A file item for plugin files: only .wps extensions.
     root.add(file_item::create("Plugin file",
                                cfg::plugin_file,
-                               "fs:/vol/external01/wiiu/environments/aroma/plugins",
+                               cfg::defaults::plugin_file,
                                30,
                                {".wps"}));
 
 
     root.add(button_combo_item::create("Shortcut1",
-                                       cfg::shortcut1));
+                                       cfg::shortcut1,
+                                       cfg::defaults::shortcut1));
 
     root.add(button_combo_item::create("Shortcut2",
                                        cfg::shortcut2,
-                                       vpad_buttons{VPAD_BUTTON_B | VPAD_BUTTON_Y}));
+                                       cfg::defaults::shortcut2));
 
 
     root.add(press_counter_item::create());
@@ -461,10 +505,10 @@ DECL_FUNCTION(int32_t,
     // Note: when proc mode is loose, all button samples are identical to the most recent
     const int32_t num_samples = VPADGetButtonProcMode(channel) ? result : 1;
     for (int32_t idx = num_samples - 1; idx >= 0; --idx) {
-        if (wups::utils::vpad_update(channel, status[idx])) {
-            if (wups::utils::vpad_triggered(channel, cfg::shortcut1))
+        if (wups::utils::vpad::update(channel, status[idx])) {
+            if (wups::utils::vpad::triggered(channel, cfg::shortcut1))
                 activate_shortcut1();
-            if (wups::utils::vpad_triggered(channel, cfg::shortcut2))
+            if (wups::utils::vpad::triggered(channel, cfg::shortcut2))
                 activate_shortcut2();
         }
     }
@@ -481,10 +525,10 @@ DECL_FUNCTION(void,
               WPADStatus* status)
 {
     real_WPADRead(channel, status);
-    if (wups::utils::wpad_update(channel, status)) {
-        if (wups::utils::wpad_triggered(channel, cfg::shortcut1))
+    if (wups::utils::wpad::update(channel, status)) {
+        if (wups::utils::wpad::triggered(channel, cfg::shortcut1))
             activate_shortcut1();
-        if (wups::utils::wpad_triggered(channel, cfg::shortcut2))
+        if (wups::utils::wpad::triggered(channel, cfg::shortcut2))
             activate_shortcut2();
     }
 }
