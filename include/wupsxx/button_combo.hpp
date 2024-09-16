@@ -252,9 +252,35 @@ namespace wups::utils {
                                               classic_button_state,
                                               pro_button_state>;
 
+
         struct button_state {
+
             core_button_state core;
             ext_button_state  ext;
+
+            constexpr
+            button_state() noexcept = default;
+
+            constexpr
+            button_state(const core_button_state& core)
+                noexcept:
+                core{core}
+            {}
+
+            constexpr
+            button_state(const core_button_state& core,
+                         const ext_button_state& ext)
+                noexcept :
+                core{core},
+                ext{ext}
+            {}
+
+            constexpr
+            button_state(const ext_button_state& ext)
+                noexcept :
+                ext{ext}
+            {}
+
         };
 
 
