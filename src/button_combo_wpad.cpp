@@ -316,6 +316,47 @@ namespace wups::utils::wpad {
     }
 
 
+    bool
+    button_set::contains(WPADButton btn)
+        const noexcept
+    {
+        return btn & core.buttons & core::button_mask;
+    }
+
+
+    bool
+    button_set::contains(WPADNunchukButton btn)
+        const noexcept
+    {
+        auto ptr = get_if<nunchuk::button_set>(&ext);
+        if (!ptr)
+            return false;
+        return btn & ptr->buttons & nunchuk::button_mask;
+    }
+
+
+    bool
+    button_set::contains(WPADClassicButton btn)
+        const noexcept
+    {
+        auto ptr = get_if<classic::button_set>(&ext);
+        if (!ptr)
+            return false;
+        return btn & ptr->buttons & classic::button_mask;
+    }
+
+
+    bool
+    button_set::contains(WPADProButton btn)
+        const noexcept
+    {
+        auto ptr = get_if<pro::button_set>(&ext);
+        if (!ptr)
+            return false;
+        return btn & ptr->buttons & pro::button_mask;
+    }
+
+
     string
     to_string(const button_set& bs)
     {
@@ -632,7 +673,5 @@ namespace wups::utils::wpad {
             throw std::invalid_argument{"invalid wpad channel"};
         return states[channel];
     }
-
-
 
 } // namespace wups::utils::wpad

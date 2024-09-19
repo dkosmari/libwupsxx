@@ -53,6 +53,53 @@ namespace wups::utils {
             parent::operator =(wpad::button_set{tokens});
     }
 
+
+    bool
+    button_combo::contains(VPADButtons btn)
+        const noexcept
+    {
+        auto ptr = get_if<vpad::button_set>(this);
+        if (!ptr)
+            return false;
+        return ptr->contains(btn);
+    }
+    
+
+    bool
+    button_combo::contains(WPADButton btn)
+        const noexcept
+    {
+        auto ptr = get_if<wpad::button_set>(this);
+        return ptr && ptr->contains(btn);
+    }
+    
+    
+    bool
+    button_combo::contains(WPADNunchukButton btn)
+        const noexcept
+    {
+        auto ptr = get_if<wpad::button_set>(this);
+        return ptr && ptr->contains(btn);
+    }
+    
+
+    bool
+    button_combo::contains(WPADClassicButton btn)
+        const noexcept
+    {
+        auto ptr = get_if<wpad::button_set>(this);
+        return ptr && ptr->contains(btn);
+    }
+
+    
+    bool
+    button_combo::contains(WPADProButton btn)
+        const noexcept
+    {
+        auto ptr = get_if<wpad::button_set>(this);
+        return ptr && ptr->contains(btn);
+    }
+    
     
     string
     to_string(const button_combo& bc)
@@ -74,5 +121,5 @@ namespace wups::utils {
         };
         return visit(visitor, bc);
     }
-
+    
 } // namespace wups::utils

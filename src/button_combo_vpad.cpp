@@ -83,6 +83,14 @@ namespace wups::utils::vpad {
     }
 
 
+    bool
+    button_set::contains(VPADButtons btn)
+        const noexcept
+    {
+        return btn & buttons;
+    }
+
+
     string
     to_string(const button_set& bs)
     {
@@ -145,5 +153,6 @@ namespace wups::utils::vpad {
         // Test 2: at least one triggered button must match combo
         return state.trigger & vb.buttons;
     }
+
 
 } // namespace wups::utils::vpad

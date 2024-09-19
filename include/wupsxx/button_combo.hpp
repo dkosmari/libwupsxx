@@ -49,6 +49,7 @@ namespace wups::utils {
     namespace vpad {
 
         struct button_set {
+
             // combination of VPAD_BUTTON_* values.
             std::uint32_t buttons = 0;
 
@@ -64,6 +65,9 @@ namespace wups::utils {
 
             explicit
             button_set(const std::vector<std::string_view>& args);
+
+            bool contains(VPADButtons btn) const noexcept;
+
         };
 
 
@@ -208,6 +212,7 @@ namespace wups::utils {
 
 
         struct button_set {
+
             core::button_set core;
             ext_button_set ext;
 
@@ -235,6 +240,12 @@ namespace wups::utils {
             {}
 
             button_set(const std::vector<std::string_view>& args);
+
+            bool contains(WPADButton btn) const noexcept;
+            bool contains(WPADNunchukButton btn) const noexcept;
+            bool contains(WPADClassicButton btn) const noexcept;
+            bool contains(WPADProButton btn) const noexcept;
+
         };
 
 
@@ -293,6 +304,13 @@ namespace wups::utils {
 
         explicit
         button_combo(const std::string& str);
+
+        bool contains(VPADButtons btn) const noexcept;
+
+        bool contains(WPADButton btn) const noexcept;
+        bool contains(WPADNunchukButton btn) const noexcept;
+        bool contains(WPADClassicButton btn) const noexcept;
+        bool contains(WPADProButton btn) const noexcept;
 
     };
 
