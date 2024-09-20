@@ -72,6 +72,7 @@ using wups::utils::color;
 using wups::utils::button_combo;
 
 namespace vpad = wups::utils::vpad;
+namespace wpad = wups::utils::wpad;
 
 
 namespace cfg {
@@ -97,7 +98,8 @@ namespace cfg {
         path some_file = "fs:/vol/external01";
         path plugin_file = "fs:/vol/external01/wiiu/environments/aroma/plugins";
 
-        button_combo shortcut1 = {};
+        button_combo shortcut1 = wpad::button_set{{WPAD_BUTTON_DOWN, WPAD_BUTTON_1},
+                                                  {WPAD_NUNCHUK_BUTTON_C}};
         button_combo shortcut2 = vpad::button_set{VPAD_BUTTON_B, VPAD_BUTTON_Y};
 
     } // namespace cfg::defaults

@@ -116,18 +116,17 @@ namespace wups::utils::vpad {
 
 
     bool
-    update(VPADChan chan,
+    update(VPADChan channel,
            const VPADStatus& status)
         noexcept
     {
-        unsigned idx = chan;
-        if (idx >= states.size())
+        if (channel < 0 || channel >= states.size()) [[unlikely]]
             return false;
         if (status.error)
             return false;
-        states[idx].hold    = status.hold;
-        states[idx].trigger = status.trigger;
-        states[idx].release = status.release;
+        states[channel].hold    = status.hold;
+        states[channel].trigger = status.trigger;
+        states[channel].release = status.release;
         return true;
     }
 
@@ -140,7 +139,7 @@ namespace wups::utils::vpad {
         if (!holds_alternative<button_set>(combo))
             return false;
 
-        if (channel < 0 || channel >= states.size())
+        if (channel < 0 || channel >= states.size()) [[unlikely]]
             return false;
 
         const auto& state = states[channel];

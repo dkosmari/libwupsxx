@@ -500,9 +500,9 @@ namespace wups::utils::wpad {
            const WPADStatus* status)
         noexcept
     {
-        if (channel >= states.size())
+        if (channel < 0 || channel >= states.size()) [[unlikely]]
             return false;
-        if (!status)
+        if (!status) [[unlikely]]
             return false;
 
         if (status->error)
@@ -669,7 +669,7 @@ namespace wups::utils::wpad {
     const button_state&
     get_button_state(WPADChan channel)
     {
-        if (channel < 0 || channel >= states.size())
+        if (channel < 0 || channel >= states.size()) [[unlikely]]
             throw std::invalid_argument{"invalid wpad channel"};
         return states[channel];
     }

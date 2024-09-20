@@ -60,7 +60,7 @@ namespace wups::utils {
             constexpr
             button_set(Bs... bs)
                 noexcept :
-                buttons{ (static_cast<std::uint32_t>(bs) | ...) }
+                buttons{ static_cast<std::uint32_t>((bs | ...)) }
             {}
 
             explicit
@@ -105,7 +105,7 @@ namespace wups::utils {
                 constexpr
                 button_set(Bs... bs)
                     noexcept :
-                    buttons{ (static_cast<std::uint16_t>(bs) | ...) }
+                    buttons{ static_cast<std::uint16_t>((bs | ...)) }
                 {}
 
             };
@@ -134,7 +134,7 @@ namespace wups::utils {
                 constexpr
                 button_set(Bs... bs)
                     noexcept :
-                    buttons{ (static_cast<std::uint16_t>(bs) | ...) }
+                    buttons{ static_cast<std::uint16_t>((bs | ...)) }
                 {}
             };
 
@@ -162,7 +162,7 @@ namespace wups::utils {
                 constexpr
                 button_set(Bs... bs)
                     noexcept :
-                    buttons{ (static_cast<std::uint16_t>(bs) | ...) }
+                    buttons{ static_cast<std::uint16_t>((bs | ...)) }
                 {}
             };
 
@@ -190,7 +190,7 @@ namespace wups::utils {
                 constexpr
                 button_set(Bs... bs)
                     noexcept :
-                    buttons{ (static_cast<std::uint32_t>(bs) | ...) }
+                    buttons{ static_cast<std::uint32_t>((bs | ...)) }
                 {}
             };
 
