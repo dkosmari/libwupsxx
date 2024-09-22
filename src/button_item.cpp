@@ -17,15 +17,8 @@ namespace wups::config {
 
     button_item::button_item(const std::string& label) :
         item{label},
-        current_state{state::normal}
+        current_state{state::stopped}
     {}
-
-
-    std::unique_ptr<button_item>
-    button_item::create(const std::string& label)
-    {
-        return std::make_unique<button_item>(label);
-    }
 
 
     void
@@ -37,7 +30,8 @@ namespace wups::config {
                           "%s (Press " CAFE_GLYPH_BTN_A ")",
                           status_msg.c_str());
         else
-            buf[0] = '\0';
+            std::snprintf(buf, size,
+                          "(Press " CAFE_GLYPH_BTN_A ")");
     }
 
 
@@ -46,17 +40,8 @@ namespace wups::config {
         const
     {
         switch (current_state.load()) {
-        case state::normal:
-        case state::finished:
-            if (status_msg.empty())
-                std::snprintf(buf, size,
-                              "(Press " CAFE_GLYPH_BTN_A ")");
-            else
-                std::snprintf(buf, size,
-                              "%s (Press " CAFE_GLYPH_BTN_A ")",
-                              status_msg.c_str());
-            break;
-        case state::started:
+
+        case state::running:
             if (status_msg.empty())
                 std::snprintf(buf, size,
                               "(Press " CAFE_GLYPH_BTN_B " to cancel )");
@@ -65,6 +50,8 @@ namespace wups::config {
                               "%s (Press " CAFE_GLYPH_BTN_B " to cancel )",
                               status_msg.c_str());
             break;
+
+        case state::stopped:
         default:
             buf[0] = '\0';
         }
@@ -75,7 +62,7 @@ namespace wups::config {
     button_item::on_focus_request(bool)
         const
     {
-        if (current_state == state::started)
+        if (current_state == state::running)
             return false;
         return true;
     }
@@ -85,10 +72,10 @@ namespace wups::config {
     button_item::on_focus_changed()
     {
         if (has_focus()) {
-            current_state = state::started;
+            current_state = state::running;
             on_started();
         } else {
-            current_state = state::normal;
+            current_state = state::stopped;
         }
     }
 
@@ -96,22 +83,17 @@ namespace wups::config {
     focus_status
     button_item::on_input(const simple_pad_data& input)
     {
-        if (current_state == state::finished) {
+        if (current_state == state::stopped) {
             on_finished();
             return focus_status::lose;
         }
 
         if (input.buttons_d & WUPS_CONFIG_BUTTON_B)
-            if (current_state == state::started)
+            if (current_state == state::running)
                 on_cancel();
 
         return focus_status::keep;
     }
-
-
-    void
-    button_item::on_started()
-    {}
 
 
     void

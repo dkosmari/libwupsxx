@@ -224,7 +224,7 @@ struct press_counter_item : wups::config::button_item {
         ++counter;
         status_msg = "Pressed " + std::to_string(counter) + " times";
         // Note: we immediately set to the finished state.
-        current_state = state::finished;
+        current_state = state::stopped;
     }
 
 };
@@ -271,7 +271,7 @@ struct wait_5_seconds_item : wups::config::button_item {
             // Note: Always mark the state as finished.
             // Note: button_item::current_state is atomic.
             // Note: Do this on every exit path out of the thread.
-            current_state = state::finished;
+            current_state = state::stopped;
         }};
     }
 

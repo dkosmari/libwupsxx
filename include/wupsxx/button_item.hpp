@@ -11,7 +11,6 @@
 
 #include <atomic>
 #include <string>
-#include <memory>
 
 #include "item.hpp"
 
@@ -22,9 +21,8 @@ namespace wups::config {
 
 
         enum class state {
-            normal,
-            started,
-            finished,
+            stopped,
+            running,
         };
 
         std::atomic<state> current_state;
@@ -32,11 +30,6 @@ namespace wups::config {
 
 
         button_item(const std::string& label);
-
-
-        static
-        std::unique_ptr<button_item>
-        create(const std::string& label);
 
 
         virtual
@@ -64,9 +57,10 @@ namespace wups::config {
         on_input(const simple_pad_data& input) override;
 
 
+        // This should eventually set `current_state` to `state::stopped`.
         virtual
         void
-        on_started();
+        on_started() = 0;
 
 
         virtual
