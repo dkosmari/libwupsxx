@@ -15,7 +15,6 @@
 #include "wupsxx/cafe_glyphs.h"
 
 #include "utils.hpp"
-#include "wpad_status.h"
 
 
 using std::string;

@@ -17,7 +17,6 @@
 #include "wupsxx/cafe_glyphs.h"
 #include "wupsxx/logger.hpp"
 
-#include "wpad_status.h"
 #include "utils.hpp"
 
 
@@ -435,7 +434,7 @@ namespace wups::utils::wpad {
 
         void
         update_nunchuk(WPADChan channel,
-                            const WPADNunchukStatus* status)
+                            const WPADStatusNunchuk* status)
             noexcept
         {
             update_core_common(channel, status->core);
@@ -455,7 +454,7 @@ namespace wups::utils::wpad {
 
         void
         update_classic(WPADChan channel,
-                       const WPADClassicStatus* status)
+                       const WPADStatusClassic* status)
             noexcept
         {
             update_core_common(channel, status->core);
@@ -463,7 +462,7 @@ namespace wups::utils::wpad {
             auto& classic = ensure<classic_button_state>(states[channel].ext);
 
             uint16_t old_hold = classic.hold;
-            uint16_t new_hold = status->ext.buttons & classic::button_mask;
+            uint16_t new_hold = status->buttons & classic::button_mask;
 
             auto [trigger, release] = calc_trigger_release(old_hold, new_hold);
 
@@ -475,7 +474,7 @@ namespace wups::utils::wpad {
 
         void
         update_pro(WPADChan channel,
-                   const WPADProStatus* status)
+                   const WPADStatusProController* status)
             noexcept
         {
             states[channel].core = {};
@@ -483,7 +482,7 @@ namespace wups::utils::wpad {
             auto& pro = ensure<pro_button_state>(states[channel].ext);
 
             uint32_t old_hold = pro.hold;
-            uint32_t new_hold = status->ext.buttons & pro::button_mask;
+            uint32_t new_hold = status->buttons & pro::button_mask;
 
             auto [trigger, release] = calc_trigger_release(old_hold, new_hold);
 
@@ -517,16 +516,16 @@ namespace wups::utils::wpad {
 
         case WPAD_EXT_NUNCHUK:
         case WPAD_EXT_MPLUS_NUNCHUK:
-            update_nunchuk(channel, reinterpret_cast<const WPADNunchukStatus*>(status));
+            update_nunchuk(channel, reinterpret_cast<const WPADStatusNunchuk*>(status));
             break;
 
         case WPAD_EXT_CLASSIC:
         case WPAD_EXT_MPLUS_CLASSIC:
-            update_classic(channel, reinterpret_cast<const WPADClassicStatus*>(status));
+            update_classic(channel, reinterpret_cast<const WPADStatusClassic*>(status));
             break;
 
         case WPAD_EXT_PRO_CONTROLLER:
-            update_pro(channel, reinterpret_cast<const WPADProStatus*>(status));
+            update_pro(channel, reinterpret_cast<const WPADStatusProController*>(status));
             break;
 
         }
