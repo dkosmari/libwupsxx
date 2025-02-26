@@ -23,6 +23,8 @@ AM_PROG_AR
 AC_LANG([C++])
 AX_APPEND_COMPILE_FLAGS([-std=c++23], [CXX])
 
+WIIU_WUMS_CHECK_LIBBUTTONCOMBO
+
 
 AC_ARG_ENABLE([demo],
               [AS_HELP_STRING([--enable-demo],

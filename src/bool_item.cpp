@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -66,7 +66,7 @@ namespace wups::config {
     bool_item::on_input(const simple_pad_data& input)
     {
         // Allow toggling with left or right.
-        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_LEFT | WUPS_CONFIG_BUTTON_RIGHT))
+        if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_LEFT | WUPS_CONFIG_BUTTON_RIGHT))
             variable = !variable;
 
         return var_item::on_input(input);

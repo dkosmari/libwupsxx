@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -149,11 +149,11 @@ namespace wups::config {
 
             const std::size_t max_first = text.size() - max_width + left_glyph.size();
 
-            if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_LEFT))
+            if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_LEFT))
                 if (first > 0)
                     --first;
 
-            if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_RIGHT))
+            if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_RIGHT))
                 if (first < max_first)
                     ++first;
 

@@ -45,8 +45,6 @@ src_libwupsxx_a_SOURCES = 			\
 	include/wupsxx/var_item.hpp 		\
 	src/bool_item.cpp			\
 	src/button_combo.cpp			\
-	src/button_combo_vpad.cpp		\
-	src/button_combo_wpad.cpp		\
 	src/button_combo_item.cpp		\
 	src/button_item.cpp			\
 	src/category.cpp			\

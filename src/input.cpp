@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -36,7 +36,7 @@ namespace wups::config {
 
     namespace {
 
-        constexpr auto repeat_delay = 500ms;
+        constexpr auto long_enough = 500ms;
 
 
         constexpr array simple_button_list{
@@ -69,7 +69,7 @@ namespace wups::config {
         };
 
 
-        constexpr array wpad_button_list{
+        constexpr array core_button_list{
             WPAD_BUTTON_LEFT, WPAD_BUTTON_RIGHT,
             WPAD_BUTTON_UP, WPAD_BUTTON_DOWN,
             WPAD_BUTTON_PLUS, WPAD_BUTTON_HOME, WPAD_BUTTON_MINUS,
@@ -78,12 +78,12 @@ namespace wups::config {
         };
 
 
-        constexpr array wpad_nunchuk_button_list{
+        constexpr array nunchuk_button_list{
             WPAD_NUNCHUK_BUTTON_Z, WPAD_NUNCHUK_BUTTON_C,
         };
 
 
-        constexpr array wpad_classic_button_list{
+        constexpr array classic_button_list{
             WPAD_CLASSIC_BUTTON_UP, WPAD_CLASSIC_BUTTON_DOWN,
             WPAD_CLASSIC_BUTTON_LEFT, WPAD_CLASSIC_BUTTON_RIGHT,
             WPAD_CLASSIC_BUTTON_L, WPAD_CLASSIC_BUTTON_R,
@@ -94,7 +94,7 @@ namespace wups::config {
         };
 
 
-        constexpr array wpad_pro_button_list{
+        constexpr array pro_button_list{
             WPAD_PRO_BUTTON_UP, WPAD_PRO_BUTTON_DOWN,
             WPAD_PRO_BUTTON_LEFT, WPAD_PRO_BUTTON_RIGHT,
             WPAD_PRO_TRIGGER_L, WPAD_PRO_TRIGGER_R,
@@ -113,15 +113,15 @@ namespace wups::config {
     simple_pad_data::simple_pad_data(const WUPSConfigSimplePadData& base)
         noexcept :
         WUPSConfigSimplePadData{base},
-        buttons_repeat{0},
+        long_hold{0},
         now{steady_clock::now()}
     {
-        update_repeat();
+        update_long_hold();
     }
 
 
     void
-    simple_pad_data::update_repeat()
+    simple_pad_data::update_long_hold()
         noexcept
     {
         static array<time_point, simple_button_list.size()> pressed_moment;
@@ -131,9 +131,8 @@ namespace wups::config {
                 pressed_moment[idx] = now;
 
             if (buttons_h & button)
-                // if button idx was held long enough
-                if (now - pressed_moment[idx] >= repeat_delay)
-                    buttons_repeat |= button;
+                if (now - pressed_moment[idx] >= long_enough)
+                    long_hold |= button;
 
             if (buttons_r & button)
                 pressed_moment[idx] = {};
@@ -142,10 +141,10 @@ namespace wups::config {
 
 
     bool
-    simple_pad_data::pressed_or_repeated(std::uint32_t mask)
+    simple_pad_data::pressed_or_long_held(std::uint32_t mask)
         const noexcept
     {
-        return (buttons_d | buttons_repeat) & mask;
+        return (buttons_d | long_hold) & mask;
     }
 
 
@@ -155,34 +154,32 @@ namespace wups::config {
     complex_pad_data::complex_pad_data(const WUPSConfigComplexPadData& base)
         noexcept :
         WUPSConfigComplexPadData{base},
-        vpad_repeat{0},
-        kpad_core_repeat{},
-        kpad_ext_repeat{},
+        vpad_long_hold{0},
+        kpad_core_long_hold{},
+        kpad_ext_long_hold{},
         now{steady_clock::now()}
     {
-        update_repeat();
+        update_long_hold();
     }
 
 
     void
-    complex_pad_data::update_repeat()
+    complex_pad_data::update_long_hold()
         noexcept
     {
+        // First, handle VPAD
         static array<time_point, vpad_button_list.size()> pressed_time;
-
-        // first, handle VPad
         if (vpad.vpadError == VPAD_READ_SUCCESS) {
 
             for (auto [idx, button] : enumerate(vpad_button_list)) {
-                VPADStatus& status = vpad.data;
+                const VPADStatus& status = vpad.data;
 
                 if (status.trigger & button)
                     pressed_time[idx] = now;
 
                 if (status.hold & button)
-                    // if button idx was held long enough, flag it as being on repeat
-                    if (now - pressed_time[idx] >= repeat_delay)
-                        vpad_repeat |= button;
+                    if (now - pressed_time[idx] >= long_enough)
+                        vpad_long_hold |= button;
 
                 if (status.release & button)
                     pressed_time[idx] = {};
@@ -190,34 +187,32 @@ namespace wups::config {
 
         }
 
-
         // Now handle each wiimote
         for (unsigned w = 0; w < max_wiimotes; ++w)
             if (kpad.kpadError[w] == KPAD_ERROR_OK)
-                update_repeat_wpad(w);
+                update_long_hold_kpad(w);
 
     }
 
 
     void
-    complex_pad_data::update_repeat_wpad(unsigned w)
+    complex_pad_data::update_long_hold_kpad(unsigned w)
         noexcept
     {
-        using core_times = array<time_point, wpad_button_list.size()>;
+        using core_times = array<time_point, core_button_list.size()>;
         static array<core_times, max_wiimotes> pressed_time;
 
         const KPADStatus& status = kpad.data[w];
 
-        for (auto [idx, button] : enumerate(wpad_button_list)) {
+        for (auto [idx, button] : enumerate(core_button_list)) {
             auto& pressed = pressed_time[w][idx];
 
             if (status.trigger & button)
                 pressed = now;
 
             if (status.hold & button)
-                // if button idx was held long enough, flag it as being on repeat
-                if (now - pressed >= repeat_delay)
-                    kpad_core_repeat[w] |= button;
+                if (now - pressed >= long_enough)
+                    kpad_core_long_hold[w] |= button;
 
             if ((status.release & button) || !(status.hold & button))
                 pressed = {};
@@ -228,16 +223,16 @@ namespace wups::config {
 
         case WPAD_EXT_NUNCHUK:
         case WPAD_EXT_MPLUS_NUNCHUK:
-            update_repeat_nunchuk(w);
+            update_long_hold_nunchuk(w);
             break;
 
         case WPAD_EXT_CLASSIC:
         case WPAD_EXT_MPLUS_CLASSIC:
-            update_repeat_classic(w);
+            update_long_hold_classic(w);
             break;
 
         case WPAD_EXT_PRO_CONTROLLER:
-            update_repeat_pro(w);
+            update_long_hold_pro(w);
             break;
 
         } // switch (status.extensionType)
@@ -245,24 +240,23 @@ namespace wups::config {
 
 
     void
-    complex_pad_data::update_repeat_nunchuk(unsigned w)
+    complex_pad_data::update_long_hold_nunchuk(unsigned w)
         noexcept
     {
-        using nunchuk_times = array<time_point, wpad_nunchuk_button_list.size()>;
+        using nunchuk_times = array<time_point, nunchuk_button_list.size()>;
         static array<nunchuk_times, max_wiimotes> pressed_time;
 
         auto& status = kpad.data[w].nunchuk;
 
-        for (auto [idx, button] : enumerate(wpad_nunchuk_button_list)) {
+        for (auto [idx, button] : enumerate(nunchuk_button_list)) {
             auto& pressed = pressed_time[w][idx];
 
             if (status.trigger & button)
                 pressed = now;
 
             if (status.hold & button)
-                // if button idx was held long enough, flag it as being on repeat
-                if (now - pressed >= repeat_delay)
-                    kpad_ext_repeat[w] |= button;
+                if (now - pressed >= long_enough)
+                    kpad_ext_long_hold[w] |= button;
 
             if (status.release & button || !(status.hold & button))
                 pressed = {};
@@ -271,24 +265,23 @@ namespace wups::config {
 
 
     void
-    complex_pad_data::update_repeat_classic(unsigned w)
+    complex_pad_data::update_long_hold_classic(unsigned w)
         noexcept
     {
-        using classic_times = array<time_point, wpad_classic_button_list.size()>;
+        using classic_times = array<time_point, classic_button_list.size()>;
         static array<classic_times, max_wiimotes> pressed_time;
 
         auto& status = kpad.data[w].classic;
 
-        for (auto [idx, button] : enumerate(wpad_classic_button_list)) {
+        for (auto [idx, button] : enumerate(classic_button_list)) {
             auto& pressed = pressed_time[w][idx];
 
             if (status.trigger & button)
                 pressed = now;
 
             if (status.hold & button)
-                // if button idx was held long enough, flag it as being on repeat
-                if (now - pressed >= repeat_delay)
-                    kpad_ext_repeat[w] |= button;
+                if (now - pressed >= long_enough)
+                    kpad_ext_long_hold[w] |= button;
 
             if (status.release & button || !(status.hold & button))
                 pressed = {};
@@ -297,24 +290,23 @@ namespace wups::config {
 
 
     void
-    complex_pad_data::update_repeat_pro(unsigned w)
+    complex_pad_data::update_long_hold_pro(unsigned w)
         noexcept
     {
-        using pro_times = array<time_point, wpad_pro_button_list.size()>;
+        using pro_times = array<time_point, pro_button_list.size()>;
         static array<pro_times, max_wiimotes> pressed_time;
 
         auto& status = kpad.data[w].pro;
 
-        for (auto [idx, button] : enumerate(wpad_pro_button_list)) {
+        for (auto [idx, button] : enumerate(pro_button_list)) {
             auto& pressed = pressed_time[w][idx];
 
             if (status.trigger & button)
                 pressed = now;
 
             if (status.hold & button)
-                // if button idx was held long enough, flag it as being on repeat
-                if (now - pressed >= repeat_delay)
-                    kpad_ext_repeat[w] |= button;
+                if (now - pressed >= long_enough)
+                    kpad_ext_long_hold[w] |= button;
 
             if (status.release & button || !(status.hold & button))
                 pressed = {};

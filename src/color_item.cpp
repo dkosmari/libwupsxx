@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -169,23 +169,23 @@ namespace wups::config {
                 mode = mode_t::rgb;
         }
 
-        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_LEFT)) {
+        if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_LEFT)) {
             if (edit_idx > 0)
                 --edit_idx;
         }
 
-        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_RIGHT)) {
+        if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_RIGHT)) {
             if (edit_idx < max_edit_idx)
                 ++edit_idx;
         }
 
         auto& channel = variable[edit_idx];
 
-        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_UP))
+        if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_UP))
             if (channel < 0xff)
                 ++channel;
 
-        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_DOWN))
+        if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_DOWN))
             if (channel > 0)
                 --channel;
 

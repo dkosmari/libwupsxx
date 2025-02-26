@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -96,16 +96,16 @@ namespace wups::config {
     focus_status
     numeric_item<T>::on_input(const simple_pad_data& input)
     {
-        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_LEFT))
+        if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_LEFT))
             variable -= slow_increment;
 
-        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_RIGHT))
+        if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_RIGHT))
             variable += slow_increment;
 
-        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_L))
+        if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_L))
             variable -= fast_increment;
 
-        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_R))
+        if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_R))
             variable += fast_increment;
 
         variable = std::clamp(variable, min_value, max_value);

@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -265,10 +265,10 @@ namespace wups::config {
     focus_status
     file_item::on_input(const simple_pad_data& input)
     {
-        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_UP))
+        if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_UP))
             navigate_prev();
 
-        if (input.pressed_or_repeated(WUPS_CONFIG_BUTTON_DOWN))
+        if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_DOWN))
             navigate_next();
 
         if (input.buttons_d & WUPS_CONFIG_BUTTON_RIGHT)

@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -61,8 +61,8 @@ namespace wups::storage {
 
 
     template<>
-    std::expected<utils::button_combo, storage_error>
-    load<utils::button_combo>(const std::string& key);
+    std::expected<button_combo::combo, storage_error>
+    load<button_combo::combo>(const std::string& key);
 
 
 
@@ -94,7 +94,7 @@ namespace wups::storage {
 
 
     void
-    store(const std::string& key, const utils::button_combo& bc);
+    store(const std::string& key, const button_combo::combo& c);
 
 
 

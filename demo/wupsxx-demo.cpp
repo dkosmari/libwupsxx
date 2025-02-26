@@ -20,6 +20,7 @@
 #include <whb/log_udp.h>
 
 #include <wups.h>
+#include <buttoncombo/api.h>
 #include <notifications/notifications.h>
 
 #include <wupsxx/bool_item.hpp>
@@ -69,10 +70,7 @@ using wups::utils::color;
 
 
 // Used to store button combo shortcuts.
-using wups::utils::button_combo;
-
-namespace vpad = wups::utils::vpad;
-namespace wpad = wups::utils::wpad;
+using wups::button_combo::combo;
 
 
 namespace cfg {
@@ -98,9 +96,9 @@ namespace cfg {
         path some_file = "fs:/vol/external01";
         path plugin_file = "fs:/vol/external01/wiiu/environments/aroma/plugins";
 
-        button_combo shortcut1 = wpad::button_set{{WPAD_BUTTON_DOWN, WPAD_BUTTON_1},
-                                                  {WPAD_NUNCHUK_BUTTON_C}};
-        button_combo shortcut2 = vpad::button_set{VPAD_BUTTON_B, VPAD_BUTTON_Y};
+        combo shortcut1 = combo::from_wpad_nunchuk(WPAD_BUTTON_DOWN | WPAD_BUTTON_1,
+                                                   WPAD_NUNCHUK_BUTTON_C);
+        combo shortcut2 = combo::from_vpad(VPAD_BUTTON_B |VPAD_BUTTON_Y);
 
     } // namespace cfg::defaults
 
@@ -124,8 +122,8 @@ namespace cfg {
     path some_file   = defaults::some_file;
     path plugin_file = defaults::plugin_file;
 
-    button_combo shortcut1 = defaults::shortcut1;
-    button_combo shortcut2 = defaults::shortcut2;
+    combo shortcut1 = defaults::shortcut1;
+    combo shortcut2 = defaults::shortcut2;
 
 
     namespace foo {
@@ -139,7 +137,6 @@ namespace cfg {
         }
 
     }
-
 
 
     void
@@ -194,8 +191,7 @@ namespace cfg {
 #undef LOAD
     }
 
-}
-
+} // namespace cfg
 
 
 // Example of a button item that blocks when activated, and finishes immediately.
@@ -297,6 +293,58 @@ struct wait_5_seconds_item : wups::config::button_item {
 };
 
 
+ButtonComboModule_ComboHandle shortcut1_handle;
+ButtonComboModule_ComboHandle shortcut2_handle;
+
+
+void
+activate_shortcut2(ButtonComboModule_ControllerTypes triggeredBy,
+                   ButtonComboModule_ComboHandle handle);
+
+
+void
+setup_shortcuts()
+{
+    using wups::button_combo::create;
+
+
+    auto shortcut1_callback = [](ButtonComboModule_ControllerTypes,
+                                 ButtonComboModule_ComboHandle)
+    {
+        logger::printf("activated shortcut1\n");
+        NotificationModule_AddInfoNotification("activated shortcut1");
+    };
+
+    auto [handle1, conflict1] = create(PLUGIN_NAME " - Shortcut 1",
+                                       cfg::shortcut1,
+                                       std::move(shortcut1_callback));
+    shortcut1_handle = handle1;
+    if (conflict1) {
+        logger::printf("Conflict in shortcut1\n");
+        NotificationModule_AddErrorNotification("Conflict in shortcut1");
+    }
+
+
+    auto [handle2, conflict2] = create(PLUGIN_NAME " - Shortcut 2",
+                                       cfg::shortcut2,
+                                       activate_shortcut2);
+    shortcut2_handle = handle2;
+    if (conflict2) {
+        logger::printf("Conflict in shortcut2\n");
+        NotificationModule_AddErrorNotification("Conflict in shortcut2");
+    }
+
+}
+
+
+void
+clear_shortcuts()
+{
+    wups::button_combo::destroy(shortcut1_handle);
+    wups::button_combo::destroy(shortcut2_handle);
+}
+
+
 void
 menu_open(wups::config::category& root)
 {
@@ -384,11 +432,13 @@ menu_open(wups::config::category& root)
                                {".wps"}));
 
 
-    root.add(button_combo_item::create("Shortcut1",
+    root.add(button_combo_item::create("Shortcut 1",
+                                       shortcut1_handle,
                                        cfg::shortcut1,
                                        cfg::defaults::shortcut1));
 
-    root.add(button_combo_item::create("Shortcut2",
+    root.add(button_combo_item::create("Shortcut 2",
+                                       shortcut2_handle,
                                        cfg::shortcut2,
                                        cfg::defaults::shortcut2));
 
@@ -448,10 +498,12 @@ INITIALIZE_PLUGIN()
     wups::logger::guard guard_{PLUGIN_NAME};
 
     NotificationModule_InitLibrary();
+    ButtonComboModule_InitLibrary();
 
     try {
         wups::config::init(PLUGIN_NAME, menu_open, menu_close);
         cfg::load();
+        setup_shortcuts();
     }
     catch (std::exception& e) {
         logger::printf("Error initializing: %s\n", e.what());
@@ -461,6 +513,8 @@ INITIALIZE_PLUGIN()
 
 DEINITIALIZE_PLUGIN()
 {
+    clear_shortcuts();
+    ButtonComboModule_DeInitLibrary();
     NotificationModule_DeInitLibrary();
 }
 
@@ -478,61 +532,9 @@ ON_APPLICATION_ENDS()
 
 
 void
-activate_shortcut1()
-{
-    logger::printf("activated shortcut1\n");
-    NotificationModule_AddInfoNotification("activated shortcut1");
-}
-
-
-void
-activate_shortcut2()
+activate_shortcut2(ButtonComboModule_ControllerTypes,
+                   ButtonComboModule_ComboHandle)
 {
     logger::printf("activated shortcut2\n");
     NotificationModule_AddInfoNotification("activated shortcut2");
 }
-
-
-DECL_FUNCTION(int32_t,
-              VPADRead,
-              VPADChan channel,
-              VPADStatus* status,
-              uint32_t count,
-              VPADReadError* error)
-{
-    auto result = real_VPADRead(channel, status, count, error);
-    if (result <= 0)
-        return result;
-
-    // Note: when proc mode is loose, all button samples are identical to the most recent
-    const int32_t num_samples = VPADGetButtonProcMode(channel) ? result : 1;
-    for (int32_t idx = num_samples - 1; idx >= 0; --idx) {
-        if (wups::utils::vpad::update(channel, status[idx])) {
-            if (wups::utils::vpad::triggered(channel, cfg::shortcut1))
-                activate_shortcut1();
-            if (wups::utils::vpad::triggered(channel, cfg::shortcut2))
-                activate_shortcut2();
-        }
-    }
-
-    return result;
-}
-
-WUPS_MUST_REPLACE(VPADRead, WUPS_LOADER_LIBRARY_VPAD, VPADRead);
-
-
-DECL_FUNCTION(void,
-              WPADRead,
-              WPADChan channel,
-              WPADStatus* status)
-{
-    real_WPADRead(channel, status);
-    if (wups::utils::wpad::update(channel, status)) {
-        if (wups::utils::wpad::triggered(channel, cfg::shortcut1))
-            activate_shortcut1();
-        if (wups::utils::wpad::triggered(channel, cfg::shortcut2))
-            activate_shortcut2();
-    }
-}
-
-WUPS_MUST_REPLACE(WPADRead, WUPS_LOADER_LIBRARY_PADSCORE, WPADRead);

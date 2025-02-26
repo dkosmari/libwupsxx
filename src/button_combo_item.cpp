@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -10,35 +10,60 @@
 
 // #include <whb/log.h> // DEBUG
 
+#include <buttoncombo/api.h>
+
 #include "wupsxx/button_combo_item.hpp"
 
 #include "wupsxx/cafe_glyphs.h"
 
+#include "wupsxx/logger.hpp"
 #include "utils.hpp"
-
-
-using wups::utils::button_combo;
-namespace vpad = wups::utils::vpad;
-namespace wpad = wups::utils::wpad;
 
 
 namespace wups::config {
 
+    namespace {
+
+        void
+        dummy_callback(button_combo::ctr_set, button_combo::handle, void*)
+        {}
+
+    }
+
 
     button_combo_item::button_combo_item(const std::string& label,
-                                         button_combo& variable,
-                                         const button_combo& default_value) :
+                                         button_combo::handle combo_handle_,
+                                         button_combo::combo& variable,
+                                         const button_combo::combo& default_value) :
         var_item{label, variable, default_value},
-        state{state_t::waiting}
-    {}
+        state{state_t::waiting},
+        combo_handle{combo_handle_}
+    {
+        ButtonComboModule_GetButtonComboCallback(combo_handle, &old_callback);
+        ButtonComboModule_CallbackOptions new_callback{
+            .callback = dummy_callback,
+            .context = nullptr
+        };
+        ButtonComboModule_UpdateButtonComboCallback(combo_handle, &new_callback);
+
+        if (button_combo::is_conflicted(combo_handle))
+            message = "Conflict!";
+    }
+
+
+    button_combo_item::~button_combo_item()
+    {
+        ButtonComboModule_UpdateButtonComboCallback(combo_handle, &old_callback);
+    }
 
 
     std::unique_ptr<button_combo_item>
     button_combo_item::create(const std::string& label,
-                              button_combo& variable,
-                              const button_combo& default_value)
+                              button_combo::handle combo_handle,
+                              button_combo::combo& variable,
+                              const button_combo::combo& default_value)
     {
-        return make_unique<button_combo_item>(label, variable, default_value);
+        return make_unique<button_combo_item>(label, combo_handle, variable, default_value);
     }
 
 
@@ -46,7 +71,14 @@ namespace wups::config {
     button_combo_item::get_display(char* buf, std::size_t size)
         const
     {
-        std::string str = to_glyph(variable);
+        std::string str;
+        if (!variable.buttons)
+            str = "(Disabled: no combo set)";
+        else
+            str = to_glyph(variable);
+
+        if (!message.empty())
+            str += " (" + message + ")";
         std::snprintf(buf, size, "%s", str.c_str());
     }
 
@@ -74,55 +106,23 @@ namespace wups::config {
     }
 
 
-    namespace {
-
-        // Returns true if an extension has no button set
-        struct wpad_ext_buttons_is_clear_visitor {
-            bool operator ()(std::monostate) const
-            { return true; }
-
-            bool operator ()(const wpad::nunchuk::button_set& bs) const
-            { return bs.buttons == 0; }
-
-            bool operator ()(const wpad::classic::button_set& bs) const
-            { return bs.buttons == 0; }
-
-            bool operator ()(const wpad::pro::button_set& bs) const
-            { return bs.buttons == 0; }
-        };
-
-    } // namespace
-
-
     void
     button_combo_item::on_focus_changed()
     {
         var_item::on_focus_changed();
 
+        // Just received focus, enter "waiting" state.
         if (has_focus()) {
-            // disable TV Remote while we read button combos
-            VPADSetTVMenuInvalid(VPAD_CHAN_0, true);
+            // clear combo
             variable = {};
+            button_combo::update(combo_handle, variable);
             state = state_t::waiting;
         } else {
-            // enable TV Remote when we lose focus
-            VPADSetTVMenuInvalid(VPAD_CHAN_0, false);
-
-            if (auto* combo = get_if<vpad::button_set>(&variable)) {
-                // if the combo is empty, set variable back to monostate
-                if (combo->buttons == 0)
-                    variable = {};
-            }
-
-            if (auto* combo = get_if<wpad::button_set>(&variable)) {
-                // if no ext button was used, reset ext back to monostate
-                if (visit(wpad_ext_buttons_is_clear_visitor{},
-                          combo->ext))
-                    combo->ext = {};
-                // if core combo is empty and no extension, set variable back to monostate
-                if (combo->core.buttons == 0 && holds_alternative<std::monostate>(combo->ext))
-                    variable = {};
-            }
+            // Just lost focus, now we check for conflicts
+            if (button_combo::update(combo_handle, variable))
+                message = "Conflict!";
+            else
+                message = "";
         }
     }
 
@@ -144,7 +144,7 @@ namespace wups::config {
             return focus_status::lose;
         }
 
-        // let var_item class handle confirm/cancel with A/B
+        // Let the `var_item` class handle confirm/cancel with A/B
         return var_item::on_input(input);
     }
 
@@ -155,94 +155,69 @@ namespace wups::config {
         if (state != state_t::waiting && state != state_t::reading)
             return focus_status::keep;
 
-        unsigned total_held = 0;
+        button_combo::combo new_value;
+        bool any_button_down = false;
 
         if (input.vpad.vpadError == VPAD_READ_SUCCESS) {
             auto& status = input.vpad.data;
             if (status.trigger && state == state_t::waiting)
                 state = state_t::reading;
             if (status.hold) {
-                ++total_held;
-                if (input.vpad_repeat) {
-                    auto& combo = utils::ensure<vpad::button_set>(variable);
-                    combo.buttons |= input.vpad_repeat;
-                }
+                any_button_down = true;
+                new_value = button_combo::combo::from_vpad(input.vpad_long_hold);
             }
         }
 
-
         for (unsigned w = 0; w < 7; ++w) {
-            // if kpad[w] is valid
             if (input.kpad.kpadError[w] == KPAD_ERROR_OK) {
 
                 auto& status = input.kpad.data[w];
-                auto& core_repeat = input.kpad_core_repeat[w];
-                auto& ext_repeat = input.kpad_ext_repeat[w];
+                auto& core_long_hold = input.kpad_core_long_hold[w];
+                auto& ext_long_hold = input.kpad_ext_long_hold[w];
 
-                // Handle core buttons here, it's common to all extensions
                 if (status.trigger && state == state_t::waiting)
                     state = state_t::reading;
-                if (status.hold) {
-                    ++total_held;
-                    if (core_repeat) {
-                        auto& combo = utils::ensure<wpad::button_set>(variable);
-                        combo.core.buttons |= core_repeat;
-                    }
-                }
 
                 switch (status.extensionType) {
 
-                case WPAD_EXT_CORE:
-                case WPAD_EXT_MPLUS:
-                    if (core_repeat) {
-                        // user is trying to set combo from wiimote with no ext
-                        auto& combo = utils::ensure<wpad::button_set>(variable);
-                        combo.ext = {}; // clear the extension in the combo
-                    }
-                    break;
-
-                case WPAD_EXT_NUNCHUK:
-                case WPAD_EXT_MPLUS_NUNCHUK:
-                    if (status.nunchuk.trigger && state == state_t::waiting)
-                        state = state_t::reading;
-                    if (status.nunchuk.hold) {
-                        ++total_held;
-                        if (ext_repeat) {
-                            auto& combo = utils::ensure<wpad::button_set>(variable);
-                            auto& xcombo = utils::ensure<wpad::nunchuk::button_set>(combo.ext);
-                            xcombo.buttons |= ext_repeat;
+                    case WPAD_EXT_CORE:
+                    case WPAD_EXT_MPLUS:
+                        if (status.hold) {
+                            any_button_down = true;
+                            new_value = button_combo::combo::from_wpad_core(core_long_hold);
                         }
-                    }
-                    break;
+                        break;
 
-                case WPAD_EXT_CLASSIC:
-                case WPAD_EXT_MPLUS_CLASSIC:
-                    if (status.classic.trigger && state == state_t::waiting)
-                        state = state_t::reading;
-                    if (status.classic.hold) {
-                        ++total_held;
-                        if (ext_repeat) {
-                            auto& combo = utils::ensure<wpad::button_set>(variable);
-                            auto& xcombo = utils::ensure<wpad::classic::button_set>(combo.ext);
-                            xcombo.buttons |= ext_repeat;
+                    case WPAD_EXT_NUNCHUK:
+                    case WPAD_EXT_MPLUS_NUNCHUK:
+                        if (status.nunchuk.trigger && state == state_t::waiting)
+                            state = state_t::reading;
+                        if (status.hold || status.nunchuk.hold) {
+                            any_button_down = true;
+                            new_value = button_combo::combo::from_wpad_nunchuk(core_long_hold,
+                                                                               ext_long_hold);
                         }
-                    }
-                    break;
+                        break;
 
-                case WPAD_EXT_PRO_CONTROLLER:
-                    if (status.pro.trigger && state == state_t::waiting)
-                        state = state_t::reading;
-                    if (status.pro.hold) {
-                        ++total_held;
-                        if (ext_repeat) {
-                            auto& combo = utils::ensure<wpad::button_set>(variable);
-                            auto& xcombo = utils::ensure<wpad::pro::button_set>(combo.ext);
-                            xcombo.buttons |= ext_repeat;
-                            // Note: core buttons are not reported, so clear them out
-                            combo.core.buttons = 0;
+                    case WPAD_EXT_CLASSIC:
+                    case WPAD_EXT_MPLUS_CLASSIC:
+                        if (status.classic.trigger && state == state_t::waiting)
+                            state = state_t::reading;
+                        if (status.hold || status.classic.hold) {
+                            any_button_down = true;
+                            new_value = button_combo::combo::from_wpad_classic(core_long_hold,
+                                                                               ext_long_hold);
                         }
-                    }
-                    break;
+                        break;
+
+                    case WPAD_EXT_PRO_CONTROLLER:
+                        if (status.pro.trigger && state == state_t::waiting)
+                            state = state_t::reading;
+                        if (status.pro.hold) {
+                            any_button_down = true;
+                            new_value = button_combo::combo::from_wpad_pro(ext_long_hold);
+                        }
+                        break;
 
                 } // switch (status.extensionType)
 
@@ -250,15 +225,24 @@ namespace wups::config {
 
         } // for each wiimote
 
-        if (total_held == 0 && state == state_t::reading) {
-            // user released all buttons after entering reading mode
+
+        if (new_value.buttons) {
+            // If input is still coming from the same controller, just merge the buttons...
+            if (variable.controllers == new_value.controllers)
+                variable.buttons |= new_value.buttons;
+            else // ... otherwise replace it.
+                variable = new_value;
+        }
+
+        if (!any_button_down && state == state_t::reading) {
+            // After all buttons were released while in `reading` state, enter
+            // `confirming` state and switch back to simple input.
             state = state_t::confirming;
-            return focus_status::change_input; // use simple input now
+            return focus_status::change_input;
         }
 
         return focus_status::keep;
     }
-
 
 
 } // wups::config

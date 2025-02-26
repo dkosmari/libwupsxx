@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -12,13 +12,14 @@
 #include <memory>
 
 #include "button_combo.hpp"
+
 #include "var_item.hpp"
 
 
 namespace wups::config {
 
 
-    class button_combo_item : public var_item<utils::button_combo> {
+    class button_combo_item : public var_item<button_combo::combo> {
 
         enum class state_t {
             waiting,
@@ -28,17 +29,26 @@ namespace wups::config {
 
         state_t state;
 
+        button_combo::handle combo_handle{};
+        ButtonComboModule_CallbackOptions old_callback{};
+
+        std::string message;
+
     public:
 
         button_combo_item(const std::string& label,
-                          utils::button_combo& variable,
-                          const utils::button_combo& default_value = {});
+                          button_combo::handle combo_handle,
+                          button_combo::combo& variable,
+                          const button_combo::combo& default_value = {});
+
+        virtual ~button_combo_item();
 
         static
         std::unique_ptr<button_combo_item>
         create(const std::string& label,
-               utils::button_combo& variable,
-               const utils::button_combo& default_value = {});
+               button_combo::handle combo_handle,
+               button_combo::combo& variable,
+               const button_combo::combo& default_value = {});
 
 
         virtual void get_display(char* buf, std::size_t size) const override;
