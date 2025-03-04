@@ -26,7 +26,7 @@ using std::views::enumerate;
 using namespace std::literals;
 
 
-namespace wups::config {
+namespace wups {
 
 
     static_assert(complex_pad_data::max_wiimotes
@@ -314,4 +314,4 @@ namespace wups::config {
     }
 
 
-} // namespace wups::config
+} // namespace wups

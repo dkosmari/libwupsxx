@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -12,7 +12,7 @@
 #include "wupsxx/color.hpp"
 
 
-namespace wups::utils {
+namespace wups {
 
     color::color(const std::string& str)
     {
@@ -77,4 +77,4 @@ namespace wups::utils {
     }
 
 
-} // namespace wups::utils
+} // namespace wups

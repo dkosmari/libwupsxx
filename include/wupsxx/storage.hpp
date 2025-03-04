@@ -11,6 +11,7 @@
 
 #include <expected>
 #include <filesystem>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -19,10 +20,17 @@
 #include "button_combo.hpp"
 #include "color.hpp"
 #include "duration.hpp"
-#include "storage_error.hpp"
 
 
-namespace wups::storage {
+namespace wups {
+
+
+    struct storage_error : std::runtime_error {
+        WUPSStorageError code;
+
+        storage_error(WUPSStorageError status, const std::string& msg);
+    };
+
 
     template<typename T>
     std::expected<T, storage_error>
@@ -32,9 +40,8 @@ namespace wups::storage {
         auto status = WUPSStorageAPI::Get(key,
                                           value,
                                           WUPSStorageAPI::GetOptions::RESIZE_EXISTING_BUFFER);
-        if (status != WUPS_STORAGE_ERROR_SUCCESS)
-            return std::unexpected{storage_error{"error loading key \"" + key + "\"",
-                                                 status}};
+        if (status)
+            return std::unexpected{storage_error{status, "error loading key \"" + key + "\""}};
         return value;
     }
 
@@ -51,8 +58,8 @@ namespace wups::storage {
 
 
     template<>
-    std::expected<utils::color, storage_error>
-    load<utils::color>(const std::string& key);
+    std::expected<color, storage_error>
+    load<color>(const std::string& key);
 
 
     template<>
@@ -71,9 +78,8 @@ namespace wups::storage {
     store(const std::string& key, const T& value)
     {
         auto status = WUPSStorageAPI::Store(key, value);
-        if (status != WUPS_STORAGE_ERROR_SUCCESS)
-            throw storage_error{"error storing key \"" + key + "\"",
-                                status};
+        if (status)
+            throw storage_error{status, "error storing key \"" + key + "\""};
     }
 
 
@@ -86,7 +92,7 @@ namespace wups::storage {
 
 
     void
-    store(const std::string& key, const utils::color& c);
+    store(const std::string& key, const color& c);
 
 
     void
@@ -144,6 +150,6 @@ namespace wups::storage {
 
     void reload();
 
-} // namespace wups::storage
+} // namespace wups
 
 #endif

@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -10,7 +10,7 @@
 
 #include "numeric_item_impl.hpp"
 
-namespace wups::config {
+namespace wups {
 
     // Here we instantiate numeric_item<> for useful types.
 
@@ -22,4 +22,4 @@ namespace wups::config {
 
     template class numeric_item<std::chrono::hours>;
 
-} // namespace wups::config
+} // namespace wups

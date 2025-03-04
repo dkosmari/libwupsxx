@@ -23,6 +23,7 @@
 
 #include <buttoncombo/defines.h>
 
+
 namespace wups::button_combo {
 
     struct error : std::runtime_error {

@@ -22,7 +22,7 @@ namespace {
 }
 
 
-namespace wups::config {
+namespace wups {
 
     text_item::text_item(const std::string& label,
                          const std::string& text,
@@ -172,4 +172,4 @@ namespace wups::config {
             return focus_status::lose; // should not be reachable
     }
 
-} // namespace wups::config
+} // namespace wups

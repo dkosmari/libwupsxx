@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -14,7 +14,7 @@
 #include <string>
 
 
-namespace wups::utils {
+namespace wups {
 
     struct color {
 
@@ -90,8 +90,11 @@ namespace wups::utils {
     };
 
 
-    std::string to_string(color c, bool with_alpha = true, bool uppercase = true);
+    std::string
+    to_string(color c,
+              bool with_alpha = true,
+              bool uppercase = true);
 
-} // namespace wups::utils
+} // namespace wups
 
 #endif

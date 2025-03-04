@@ -20,16 +20,12 @@ using std::array;
 using std::views::enumerate;
 using std::optional;
 
-using wups::utils::color;
 
+namespace wups {
 
-namespace wups::config {
-
-    color_item::color_item(const std::string& label,
-                           color& variable,
-                           color default_value,
+    color_item::color_item(option<color>& opt,
                            bool has_alpha) :
-        var_item{label, variable, default_value},
+        var_item{opt},
         has_alpha{has_alpha},
         mode{mode_t::rgb},
         edit_idx{0}
@@ -37,14 +33,10 @@ namespace wups::config {
 
 
     std::unique_ptr<color_item>
-    color_item::create(const std::string& label,
-                       color& variable,
-                       color default_value,
+    color_item::create(option<color>& opt,
                        bool has_alpha)
     {
-        return std::make_unique<color_item>(label,
-                                            variable, default_value,
-                                            has_alpha);
+        return std::make_unique<color_item>(opt, has_alpha);
     }
 
 

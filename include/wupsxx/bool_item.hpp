@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -14,7 +14,7 @@
 #include "var_item.hpp"
 
 
-namespace wups::config {
+namespace wups {
 
     class bool_item : public var_item<bool> {
 
@@ -23,17 +23,13 @@ namespace wups::config {
 
     public:
 
-        bool_item(const std::string& label,
-                  bool& variable,
-                  bool default_value,
+        bool_item(option<bool>& opt,
                   const std::string& true_str = "true",
                   const std::string& false_str = "false");
 
         static
         std::unique_ptr<bool_item>
-        create(const std::string& label,
-               bool& variable,
-               bool default_value,
+        create(option<bool>& opt,
                const std::string& true_str = "true",
                const std::string& false_str = "false");
 
@@ -46,6 +42,6 @@ namespace wups::config {
 
     };
 
-} // namespace wups::config
+} // namespace wups
 
 #endif

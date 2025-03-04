@@ -12,9 +12,10 @@
 #include <optional>
 
 #include "item.hpp"
+#include "option.hpp"
 
 
-namespace wups::config {
+namespace wups {
 
     // Base class for items that map to a variable.
 
@@ -28,12 +29,10 @@ namespace wups::config {
         const T default_value;
 
 
-        var_item(const std::string& label,
-                 T& variable,
-                 T default_value) :
-            item{label},
-            variable(variable),
-            default_value{default_value}
+        var_item(option<T>& opt) :
+            item{opt.label},
+            variable(opt.value),
+            default_value{opt.default_value}
         {}
 
 
@@ -113,7 +112,7 @@ namespace wups::config {
 
     };
 
-} // namespace wups::config
+} // namespace wups
 
 
 #endif

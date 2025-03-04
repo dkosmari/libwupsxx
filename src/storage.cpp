@@ -11,17 +11,25 @@
 #include "wupsxx/storage.hpp"
 
 
-namespace wups::storage {
+using namespace std::literals;
+
+
+namespace wups {
+
+    storage_error::storage_error(WUPSStorageError status, const std::string& msg) :
+        std::runtime_error{msg + ": "s + std::string(WUPSStorageAPI::GetStatusStr(status))},
+        code{status}
+    {}
 
 
     template<>
-    std::expected<utils::color, storage_error>
-    load<utils::color>(const std::string& key)
+    std::expected<color, storage_error>
+    load<color>(const std::string& key)
     {
         auto res = load<std::string>(key);
         if (!res)
             return std::unexpected{res.error()};
-        return utils::color{*res};
+        return color{*res};
     }
 
 
@@ -48,7 +56,7 @@ namespace wups::storage {
 
 
     void
-    store(const std::string& key, const utils::color& c)
+    store(const std::string& key, const color& c)
     {
         store<std::string>(key, to_string(c));
     }
@@ -72,8 +80,8 @@ namespace wups::storage {
     save()
     {
         auto status = WUPSStorageAPI::SaveStorage();
-        if (status != WUPS_STORAGE_ERROR_SUCCESS)
-            throw storage_error{"error saving storage", status};
+        if (status)
+            throw storage_error{status, "error saving storage"};
     }
 
 
@@ -81,9 +89,8 @@ namespace wups::storage {
     reload()
     {
         auto status = WUPSStorageAPI::ForceReloadStorage();
-        if (status != WUPS_STORAGE_ERROR_SUCCESS)
-            throw storage_error{"error reloading storage", status};
+        if (status)
+            throw storage_error{status, "error reloading storage"};
     }
 
-
-} // namespace wups::storage
+} // namespace wups

@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -14,7 +14,7 @@
 #include "numeric_item.hpp"
 
 
-namespace wups::config {
+namespace wups {
 
     using milliseconds_item = numeric_item<std::chrono::milliseconds>;
 
@@ -24,6 +24,6 @@ namespace wups::config {
 
     using hours_item = numeric_item<std::chrono::hours>;
 
-} // namespace wups::config
+} // namespace wups
 
 #endif

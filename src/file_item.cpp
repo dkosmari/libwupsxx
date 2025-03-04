@@ -18,8 +18,7 @@
 #include "wupsxx/cafe_glyphs.h"
 
 
-namespace wups::config {
-
+namespace wups {
 
     namespace {
 
@@ -150,12 +149,10 @@ namespace wups::config {
     } // namespace
 
 
-    file_item::file_item(const std::string& label,
-                         std::filesystem::path& variable,
-                         const std::filesystem::path& default_value,
+    file_item::file_item(option<std::filesystem::path>& opt,
                          std::size_t max_width,
                          const std::vector<std::string>& extensions) :
-        var_item{label, variable, default_value},
+        var_item{opt},
         max_width{max_width},
         extensions{extensions},
         current_idx{0},
@@ -171,14 +168,11 @@ namespace wups::config {
 
 
     std::unique_ptr<file_item>
-    file_item::create(const std::string& label,
-                      std::filesystem::path& variable,
-                      const std::filesystem::path& default_value,
+    file_item::create(option<std::filesystem::path>& opt,
                       std::size_t max_width,
                       const std::vector<std::string>& extensions)
     {
-        return std::make_unique<file_item>(label, variable, default_value,
-                                           max_width, extensions);
+        return std::make_unique<file_item>(opt, max_width, extensions);
     }
 
 
@@ -369,4 +363,4 @@ namespace wups::config {
                             variable.parent_path());
     }
 
-} // namespace wups::config
+} // namespace wups

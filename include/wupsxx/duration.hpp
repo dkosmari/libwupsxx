@@ -37,7 +37,7 @@ namespace wups::concepts {
 } // namespace wups::concepts
 
 
-namespace wups::utils {
+namespace wups {
 
     // make wups::utils::duration<> an alias to std::chrono::duration<>
     template<typename R, typename P>
@@ -47,7 +47,7 @@ namespace wups::utils {
     template<concepts::duration D>
     std::string to_string(D d);
 
-} // namespace wups::utils
+} // namespace wups
 
 
 #endif

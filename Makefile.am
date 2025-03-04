@@ -29,7 +29,7 @@ src_libwupsxx_a_SOURCES = 			\
 	include/wupsxx/category.hpp		\
 	include/wupsxx/color.hpp		\
 	include/wupsxx/color_item.hpp		\
-	include/wupsxx/config_error.hpp		\
+	include/wupsxx/error.hpp		\
 	include/wupsxx/duration.hpp		\
 	include/wupsxx/duration_items.hpp	\
 	include/wupsxx/file_item.hpp		\
@@ -39,8 +39,8 @@ src_libwupsxx_a_SOURCES = 			\
 	include/wupsxx/item.hpp			\
 	include/wupsxx/logger.hpp		\
 	include/wupsxx/numeric_item.hpp		\
+	include/wupsxx/option.hpp		\
 	include/wupsxx/storage.hpp		\
-	include/wupsxx/storage_error.hpp	\
 	include/wupsxx/text_item.hpp		\
 	include/wupsxx/var_item.hpp 		\
 	src/bool_item.cpp			\
@@ -50,7 +50,7 @@ src_libwupsxx_a_SOURCES = 			\
 	src/category.cpp			\
 	src/color.cpp				\
 	src/color_item.cpp			\
-	src/config_error.cpp			\
+	src/error.cpp				\
 	src/duration.cpp			\
 	src/duration_items.cpp			\
 	src/file_item.cpp			\
@@ -61,7 +61,6 @@ src_libwupsxx_a_SOURCES = 			\
 	src/logger.cpp				\
 	src/numeric_item_impl.hpp		\
 	src/storage.cpp				\
-	src/storage_error.cpp			\
 	src/text_item.cpp			\
 	src/utils.cpp src/utils.hpp
 

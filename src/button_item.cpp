@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -13,7 +13,7 @@
 #include "wupsxx/cafe_glyphs.h"
 
 
-namespace wups::config {
+namespace wups {
 
     button_item::button_item(const std::string& label) :
         item{label},
@@ -105,4 +105,4 @@ namespace wups::config {
     button_item::on_cancel()
     {}
 
-} // namespace wups::config
+} // namespace wups

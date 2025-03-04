@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -14,14 +14,14 @@
 
 #include "wupsxx/item.hpp"
 
-#include "wupsxx/config_error.hpp"
+#include "wupsxx/error.hpp"
 
 
 #define REPORT_ERROR(e) \
     WHBLogPrintf("[libwupsxx] error in %s(): %s\n", __func__, e.what())
 
 
-namespace wups::config {
+namespace wups {
 
     // Constant used by both input functions:
     // How long a button must be held until it's in a "repeat" state.
@@ -227,8 +227,8 @@ namespace wups::config {
         };
 
         auto status = WUPSConfigAPI_Item_Create(options, &handle);
-        if (status != WUPSCONFIG_API_RESULT_SUCCESS)
-            throw config_error{status, "could not create config item \"" + label + "\""};
+        if (status)
+            throw error{status, "could not create config item \"" + label + "\""};
     }
 
 
@@ -372,4 +372,4 @@ namespace wups::config {
     }
 
 
-} // namespace wups::config
+} // namespace wups

@@ -12,6 +12,7 @@
 #include <string>
 #include <thread>
 #include <utility>              // move()
+#include <vector>
 
 #include <padscore/wpad.h>
 #include <vpad/input.h>
@@ -66,7 +67,7 @@ namespace logger = wups::logger;
 
 
 // This type has .r, .g, .b, .a members, and a to_string() function.
-using wups::utils::color;
+using wups::color;
 
 
 // Used to store button combo shortcuts.
@@ -75,55 +76,57 @@ using wups::button_combo::combo;
 
 namespace cfg {
 
-    namespace defaults {
 
-        bool bool_option_1 = true;
-        bool bool_option_2 = false;
+    WUPSXX_OPTION(bool, bool_option_1,
+                  true,
+                  "Boolean option 1");
+    WUPSXX_OPTION(bool, bool_option_2,
+                  false,
+                  "Boolean option 2");
 
-        color foreground = {0xff, 0x40, 0x80};
-        color background = {0xaa, 0xbb, 0xcc, 0xdd};
+    WUPSXX_OPTION(color, fg_color,
+                  color(0xff, 0x40, 0x80),
+                  "Foreground color");
+    WUPSXX_OPTION(color, bg_color,
+                  color(0xaa, 0xbb, 0xcc),
+                  "Background color");
 
-        milliseconds ms_value = 10ms;
-        seconds s_value = 10s;
-        minutes min_value = 10min;
-        hours h_value = 10h;
+    WUPSXX_OPTION(milliseconds, ms_value,
+                  10ms,
+                  "Duration (ms)");
+    WUPSXX_OPTION(seconds, s_value,
+                  10s,
+                  "Duration (s)");
+    WUPSXX_OPTION(minutes, min_value,
+                  10min,
+                  "Duration (min)");
+    WUPSXX_OPTION(hours, h_value,
+                  10h,
+                  "Duration (h)");
 
-        int int_value_1 = 5;
-        int int_value_2 = 0;
+    WUPSXX_OPTION(int, int_value_1,
+                  5,
+                  "Integer option 1");
+    WUPSXX_OPTION(int, int_value_2,
+                  0,
+                  "Integer option 2");
 
-        string text = "The quick brown fox jumps over the lazy dog.";
+    WUPSXX_OPTION(path, some_file,
+                  "fs:/vol/external01",
+                  "Some file");
+    WUPSXX_OPTION(path, plugin_file,
+                  "fs:/vol/external01/wiiu/environments/aroma/plugins",
+                  "Plugin file");
 
-        path some_file = "fs:/vol/external01";
-        path plugin_file = "fs:/vol/external01/wiiu/environments/aroma/plugins";
+    WUPSXX_OPTION(combo, shortcut1,
+                  combo::from_wpad_nunchuk(WPAD_BUTTON_DOWN | WPAD_BUTTON_1,
+                                           WPAD_NUNCHUK_BUTTON_C),
+                  "Shortcut 1");
+    WUPSXX_OPTION(combo, shortcut2,
+                  combo::from_vpad(VPAD_BUTTON_B | VPAD_BUTTON_Y),
+                  "Shortcut 2");
 
-        combo shortcut1 = combo::from_wpad_nunchuk(WPAD_BUTTON_DOWN | WPAD_BUTTON_1,
-                                                   WPAD_NUNCHUK_BUTTON_C);
-        combo shortcut2 = combo::from_vpad(VPAD_BUTTON_B |VPAD_BUTTON_Y);
-
-    } // namespace cfg::defaults
-
-
-    bool bool_option_1 = defaults::bool_option_1;
-    bool bool_option_2 = defaults::bool_option_2;
-
-    color foreground = defaults::foreground;
-    color background = defaults::background;
-
-    milliseconds ms_value  = defaults::ms_value;
-    seconds      s_value   = defaults::s_value;
-    minutes      min_value = defaults::min_value;
-    hours        h_value   = defaults::h_value;
-
-    int int_value_1 = defaults::int_value_1;
-    int int_value_2 = defaults::int_value_2;
-
-    string text = defaults::text;
-
-    path some_file   = defaults::some_file;
-    path plugin_file = defaults::plugin_file;
-
-    combo shortcut1 = defaults::shortcut1;
-    combo shortcut2 = defaults::shortcut2;
+    string text = "The quick brown fox jumps over the lazy dog.";
 
 
     namespace foo {
@@ -139,56 +142,43 @@ namespace cfg {
     }
 
 
+    // store pointers to all options in a vector for convenient load/store.
+    std::vector<wups::option_base*> all_options{
+        &bool_option_1,
+        &bool_option_2,
+        &fg_color,
+        &bg_color,
+        &ms_value,
+        &s_value,
+        &min_value,
+        &h_value,
+        &int_value_1,
+        &int_value_2,
+        &some_file,
+        &plugin_file,
+        &shortcut1,
+        &shortcut2,
+    };
+
+
     void
     save()
     {
-        try {
-#define STORE(x)  wups::storage::store(#x, x)
-            STORE(bool_option_1);
-            STORE(bool_option_2);
-            STORE(foreground);
-            STORE(background);
-            STORE(ms_value);
-            STORE(s_value);
-            STORE(min_value);
-            STORE(h_value);
-            STORE(int_value_1);
-            STORE(int_value_2);
-            STORE(text);
-            STORE(some_file);
-            STORE(plugin_file);
-            STORE(shortcut1);
-            STORE(shortcut2);
-            // TODO: handle nested elements
-#undef STORE
-            wups::storage::save();
-        }
-        catch (std::exception& e) {
-            logger::printf("exception caught: %s\n", e.what());
-        }
+        for (const auto& opt : all_options)
+            opt->store();
+        // Manually store plain variables.
+        wups::store("text", cfg::text);
+        wups::save();
     }
 
 
     void
     load()
     {
-#define LOAD(x) wups::storage::load_or_init(#x, x, defaults::x)
-        LOAD(bool_option_1);
-        LOAD(bool_option_2);
-        LOAD(foreground);
-        LOAD(background);
-        LOAD(ms_value);
-        LOAD(s_value);
-        LOAD(min_value);
-        LOAD(h_value);
-        LOAD(int_value_1);
-        LOAD(int_value_2);
-        LOAD(text);
-        LOAD(some_file);
-        LOAD(plugin_file);
-        LOAD(shortcut1);
-        LOAD(shortcut2);
-#undef LOAD
+        for (auto& opt : all_options)
+            opt->load();
+        // Manually load plain variables.
+        cfg::text = *wups::load<std::string>("text");
     }
 
 } // namespace cfg
@@ -196,7 +186,7 @@ namespace cfg {
 
 // Example of a button item that blocks when activated, and finishes immediately.
 
-struct press_counter_item : wups::config::button_item {
+struct press_counter_item : wups::button_item {
 
     unsigned counter = 0;
 
@@ -228,7 +218,7 @@ struct press_counter_item : wups::config::button_item {
 
 // An example of a button that does something in a background thread.
 
-struct wait_5_seconds_item : wups::config::button_item {
+struct wait_5_seconds_item : wups::button_item {
 
     std::jthread worker_thread;
 
@@ -316,7 +306,7 @@ setup_shortcuts()
     };
 
     auto [handle1, conflict1] = create(PLUGIN_NAME " - Shortcut 1",
-                                       cfg::shortcut1,
+                                       cfg::shortcut1.value,
                                        std::move(shortcut1_callback));
     shortcut1_handle = handle1;
     if (conflict1) {
@@ -326,7 +316,7 @@ setup_shortcuts()
 
 
     auto [handle2, conflict2] = create(PLUGIN_NAME " - Shortcut 2",
-                                       cfg::shortcut2,
+                                       cfg::shortcut2.value,
                                        activate_shortcut2);
     shortcut2_handle = handle2;
     if (conflict2) {
@@ -346,101 +336,54 @@ clear_shortcuts()
 
 
 void
-menu_open(wups::config::category& root)
+menu_open(wups::category& root)
 {
-    using namespace wups::config;
+    using namespace wups;
 
-    // A bool item, default=true, strings are true/false
-    root.add(bool_item::create("Boolean option 1",
-                               cfg::bool_option_1,
-                               cfg::defaults::bool_option_1));
+    // A bool item, strings are true/false
+    root.add(bool_item::create(cfg::bool_option_1));
 
-    // Another bool item, default=false, strings are ■/□
-    root.add(bool_item::create("Boolean option 2",
-                               cfg::bool_option_2,
-                               cfg::defaults::bool_option_2,
-                               "■", "□"));
-
+    // Another bool item, strings are ■/□
+    root.add(bool_item::create(cfg::bool_option_2, "■", "□"));
 
     // A color item, only RGB
-    root.add(color_item::create("Foreground",
-                                cfg::foreground,
-                                cfg::defaults::foreground));
+    root.add(color_item::create(cfg::fg_color));
 
     // Another color item, RGBA
-    root.add(color_item::create("Background",
-                                cfg::background,
-                                cfg::defaults::background,
-                                true));
+    root.add(color_item::create(cfg::bg_color, true));
 
 
     // Some time duration items
-    root.add(milliseconds_item::create("Duration (ms)",
-                                       cfg::ms_value,
-                                       cfg::defaults::ms_value,
-                                       0ms, 1000ms));
+    root.add(milliseconds_item::create(cfg::ms_value, 0ms, 1000ms));
+    root.add(     seconds_item::create(cfg::s_value, 0s, 1000s));
+    root.add(     minutes_item::create(cfg::min_value, 0min, 1000min));
+    root.add(       hours_item::create(cfg::h_value, 0h, 1000h));
 
-    root.add(seconds_item::create("Duration (s)",
-                                  cfg::s_value,
-                                  cfg::defaults::s_value,
-                                  0s, 1000s));
-
-    root.add(minutes_item::create("Duration (min)",
-                                  cfg::min_value,
-                                  cfg::defaults::min_value,
-                                  0min, 1000min));
-
-    root.add(hours_item::create("Duration (h)",
-                                cfg::h_value,
-                                cfg::defaults::h_value,
-                                0h, 1000h));
 
     // An int item
-    root.add(int_item::create("Integer option 1",
-                              cfg::int_value_1,
-                              cfg::defaults::int_value_1,
-                              -100, 100));
+    root.add(int_item::create(cfg::int_value_1, -100, 100));
 
     // Another int item, with custom increments
-    root.add(int_item::create("Integer option 2",
-                              cfg::int_value_2,
-                              cfg::defaults::int_value_2,
-                              -1000, 1000,
+    root.add(int_item::create(cfg::int_value_2, -1000, 1000,
                               100, 10));
 
-
     // A text item, max width limited to 30 chars.
-    root.add(text_item::create("Text",
-                               cfg::text,
-                               30));
+    root.add(text_item::create("Text", cfg::text, 30));
 
     // Short text, not scrollable, not focusable.
-    root.add(text_item::create("Short Text",
-                               "FooBar"));
+    root.add(text_item::create("Short Text", "FooBar"));
 
 
     // A file item
-    root.add(file_item::create("Some file",
-                               cfg::some_file,
-                               cfg::defaults::some_file));
+    root.add(file_item::create(cfg::some_file));
 
     // A file item for plugin files: only .wps extensions.
-    root.add(file_item::create("Plugin file",
-                               cfg::plugin_file,
-                               cfg::defaults::plugin_file,
-                               30,
-                               {".wps"}));
+    root.add(file_item::create(cfg::plugin_file, 30, {".wps"}));
 
 
-    root.add(button_combo_item::create("Shortcut 1",
-                                       shortcut1_handle,
-                                       cfg::shortcut1,
-                                       cfg::defaults::shortcut1));
+    root.add(button_combo_item::create(cfg::shortcut1, shortcut1_handle));
 
-    root.add(button_combo_item::create("Shortcut 2",
-                                       shortcut2_handle,
-                                       cfg::shortcut2,
-                                       cfg::defaults::shortcut2));
+    root.add(button_combo_item::create(cfg::shortcut2, shortcut2_handle));
 
 
     root.add(press_counter_item::create());
@@ -501,7 +444,7 @@ INITIALIZE_PLUGIN()
     ButtonComboModule_InitLibrary();
 
     try {
-        wups::config::init(PLUGIN_NAME, menu_open, menu_close);
+        wups::init(PLUGIN_NAME, menu_open, menu_close);
         cfg::load();
         setup_shortcuts();
     }

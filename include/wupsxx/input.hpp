@@ -18,7 +18,7 @@
 #include <wups/config.h>
 
 
-namespace wups::config {
+namespace wups {
 
     struct simple_pad_data : WUPSConfigSimplePadData {
 
@@ -64,6 +64,6 @@ namespace wups::config {
     };
 
 
-} // namespace wups::config
+} // namespace wups
 
 #endif

@@ -22,14 +22,13 @@
 
 
 
-namespace wups::config {
+namespace wups {
 
     template<typename T>
-    numeric_item<T>::numeric_item(const std::string& label,
-                                  T& variable, T default_value,
+    numeric_item<T>::numeric_item(option<T>& opt,
                                   T min_value, T max_value,
                                   T fast_increment, T slow_increment) :
-        var_item<T>{label, variable, default_value},
+        var_item<T>{opt},
         min_value{min_value},
         max_value{max_value},
         fast_increment{fast_increment},
@@ -39,13 +38,11 @@ namespace wups::config {
 
     template<typename T>
     std::unique_ptr<numeric_item<T>>
-    numeric_item<T>::create(const std::string& label,
-                            T& variable, T default_value,
+    numeric_item<T>::create(option<T>& opt,
                             T min_value, T max_value,
                             T fast_increment, T slow_increment)
     {
-        return std::make_unique<numeric_item<T>>(label,
-                                                 variable, default_value,
+        return std::make_unique<numeric_item<T>>(opt,
                                                  min_value, max_value,
                                                  fast_increment, slow_increment);
     }
@@ -57,7 +54,7 @@ namespace wups::config {
         const
     {
         using std::to_string;
-        using wups::utils::to_string;
+        using wups::to_string;
         std::string str = to_string(variable);
         ::strlcpy(buf, str.c_str(), size);
     }
@@ -80,7 +77,7 @@ namespace wups::config {
             fast_right = CAFE_GLYPH_BTN_R;
         }
         using std::to_string;
-        using wups::utils::to_string;
+        using wups::to_string;
         std::string str = to_string(variable);
         std::snprintf(buf, size,
                       "%s%s" "%s" "%s%s",
@@ -113,7 +110,7 @@ namespace wups::config {
         return var_item<T>::on_input(input);
     }
 
-} // namespace wups::config
+} // namespace wups
 
 
 #endif

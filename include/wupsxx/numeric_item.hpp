@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -14,7 +14,7 @@
 #include "var_item.hpp"
 
 
-namespace wups::config {
+namespace wups {
 
 
     template<typename T>
@@ -31,16 +31,14 @@ namespace wups::config {
 
     public:
 
-        numeric_item(const std::string& label,
-                     T& variable, T default_value,
+        numeric_item(option<T>& opt,
                      T min_value, T max_value,
                      T fast_increment = T{10},
                      T slow_increment = T{1});
 
         static
         std::unique_ptr<numeric_item>
-        create(const std::string& label,
-               T& variable, T default_value,
+        create(option<T>& opt,
                T min_value, T max_value,
                T fast_increment = T{10},
                T slow_increment = T{1});

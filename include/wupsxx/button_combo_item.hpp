@@ -16,8 +16,7 @@
 #include "var_item.hpp"
 
 
-namespace wups::config {
-
+namespace wups {
 
     class button_combo_item : public var_item<button_combo::combo> {
 
@@ -36,19 +35,15 @@ namespace wups::config {
 
     public:
 
-        button_combo_item(const std::string& label,
-                          button_combo::handle combo_handle,
-                          button_combo::combo& variable,
-                          const button_combo::combo& default_value = {});
+        button_combo_item(option<button_combo::combo>& opt,
+                          button_combo::handle combo_handle_);
 
         virtual ~button_combo_item();
 
         static
         std::unique_ptr<button_combo_item>
-        create(const std::string& label,
-               button_combo::handle combo_handle,
-               button_combo::combo& variable,
-               const button_combo::combo& default_value = {});
+        create(option<button_combo::combo>& opt,
+               button_combo::handle combo_handle);
 
 
         virtual void get_display(char* buf, std::size_t size) const override;
@@ -64,7 +59,7 @@ namespace wups::config {
     };
 
 
-} // namespace wups::config
+} // namespace wups
 
 
 #endif

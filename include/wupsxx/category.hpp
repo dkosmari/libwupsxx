@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -17,7 +17,7 @@
 #include "item.hpp"
 
 
-namespace wups::config {
+namespace wups {
 
     class category final {
 

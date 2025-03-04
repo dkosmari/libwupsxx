@@ -20,7 +20,7 @@
 #include "utils.hpp"
 
 
-namespace wups::config {
+namespace wups {
 
     namespace {
 
@@ -31,11 +31,9 @@ namespace wups::config {
     }
 
 
-    button_combo_item::button_combo_item(const std::string& label,
-                                         button_combo::handle combo_handle_,
-                                         button_combo::combo& variable,
-                                         const button_combo::combo& default_value) :
-        var_item{label, variable, default_value},
+    button_combo_item::button_combo_item(option<button_combo::combo>& opt,
+                                         button_combo::handle combo_handle_) :
+        var_item{opt},
         state{state_t::waiting},
         combo_handle{combo_handle_}
     {
@@ -58,12 +56,10 @@ namespace wups::config {
 
 
     std::unique_ptr<button_combo_item>
-    button_combo_item::create(const std::string& label,
-                              button_combo::handle combo_handle,
-                              button_combo::combo& variable,
-                              const button_combo::combo& default_value)
+    button_combo_item::create(option<button_combo::combo>& opt,
+                              button_combo::handle combo_handle)
     {
-        return make_unique<button_combo_item>(label, combo_handle, variable, default_value);
+        return std::make_unique<button_combo_item>(opt, combo_handle);
     }
 
 
@@ -245,4 +241,4 @@ namespace wups::config {
     }
 
 
-} // wups::config
+} // wups

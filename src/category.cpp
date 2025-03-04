@@ -1,17 +1,17 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
 
 #include "wupsxx/category.hpp"
 
-#include "wupsxx/config_error.hpp"
+#include "wupsxx/error.hpp"
 
 
-namespace wups::config {
+namespace wups {
 
     category::category(WUPSConfigCategoryHandle handle) :
         handle{handle},
@@ -25,7 +25,7 @@ namespace wups::config {
         WUPSConfigAPICreateCategoryOptionsV1 options{ .name = label.c_str() };
         auto status = WUPSConfigAPI_Category_Create(options, &handle);
         if (status != WUPSCONFIG_API_RESULT_SUCCESS)
-            throw config_error{status, "could not create category \"" + label + "\""};
+            throw error{status, "could not create category \"" + label + "\""};
     }
 
 
@@ -61,7 +61,7 @@ namespace wups::config {
 
         auto status = WUPSConfigAPI_Category_AddItem(handle, item->handle);
         if (status != WUPSCONFIG_API_RESULT_SUCCESS)
-            throw config_error{status, "cannot add item to category: "};
+            throw error{status, "cannot add item to category: "};
 
         item.release(); // WUPS will call .onDelete() later
     }
@@ -72,9 +72,9 @@ namespace wups::config {
     {
         auto status = WUPSConfigAPI_Category_AddCategory(handle, child.handle);
         if (status != WUPSCONFIG_API_RESULT_SUCCESS)
-            throw config_error{status, "cannot add child category to category: "};
+            throw error{status, "cannot add child category to category: "};
 
         child.release();
     }
 
-} // namespace wups::config
+} // namespace wups

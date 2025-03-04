@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -14,10 +14,10 @@
 #include "numeric_item.hpp"
 
 
-namespace wups::config {
+namespace wups {
 
     using int_item = numeric_item<int>;
 
-} // namespace wups::config
+} // namespace wups
 
 #endif

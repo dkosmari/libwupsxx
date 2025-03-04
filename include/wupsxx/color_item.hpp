@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -15,9 +15,9 @@
 #include "var_item.hpp"
 
 
-namespace wups::config {
+namespace wups {
 
-    class color_item : public var_item<utils::color> {
+    class color_item : public var_item<color> {
 
         enum class mode_t {
             rgb,
@@ -30,16 +30,12 @@ namespace wups::config {
 
     public:
 
-        color_item(const std::string& label,
-                   utils::color& variable,
-                   utils::color default_value,
+        color_item(option<color>& opt,
                    bool has_alpha = false);
 
         static
         std::unique_ptr<color_item>
-        create(const std::string& label,
-               utils::color& variable,
-               utils::color default_value,
+        create(option<color>& opt,
                bool has_alpha = false);
 
 
@@ -51,7 +47,7 @@ namespace wups::config {
 
     };
 
-} // namespace wups::config
+} // namespace wups
 
 
 #endif

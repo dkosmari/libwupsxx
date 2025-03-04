@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -16,7 +16,7 @@
 #include "var_item.hpp"
 
 
-namespace wups::config {
+namespace wups {
 
     class file_item : public var_item<std::filesystem::path> {
 
@@ -28,17 +28,13 @@ namespace wups::config {
 
     public:
 
-        file_item(const std::string& label,
-                  std::filesystem::path& variable,
-                  const std::filesystem::path& default_value,
+        file_item(option<std::filesystem::path>& opt,
                   std::size_t max_width = 40,
                   const std::vector<std::string>& extensions = {});
 
         static
         std::unique_ptr<file_item>
-        create(const std::string& label,
-               std::filesystem::path& variable,
-               const std::filesystem::path& default_value,
+        create(option<std::filesystem::path>& opt,
                std::size_t max_width = 40,
                const std::vector<std::string>& extensions = {});
 
@@ -64,6 +60,6 @@ namespace wups::config {
         void navigate_up();
     };
 
-} // namespace wups::config
+} // namespace wups
 
 #endif

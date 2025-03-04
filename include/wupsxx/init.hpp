@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -17,7 +17,7 @@
 #include "category.hpp"
 
 
-namespace wups::config {
+namespace wups {
 
     // Throw std::runtime_error if initialization fails.
     void
@@ -25,6 +25,6 @@ namespace wups::config {
          std::function<void(category& root)> open_callback,
          std::function<void()> close_callback);
 
-} // namespace wups::config
+} // namespace wups
 
 #endif

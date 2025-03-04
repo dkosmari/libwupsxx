@@ -14,29 +14,23 @@
 #include "wupsxx/cafe_glyphs.h"
 
 
-namespace wups::config {
+namespace wups {
 
-    bool_item::bool_item(const std::string& label,
-                         bool& variable,
-                         bool default_value,
+    bool_item::bool_item(option<bool>& opt,
                          const std::string& true_str,
                          const std::string& false_str) :
-        var_item{label, variable, default_value},
+        var_item{opt},
         true_str{true_str},
         false_str{false_str}
     {}
 
 
     std::unique_ptr<bool_item>
-    bool_item::create(const std::string& label,
-                      bool& variable,
-                      bool default_value,
+    bool_item::create(option<bool>& opt,
                       const std::string& true_str,
                       const std::string& false_str)
     {
-        return std::make_unique<bool_item>(label,
-                                           variable, default_value,
-                                           true_str, false_str);
+        return std::make_unique<bool_item>(opt, true_str, false_str);
     }
 
 
@@ -72,4 +66,4 @@ namespace wups::config {
         return var_item::on_input(input);
     }
 
-} // namespace wups::config
+} // namespace wups
