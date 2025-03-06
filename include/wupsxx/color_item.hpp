@@ -47,7 +47,10 @@ namespace wups {
 
     };
 
-} // namespace wups
+    std::unique_ptr<color_item>
+    make_item(option<color>& opt,
+              bool has_alpha = false);
 
+} // namespace wups
 
 #endif

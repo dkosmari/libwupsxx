@@ -184,4 +184,12 @@ namespace wups {
         return var_item::on_input(input);
     }
 
+
+    std::unique_ptr<color_item>
+    make_item(option<color>& opt,
+              bool has_alpha)
+    {
+        return color_item::create(opt, has_alpha);
+    }
+
 } // namespace wups::config

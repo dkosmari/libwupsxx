@@ -66,4 +66,14 @@ namespace wups {
         return var_item::on_input(input);
     }
 
+
+    std::unique_ptr<bool_item>
+    make_item(option<bool>& opt,
+              const std::string& true_str,
+              const std::string& false_str)
+    {
+        return bool_item::create(opt, true_str, false_str);
+    }
+
+
 } // namespace wups

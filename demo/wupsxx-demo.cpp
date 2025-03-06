@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2024  Daniel K. O.
+ * Copyright (C) 2025  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -338,52 +338,51 @@ clear_shortcuts()
 void
 menu_open(wups::category& root)
 {
-    using namespace wups;
+    using wups::make_item;
 
     // A bool item, strings are true/false
-    root.add(bool_item::create(cfg::bool_option_1));
+    root.add(make_item(cfg::bool_option_1));
 
     // Another bool item, strings are ■/□
-    root.add(bool_item::create(cfg::bool_option_2, "■", "□"));
+    root.add(make_item(cfg::bool_option_2, "■", "□"));
 
     // A color item, only RGB
-    root.add(color_item::create(cfg::fg_color));
+    root.add(make_item(cfg::fg_color));
 
     // Another color item, RGBA
-    root.add(color_item::create(cfg::bg_color, true));
+    root.add(make_item(cfg::bg_color, true));
 
 
     // Some time duration items
-    root.add(milliseconds_item::create(cfg::ms_value, 0ms, 1000ms));
-    root.add(     seconds_item::create(cfg::s_value, 0s, 1000s));
-    root.add(     minutes_item::create(cfg::min_value, 0min, 1000min));
-    root.add(       hours_item::create(cfg::h_value, 0h, 1000h));
+    root.add(make_item(cfg::ms_value, 0ms, 1000ms));
+    root.add(make_item(cfg::s_value, 0s, 1000s));
+    root.add(make_item(cfg::min_value, 0min, 1000min));
+    root.add(make_item(cfg::h_value, 0h, 1000h));
 
 
     // An int item
-    root.add(int_item::create(cfg::int_value_1, -100, 100));
+    root.add(make_item(cfg::int_value_1, -100, 100));
 
     // Another int item, with custom increments
-    root.add(int_item::create(cfg::int_value_2, -1000, 1000,
-                              100, 10));
+    root.add(make_item(cfg::int_value_2, -1000, 1000, 100, 10));
 
     // A text item, max width limited to 30 chars.
-    root.add(text_item::create("Text", cfg::text, 30));
+    root.add(make_item("Text", cfg::text, 30));
 
     // Short text, not scrollable, not focusable.
-    root.add(text_item::create("Short Text", "FooBar"));
+    root.add(make_item("Short Text", "FooBar"));
 
 
     // A file item
-    root.add(file_item::create(cfg::some_file));
+    root.add(make_item(cfg::some_file));
 
     // A file item for plugin files: only .wps extensions.
-    root.add(file_item::create(cfg::plugin_file, 30, {".wps"}));
+    root.add(make_item(cfg::plugin_file, 30, {".wps"}));
 
 
-    root.add(button_combo_item::create(cfg::shortcut1, shortcut1_handle));
+    root.add(make_item(cfg::shortcut1, shortcut1_handle));
 
-    root.add(button_combo_item::create(cfg::shortcut2, shortcut2_handle));
+    root.add(make_item(cfg::shortcut2, shortcut2_handle));
 
 
     root.add(press_counter_item::create());
@@ -393,11 +392,12 @@ menu_open(wups::category& root)
 
     {
         // this tests that wups::item can be safely destroyed manually
-        auto dummy = text_item::create("Dummy", "Nothing");
+        auto dummy = make_item("Dummy", "Nothing");
     }
 
 
 #if 0
+    // TODO: still gotta rework nested keys
     {
         // A category named "Foo"
         config::category cat_foo{"Foo"};

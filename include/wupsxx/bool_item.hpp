@@ -42,6 +42,12 @@ namespace wups {
 
     };
 
+
+    std::unique_ptr<bool_item>
+    make_item(option<bool>& opt,
+              const std::string& true_str = "true",
+              const std::string& false_str = "false");
+
 } // namespace wups
 
 #endif

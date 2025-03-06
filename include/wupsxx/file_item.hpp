@@ -60,6 +60,12 @@ namespace wups {
         void navigate_up();
     };
 
+
+    std::unique_ptr<file_item>
+    make_item(option<std::filesystem::path>& opt,
+              std::size_t max_width = 40,
+              const std::vector<std::string>& extensions = {});
+
 } // namespace wups
 
 #endif

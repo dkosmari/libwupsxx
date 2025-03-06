@@ -21,7 +21,6 @@
 #include "wupsxx/duration.hpp" // make to_string() overload visible
 
 
-
 namespace wups {
 
     template<typename T>
@@ -111,6 +110,5 @@ namespace wups {
     }
 
 } // namespace wups
-
 
 #endif

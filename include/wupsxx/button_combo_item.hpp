@@ -59,7 +59,10 @@ namespace wups {
     };
 
 
-} // namespace wups
+    std::unique_ptr<button_combo_item>
+    make_item(option<button_combo::combo>& opt,
+              button_combo::handle combo_handle);
 
+} // namespace wups
 
 #endif

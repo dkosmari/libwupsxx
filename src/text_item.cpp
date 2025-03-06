@@ -172,4 +172,13 @@ namespace wups {
             return focus_status::lose; // should not be reachable
     }
 
+
+    std::unique_ptr<text_item>
+    make_item(const std::string& label,
+              const std::string& text,
+              std::size_t max_width)
+    {
+        return text_item::create(label, text, max_width);
+    }
+
 } // namespace wups

@@ -363,4 +363,13 @@ namespace wups {
                             variable.parent_path());
     }
 
+
+    std::unique_ptr<file_item>
+    make_item(option<std::filesystem::path>& opt,
+              std::size_t max_width,
+              const std::vector<std::string>& extensions)
+    {
+        return file_item::create(opt, max_width, extensions);
+    }
+
 } // namespace wups

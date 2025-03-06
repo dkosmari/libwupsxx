@@ -45,6 +45,12 @@ namespace wups {
 
     };
 
+
+    std::unique_ptr<text_item>
+    make_item(const std::string& label,
+              const std::string& text = "",
+              std::size_t max_width = 50);
+
 } // namespace wups
 
 #endif

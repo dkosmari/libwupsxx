@@ -49,5 +49,4 @@ namespace wups {
 
 } // namespace wups
 
-
 #endif
