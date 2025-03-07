@@ -22,8 +22,6 @@ namespace wups {
 
     std::unique_ptr<int_item>
     make_item(option<int>& opt,
-              int min_value,
-              int max_value,
               int fast_increment = 10,
               int slow_increment = 1);
 

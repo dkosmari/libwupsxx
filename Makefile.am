@@ -29,6 +29,7 @@ src_libwupsxx_a_SOURCES = 			\
 	include/wupsxx/category.hpp		\
 	include/wupsxx/color.hpp		\
 	include/wupsxx/color_item.hpp		\
+	include/wupsxx/concepts.hpp		\
 	include/wupsxx/error.hpp		\
 	include/wupsxx/duration.hpp		\
 	include/wupsxx/duration_items.hpp	\

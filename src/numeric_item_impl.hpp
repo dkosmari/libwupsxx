@@ -25,11 +25,11 @@ namespace wups {
 
     template<typename T>
     numeric_item<T>::numeric_item(option<T>& opt,
-                                  T min_value, T max_value,
-                                  T fast_increment, T slow_increment) :
+                                  T fast_increment,
+                                  T slow_increment) :
         var_item<T>{opt},
-        min_value{min_value},
-        max_value{max_value},
+        min_value{opt.min_value},
+        max_value{opt.max_value},
         fast_increment{fast_increment},
         slow_increment{slow_increment}
     {}
@@ -38,12 +38,12 @@ namespace wups {
     template<typename T>
     std::unique_ptr<numeric_item<T>>
     numeric_item<T>::create(option<T>& opt,
-                            T min_value, T max_value,
-                            T fast_increment, T slow_increment)
+                            T fast_increment,
+                            T slow_increment)
     {
         return std::make_unique<numeric_item<T>>(opt,
-                                                 min_value, max_value,
-                                                 fast_increment, slow_increment);
+                                                 fast_increment,
+                                                 slow_increment);
     }
 
 

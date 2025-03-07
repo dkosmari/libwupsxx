@@ -77,54 +77,42 @@ using wups::button_combo::combo;
 namespace cfg {
 
 
-    WUPSXX_OPTION(bool, bool_option_1,
-                  true,
-                  "Boolean option 1");
-    WUPSXX_OPTION(bool, bool_option_2,
-                  false,
-                  "Boolean option 2");
+    WUPSXX_OPTION("Boolean option 1",
+                  bool, bool_option_1, true);
+    WUPSXX_OPTION("Boolean option 2",
+                  bool, bool_option_2, false);
 
-    WUPSXX_OPTION(color, fg_color,
-                  color(0xff, 0x40, 0x80),
-                  "Foreground color");
-    WUPSXX_OPTION(color, bg_color,
-                  color(0xaa, 0xbb, 0xcc),
-                  "Background color");
+    WUPSXX_OPTION("Foreground color",
+                  color, fg_color, color(0xff, 0x40, 0x80));
+    WUPSXX_OPTION("Background color",
+                  color, bg_color, color(0xaa, 0xbb, 0xcc));
 
-    WUPSXX_OPTION(milliseconds, ms_value,
-                  10ms,
-                  "Duration (ms)");
-    WUPSXX_OPTION(seconds, s_value,
-                  10s,
-                  "Duration (s)");
-    WUPSXX_OPTION(minutes, min_value,
-                  10min,
-                  "Duration (min)");
-    WUPSXX_OPTION(hours, h_value,
-                  10h,
-                  "Duration (h)");
+    WUPSXX_OPTION("Duration (ms)",
+                  milliseconds, ms_value, 10ms, 0ms, 1000ms);
+    WUPSXX_OPTION("Duration (s)",
+                  seconds, s_value, 10s, 0s, 1000s);
+    WUPSXX_OPTION("Duration (min)",
+                  minutes, min_value, 10min, 0min, 1000min);
+    WUPSXX_OPTION("Duration (h)",
+                  hours, h_value, 10h, 0h, 1000h);
 
-    WUPSXX_OPTION(int, int_value_1,
-                  5,
-                  "Integer option 1");
-    WUPSXX_OPTION(int, int_value_2,
-                  0,
-                  "Integer option 2");
+    WUPSXX_OPTION("Integer option 1",
+                  int, int_value_1, 5, -100, 100);
+    WUPSXX_OPTION("Integer option 2",
+                  int, int_value_2, 0, -1000, 1000);
 
-    WUPSXX_OPTION(path, some_file,
-                  "fs:/vol/external01",
-                  "Some file");
-    WUPSXX_OPTION(path, plugin_file,
-                  "fs:/vol/external01/wiiu/environments/aroma/plugins",
-                  "Plugin file");
+    WUPSXX_OPTION("Some file",
+                  path, some_file, "fs:/vol/external01");
+    WUPSXX_OPTION("Plugin file",
+                  path, plugin_file, "fs:/vol/external01/wiiu/environments/aroma/plugins");
 
-    WUPSXX_OPTION(combo, shortcut1,
+    WUPSXX_OPTION("Shortcut 1",
+                  combo, shortcut1,
                   combo::from_wpad_nunchuk(WPAD_BUTTON_DOWN | WPAD_BUTTON_1,
-                                           WPAD_NUNCHUK_BUTTON_C),
-                  "Shortcut 1");
-    WUPSXX_OPTION(combo, shortcut2,
-                  combo::from_vpad(VPAD_BUTTON_B | VPAD_BUTTON_Y),
-                  "Shortcut 2");
+                                           WPAD_NUNCHUK_BUTTON_C));
+    WUPSXX_OPTION("Shortcut 2",
+                  combo, shortcut2,
+                  combo::from_vpad(VPAD_BUTTON_B | VPAD_BUTTON_Y));
 
     string text = "The quick brown fox jumps over the lazy dog.";
 
@@ -354,17 +342,17 @@ menu_open(wups::category& root)
 
 
     // Some time duration items
-    root.add(make_item(cfg::ms_value, 0ms, 1000ms));
-    root.add(make_item(cfg::s_value, 0s, 1000s));
-    root.add(make_item(cfg::min_value, 0min, 1000min));
-    root.add(make_item(cfg::h_value, 0h, 1000h));
+    root.add(make_item(cfg::ms_value));
+    root.add(make_item(cfg::s_value));
+    root.add(make_item(cfg::min_value));
+    root.add(make_item(cfg::h_value));
 
 
     // An int item
-    root.add(make_item(cfg::int_value_1, -100, 100));
+    root.add(make_item(cfg::int_value_1));
 
     // Another int item, with custom increments
-    root.add(make_item(cfg::int_value_2, -1000, 1000, 100, 10));
+    root.add(make_item(cfg::int_value_2, 100, 10));
 
     // A text item, max width limited to 30 chars.
     root.add(make_item("Text", cfg::text, 30));

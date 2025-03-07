@@ -18,13 +18,13 @@ namespace wups {
 
     struct option_base {
 
-        const std::string key;
         const std::string label;
+        const std::string key;
 
-        option_base(const std::string& key,
-                    const std::string& label) :
-            key{key},
-            label{label}
+        option_base(const std::string& label,
+                    const std::string& key) :
+            label{label},
+            key{key}
         {}
 
 
@@ -47,15 +47,15 @@ namespace wups {
     template<typename T>
     struct option : option_base {
 
-        const T default_value;
         T value;
+        const T default_value;
 
-        option(const std::string& key,
-               const T& default_value,
-               const std::string& label) :
-            option_base{key, label},
-            default_value{default_value},
-            value{default_value}
+        option(const std::string& label,
+               const std::string& key,
+               const T& default_value) :
+            option_base{label, key},
+            value{default_value},
+            default_value{default_value}
         {}
 
 
@@ -79,8 +79,8 @@ namespace wups {
 } // namespace wups
 
 
-#define WUPSXX_OPTION(type, name, default_value, label)         \
-    wups::option<type> name{#name, default_value, label}
+#define WUPSXX_OPTION(label, type, name, default_value, ...)            \
+    wups::option<type> name{label, #name, default_value, __VA_ARGS__}
 
 
 #endif
