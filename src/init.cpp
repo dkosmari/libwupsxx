@@ -78,7 +78,7 @@ namespace wups {
         auto status = WUPSConfigAPI_Init(options,
                                          menu_open,
                                          menu_close);
-        if (status != WUPSCONFIG_API_RESULT_SUCCESS)
+        if (status)
             throw std::runtime_error{WUPSConfigAPI_GetStatusStr(status)};
     }
 
