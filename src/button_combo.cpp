@@ -362,37 +362,44 @@ namespace wups::button_combo {
 
         auto f = std::make_unique<callback_func_t>(std::move(callback));
 
-        // Workaround until ButtonComboModule accepts empty combos
-        combo real_c = c;
-        if (c.is_empty()) {
-            real_c.controllers = BUTTON_COMBO_MODULE_CONTROLLER_ALL;
-            real_c.buttons = static_cast<ButtonComboModule_Buttons>(~0);
-        }
-
         auto e = ButtonComboModule_AddButtonComboPressDownEx(label.data(),
-                                                             real_c.controllers,
-                                                             real_c.buttons,
+                                                             c.controllers,
+                                                             c.buttons,
                                                              callback_wrapper,
                                                              f.get(),
                                                              false,
                                                              &h,
                                                              &status);
-        if (e)
-            throw error{e};
 
         // Workaround until ButtonComboModule accepts empty combos
-        if (c.is_empty()) {
+        if (e == BUTTON_COMBO_MODULE_ERROR_INVALID_COMBO && c.is_empty()) {
+            combo alt_c;
+            alt_c.controllers = BUTTON_COMBO_MODULE_CONTROLLER_ALL;
+            alt_c.buttons = static_cast<ButtonComboModule_Buttons>(~0);
+            e = ButtonComboModule_AddButtonComboPressDownEx(label.data(),
+                                                            alt_c.controllers,
+                                                            alt_c.buttons,
+                                                            callback_wrapper,
+                                                            f.get(),
+                                                            false,
+                                                            &h,
+                                                            &status);
+            if (e)
+                throw error{e};
             try {
                 bool conflict = update(h, c);
                 if (conflict)
                     status = BUTTON_COMBO_MODULE_COMBO_STATUS_CONFLICT;
             }
-            catch (std::exception& e) {
-                logger::printf("button_combo workaround failed: %s\n", e.what());
+            catch (std::exception& ex) {
+                logger::printf("button_combo workaround failed: %s\n", ex.what());
                 destroy(h);
                 throw;
             }
         }
+
+        if (e)
+            throw error{e};
 
         f.release();
         return { h, status == BUTTON_COMBO_MODULE_COMBO_STATUS_CONFLICT };
