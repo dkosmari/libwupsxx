@@ -16,6 +16,7 @@
 #include "wupsxx/button_combo.hpp"
 
 #include "wupsxx/cafe_glyphs.h"
+#include "wupsxx/logger.hpp"
 
 #include "utils.hpp"
 
@@ -298,6 +299,14 @@ namespace wups::button_combo {
 
 
     bool
+    combo::is_empty()
+        const noexcept
+    {
+        return !controllers || !buttons;
+    }
+
+
+    bool
     is_available(const combo& c)
     {
         ButtonComboModule_ButtonComboOptions options {
@@ -353,9 +362,16 @@ namespace wups::button_combo {
 
         auto f = std::make_unique<callback_func_t>(std::move(callback));
 
+        // Workaround until ButtonComboModule accepts empty combos
+        combo real_c = c;
+        if (c.is_empty()) {
+            real_c.controllers = BUTTON_COMBO_MODULE_CONTROLLER_ALL;
+            real_c.buttons = static_cast<ButtonComboModule_Buttons>(~0);
+        }
+
         auto e = ButtonComboModule_AddButtonComboPressDownEx(label.data(),
-                                                             c.controllers,
-                                                             c.buttons,
+                                                             real_c.controllers,
+                                                             real_c.buttons,
                                                              callback_wrapper,
                                                              f.get(),
                                                              false,
@@ -363,6 +379,20 @@ namespace wups::button_combo {
                                                              &status);
         if (e)
             throw error{e};
+
+        // Workaround until ButtonComboModule accepts empty combos
+        if (c.is_empty()) {
+            try {
+                bool conflict = update(h, c);
+                if (conflict)
+                    status = BUTTON_COMBO_MODULE_COMBO_STATUS_CONFLICT;
+            }
+            catch (std::exception& e) {
+                logger::printf("button_combo workaround failed: %s\n", e.what());
+                destroy(h);
+                throw;
+            }
+        }
 
         f.release();
         return { h, status == BUTTON_COMBO_MODULE_COMBO_STATUS_CONFLICT };

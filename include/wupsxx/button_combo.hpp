@@ -71,6 +71,10 @@ namespace wups::button_combo {
         combo
         from_wpad_pro(std::uint32_t ext) noexcept;
 
+
+        bool
+        is_empty() const noexcept;
+
     };
 
 
