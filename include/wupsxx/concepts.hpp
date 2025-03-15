@@ -11,6 +11,7 @@
 
 #include <type_traits>
 
+
 namespace wups::concepts {
 
     namespace detail {
@@ -54,7 +55,6 @@ namespace wups::concepts {
 
     template<typename T>
     concept numeric = detail::is_numeric_v<T>;
-
 
 } // namespace wups::concepts
 
