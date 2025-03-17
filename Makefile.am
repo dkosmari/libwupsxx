@@ -87,7 +87,12 @@ CLEANFILES = $(WPS_FILE)
 
 noinst_PROGRAMS = demo/wupsxx-demo.elf
 
-demo_wupsxx_demo_elf_SOURCES = demo/wupsxx-demo.cpp
+demo_wupsxx_demo_elf_SOURCES = 		\
+	demo/press_counter_item.cpp 	\
+	demo/press_counter_item.hpp 	\
+	demo/wait_5_seconds_item.cpp 	\
+	demo/wait_5_seconds_item.hpp 	\
+	demo/wupsxx-demo.cpp
 
 demo_wupsxx_demo_elf_LDADD = src/libwupsxx.a
 
