@@ -20,7 +20,6 @@
 #include <whb/log_udp.h>
 
 #include <wups.h>
-#include <buttoncombo/api.h>
 
 #include <wupsxx/bool_item.hpp>
 #include <wupsxx/category.hpp>
