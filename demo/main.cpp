@@ -173,23 +173,28 @@ namespace cfg {
     void
     save()
     {
-        for (const auto& opt : all_options)
-            opt->store();
-        // Manually store plain variables.
-        wups::store("text", cfg::text);
-        wups::save();
+        try {
+            for (const auto& opt : all_options)
+                opt->store();
+            // Manually store plain variables.
+            wups::store("text", cfg::text);
+            wups::save();
+        }
+        catch (std::exception& e) {
+            logger::printf("Failed to save settings: %s\n", e.what());
+        }
     }
 
 } // namespace cfg
 
 
-ButtonComboModule_ComboHandle shortcut1_handle;
-ButtonComboModule_ComboHandle shortcut2_handle;
+shortcut::handle shortcut1_handle;
+shortcut::handle shortcut2_handle;
 
 
 void
-activate_shortcut2(ButtonComboModule_ControllerTypes triggeredBy,
-                   ButtonComboModule_ComboHandle handle);
+activate_shortcut2(shortcut::ctr_set triggeredBy,
+                   shortcut::handle handle);
 
 
 void
@@ -198,14 +203,14 @@ setup_shortcuts()
     using wups::shortcut::create;
 
 
-    auto shortcut1_callback = [](ButtonComboModule_ControllerTypes,
-                                 ButtonComboModule_ComboHandle)
+    auto shortcut1_callback = [](shortcut::ctr_set,
+                                 shortcut::handle)
     {
         logger::printf("activated shortcut1\n");
         notify::info::show("activated shortcut1");
     };
 
-    auto [handle1, conflict1] = create(PLUGIN_NAME " - Shortcut 1",
+    auto [handle1, conflict1] = create("Shortcut 1",
                                        cfg::shortcut1.value,
                                        std::move(shortcut1_callback));
     shortcut1_handle = handle1;
@@ -214,7 +219,7 @@ setup_shortcuts()
     }
 
 
-    auto [handle2, conflict2] = create(PLUGIN_NAME " - Shortcut 2",
+    auto [handle2, conflict2] = create("Shortcut 2",
                                        cfg::shortcut2.value,
                                        activate_shortcut2);
     shortcut2_handle = handle2;
@@ -340,7 +345,7 @@ INITIALIZE_PLUGIN()
     logger::guard guard_;
 
     notify::initialize(PLUGIN_NAME);
-    shortcut::initialize();
+    shortcut::initialize(PLUGIN_NAME);
 
     try {
         wups::init(PLUGIN_NAME, menu_open, menu_close);
@@ -374,8 +379,8 @@ ON_APPLICATION_ENDS()
 
 
 void
-activate_shortcut2(ButtonComboModule_ControllerTypes,
-                   ButtonComboModule_ComboHandle)
+activate_shortcut2(shortcut::ctr_set,
+                   shortcut::handle)
 {
     logger::printf("activated shortcut2\n");
     notify::info::show("activated shortcut2");

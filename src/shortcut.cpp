@@ -7,6 +7,7 @@
  */
 
 #include <array>
+#include <cstring>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -24,8 +25,13 @@
 using std::string;
 using std::uint32_t;
 
+using namespace std::literals;
+
 
 namespace wups::shortcut {
+
+
+    std::string prefix;
 
 
     error::error(error_code e) :
@@ -41,8 +47,10 @@ namespace wups::shortcut {
 
 
     void
-    initialize()
+    initialize(const char* p)
     {
+        if (p && std::strlen(p) > 0)
+            prefix = "["s + p + "] "s;
         auto status = ButtonComboModule_InitLibrary();
         if (status)
             throw error{status};
@@ -378,7 +386,7 @@ namespace wups::shortcut {
 
         auto f = std::make_unique<callback_func_t>(std::move(callback));
 
-        auto e = ButtonComboModule_AddButtonComboPressDownEx(label.data(),
+        auto e = ButtonComboModule_AddButtonComboPressDownEx((prefix + label).data(),
                                                              c.controllers,
                                                              c.buttons,
                                                              callback_wrapper,
@@ -392,7 +400,7 @@ namespace wups::shortcut {
             combo alt_c;
             alt_c.controllers = BUTTON_COMBO_MODULE_CONTROLLER_ALL;
             alt_c.buttons = static_cast<ButtonComboModule_Buttons>(~0);
-            e = ButtonComboModule_AddButtonComboPressDownEx(label.data(),
+            e = ButtonComboModule_AddButtonComboPressDownEx((prefix + label).data(),
                                                             alt_c.controllers,
                                                             alt_c.buttons,
                                                             callback_wrapper,

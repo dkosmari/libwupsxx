@@ -92,7 +92,7 @@ demo_wupsxx_demo_elf_SOURCES = 		\
 	demo/press_counter_item.hpp 	\
 	demo/wait_5_seconds_item.cpp 	\
 	demo/wait_5_seconds_item.hpp 	\
-	demo/wupsxx-demo.cpp
+	demo/main.cpp
 
 demo_wupsxx_demo_elf_LDADD = src/libwupsxx.a
 

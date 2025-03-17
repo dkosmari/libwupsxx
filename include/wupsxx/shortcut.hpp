@@ -49,7 +49,7 @@ namespace wups::shortcut {
 
 
     void
-    initialize();
+    initialize(const char* prefix = nullptr);
 
 
     void
