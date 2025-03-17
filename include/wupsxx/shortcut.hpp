@@ -6,8 +6,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef WUPSXX_BUTTON_COMBO_HPP
-#define WUPSXX_BUTTON_COMBO_HPP
+#ifndef WUPSXX_SHORTCUT_HPP
+#define WUPSXX_SHORTCUT_HPP
+
+/*
+ * This is a wrapper for libbuttoncombo.
+ */
 
 #include <concepts>
 #include <cstdint>
@@ -25,21 +29,31 @@
 #include <buttoncombo/defines.h>
 
 
-namespace wups::button_combo {
+namespace wups::shortcut {
+
+
+    using error_code = ButtonComboModule_Error;
+    using ctr_set = ButtonComboModule_ControllerTypes;
+    using btn_set = ButtonComboModule_Buttons;
+    using handle = ButtonComboModule_ComboHandle;
+
 
     struct error : std::runtime_error {
 
-        ButtonComboModule_Error code;
+        error_code code;
 
-        error(ButtonComboModule_Error status);
-        error(const std::string& msg, ButtonComboModule_Error status);
+        error(error_code status);
+        error(const std::string& msg, error_code status);
 
     };
 
 
-    using ctr_set = ButtonComboModule_ControllerTypes;
-    using btn_set = ButtonComboModule_Buttons;
-    using handle = ButtonComboModule_ComboHandle;
+    void
+    initialize();
+
+
+    void
+    finalize();
 
 
     struct combo {
@@ -110,6 +124,6 @@ namespace wups::button_combo {
     to_glyph(const combo& c);
 
 
-} // namespace wups::button_combo
+} // namespace wups::shortcut
 
 #endif

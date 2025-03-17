@@ -13,7 +13,7 @@
 
 #include <buttoncombo/api.h>
 
-#include "wupsxx/button_combo.hpp"
+#include "wupsxx/shortcut.hpp"
 
 #include "wupsxx/cafe_glyphs.h"
 #include "wupsxx/logger.hpp"
@@ -25,19 +25,35 @@ using std::string;
 using std::uint32_t;
 
 
-namespace wups::button_combo {
+namespace wups::shortcut {
 
 
-    error::error(ButtonComboModule_Error e) :
+    error::error(error_code e) :
         std::runtime_error{ButtonComboModule_GetStatusStr(e)},
         code{e}
     {}
 
 
-    error::error(const std::string& msg, ButtonComboModule_Error e) :
+    error::error(const std::string& msg, error_code e) :
         std::runtime_error{msg + ": " + ButtonComboModule_GetStatusStr(e)},
         code{e}
     {}
+
+
+    void
+    initialize()
+    {
+        auto status = ButtonComboModule_InitLibrary();
+        if (status)
+            throw error{status};
+    }
+
+
+    void
+    finalize()
+    {
+        ButtonComboModule_DeInitLibrary();
+    }
 
 
     combo::combo(const std::string& arg)
@@ -491,6 +507,35 @@ namespace wups::button_combo {
             using utils::concat;
             std::string result;
 
+            // Put TV first, as it's often the combo starter.
+            if (arg & BCMPAD_BUTTON_TV)
+                result = concat(result, "TV");
+
+            // Put the rest of the buttons in top-to-bottom, left-to-right order.
+
+            if (arg & BCMPAD_BUTTON_L)
+                result = concat(result, "L");
+            if (arg & BCMPAD_BUTTON_R)
+                result = concat(result, "R");
+            if (arg & BCMPAD_BUTTON_ZL)
+                result = concat(result, "ZL");
+            if (arg & BCMPAD_BUTTON_ZR)
+                result = concat(result, "ZR");
+
+            if (arg & BCMPAD_BUTTON_STICK_L)
+                result = concat(result, "STICK_L");
+            if (arg & BCMPAD_BUTTON_STICK_R)
+                result = concat(result, "STICK_R");
+
+            if (arg & BCMPAD_BUTTON_UP)
+                result = concat(result, "UP");
+            if (arg & BCMPAD_BUTTON_DOWN)
+                result = concat(result, "DOWN");
+            if (arg & BCMPAD_BUTTON_LEFT)
+                result = concat(result, "LEFT");
+            if (arg & BCMPAD_BUTTON_RIGHT)
+                result = concat(result, "RIGHT");
+
             if (arg & BCMPAD_BUTTON_A)
                 result = concat(result, "A");
             if (arg & BCMPAD_BUTTON_B)
@@ -499,38 +544,20 @@ namespace wups::button_combo {
                 result = concat(result, "X");
             if (arg & BCMPAD_BUTTON_Y)
                 result = concat(result, "Y");
-            if (arg & BCMPAD_BUTTON_LEFT)
-                result = concat(result, "LEFT");
-            if (arg & BCMPAD_BUTTON_RIGHT)
-                result = concat(result, "RIGHT");
-            if (arg & BCMPAD_BUTTON_UP)
-                result = concat(result, "UP");
-            if (arg & BCMPAD_BUTTON_DOWN)
-                result = concat(result, "DOWN");
-            if (arg & BCMPAD_BUTTON_ZL)
-                result = concat(result, "ZL");
-            if (arg & BCMPAD_BUTTON_ZR)
-                result = concat(result, "ZR");
-            if (arg & BCMPAD_BUTTON_L)
-                result = concat(result, "L");
-            if (arg & BCMPAD_BUTTON_R)
-                result = concat(result, "R");
+
             if (arg & BCMPAD_BUTTON_PLUS)
                 result = concat(result, "PLUS");
             if (arg & BCMPAD_BUTTON_MINUS)
                 result = concat(result, "MINUS");
-            if (arg & BCMPAD_BUTTON_STICK_R)
-                result = concat(result, "STICK_R");
-            if (arg & BCMPAD_BUTTON_STICK_L)
-                result = concat(result, "STICK_L");
-            if (arg & BCMPAD_BUTTON_TV)
-                result = concat(result, "TV");
+
             if (arg & BCMPAD_BUTTON_RESERVED_BIT)
                 result = concat(result, "RESERVED");
+
             if (arg & BCMPAD_BUTTON_1)
                 result = concat(result, "1");
             if (arg & BCMPAD_BUTTON_2)
                 result = concat(result, "2");
+
             if (arg & BCMPAD_BUTTON_C)
                 result = concat(result, "C");
             if (arg & BCMPAD_BUTTON_Z)
@@ -561,6 +588,35 @@ namespace wups::button_combo {
 
             std::string result;
 
+            // Put TV first, as it's often the combo starter.
+            if (arg & BCMPAD_BUTTON_TV)
+                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_TV);
+
+            // Put the rest of the buttons in top-to-bottom, left-to-right order.
+
+            if (arg & BCMPAD_BUTTON_L)
+                result = concat(result, CAFE_GLYPH_BTN_L);
+            if (arg & BCMPAD_BUTTON_R)
+                result = concat(result, CAFE_GLYPH_BTN_R);
+            if (arg & BCMPAD_BUTTON_ZL)
+                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_ZL);
+            if (arg & BCMPAD_BUTTON_ZR)
+                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_ZR);
+
+            if (arg & BCMPAD_BUTTON_STICK_L)
+                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_STICK_L);
+            if (arg & BCMPAD_BUTTON_STICK_R)
+                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_STICK_R);
+
+            if (arg & BCMPAD_BUTTON_UP)
+                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_UP);
+            if (arg & BCMPAD_BUTTON_DOWN)
+                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_DOWN);
+            if (arg & BCMPAD_BUTTON_LEFT)
+                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_LEFT);
+            if (arg & BCMPAD_BUTTON_RIGHT)
+                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_RIGHT);
+
             if (arg & BCMPAD_BUTTON_A)
                 result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_A);
             if (arg & BCMPAD_BUTTON_B)
@@ -569,32 +625,12 @@ namespace wups::button_combo {
                 result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_X);
             if (arg & BCMPAD_BUTTON_Y)
                 result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_Y);
-            if (arg & BCMPAD_BUTTON_LEFT)
-                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_LEFT);
-            if (arg & BCMPAD_BUTTON_RIGHT)
-                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_RIGHT);
-            if (arg & BCMPAD_BUTTON_UP)
-                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_UP);
-            if (arg & BCMPAD_BUTTON_DOWN)
-                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_DOWN);
-            if (arg & BCMPAD_BUTTON_ZL)
-                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_ZL);
-            if (arg & BCMPAD_BUTTON_ZR)
-                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_ZR);
-            if (arg & BCMPAD_BUTTON_L)
-                result = concat(result, CAFE_GLYPH_BTN_L);
-            if (arg & BCMPAD_BUTTON_R)
-                result = concat(result, CAFE_GLYPH_BTN_R);
+
             if (arg & BCMPAD_BUTTON_PLUS)
                 result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_PLUS);
             if (arg & BCMPAD_BUTTON_MINUS)
                 result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_MINUS);
-            if (arg & BCMPAD_BUTTON_STICK_R)
-                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_STICK_R);
-            if (arg & BCMPAD_BUTTON_STICK_L)
-                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_STICK_L);
-            if (arg & BCMPAD_BUTTON_TV)
-                result = concat(result, CAFE_GLYPH_GAMEPAD_BTN_TV);
+
             if (arg & BCMPAD_BUTTON_RESERVED_BIT)
                 result = concat(result, "?");
 
@@ -602,6 +638,7 @@ namespace wups::button_combo {
                 result = concat(result, CAFE_GLYPH_WIIMOTE_BTN_1);
             if (arg & BCMPAD_BUTTON_2)
                 result = concat(result, CAFE_GLYPH_WIIMOTE_BTN_2);
+
             if (arg & BCMPAD_BUTTON_C)
                 result = concat(result, CAFE_GLYPH_NUNCHUK_BTN_C);
             if (arg & BCMPAD_BUTTON_Z)
@@ -617,19 +654,23 @@ namespace wups::button_combo {
     to_glyph(const combo& c)
     {
         using utils::concat;
-        std::string prefix;
+        std::string controller;
 
         // only show prefix when it's not ALL
         if (c.controllers != BUTTON_COMBO_MODULE_CONTROLLER_ALL) {
 
             if (c.controllers & BUTTON_COMBO_MODULE_CONTROLLER_VPAD)
-                prefix = "(" CAFE_GLYPH_GAMEPAD ") ";
-            else if (c.controllers & BUTTON_COMBO_MODULE_CONTROLLER_WPAD)
-                prefix = "(" CAFE_GLYPH_WIIMOTE ") ";
+                controller += CAFE_GLYPH_GAMEPAD;
+
+            if (c.controllers & BUTTON_COMBO_MODULE_CONTROLLER_WPAD)
+                controller += CAFE_GLYPH_WIIMOTE;
 
         }
 
-        return prefix + to_glyph(c.buttons);
+        if (!controller.empty())
+            controller = "(" + controller + ") ";
+
+        return controller + to_glyph(c.buttons);
     }
 
 } // namespace wups::button_combo

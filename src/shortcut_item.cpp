@@ -12,7 +12,7 @@
 
 #include <buttoncombo/api.h>
 
-#include "wupsxx/button_combo_item.hpp"
+#include "wupsxx/shortcut_item.hpp"
 
 #include "wupsxx/cafe_glyphs.h"
 
@@ -25,14 +25,14 @@ namespace wups {
     namespace {
 
         void
-        dummy_callback(button_combo::ctr_set, button_combo::handle, void*)
+        dummy_callback(shortcut::ctr_set, shortcut::handle, void*)
         {}
 
     }
 
 
-    button_combo_item::button_combo_item(option<button_combo::combo>& opt,
-                                         button_combo::handle combo_handle_) :
+    shortcut_item::shortcut_item(option<shortcut::combo>& opt,
+                                 shortcut::handle combo_handle_) :
         var_item{opt},
         state{state_t::waiting},
         combo_handle{combo_handle_}
@@ -44,27 +44,27 @@ namespace wups {
         };
         ButtonComboModule_UpdateButtonComboCallback(combo_handle, &new_callback);
 
-        if (button_combo::is_conflicted(combo_handle))
+        if (shortcut::is_conflicted(combo_handle))
             message = "Conflict!";
     }
 
 
-    button_combo_item::~button_combo_item()
+    shortcut_item::~shortcut_item()
     {
         ButtonComboModule_UpdateButtonComboCallback(combo_handle, &old_callback);
     }
 
 
-    std::unique_ptr<button_combo_item>
-    button_combo_item::create(option<button_combo::combo>& opt,
-                              button_combo::handle combo_handle)
+    std::unique_ptr<shortcut_item>
+    shortcut_item::create(option<shortcut::combo>& opt,
+                              shortcut::handle combo_handle)
     {
-        return std::make_unique<button_combo_item>(opt, combo_handle);
+        return std::make_unique<shortcut_item>(opt, combo_handle);
     }
 
 
     void
-    button_combo_item::get_display(char* buf, std::size_t size)
+    shortcut_item::get_display(char* buf, std::size_t size)
         const
     {
         std::string str;
@@ -80,7 +80,7 @@ namespace wups {
 
 
     void
-    button_combo_item::get_focused_display(char* buf, std::size_t size)
+    shortcut_item::get_focused_display(char* buf, std::size_t size)
         const
     {
         switch (state) {
@@ -103,7 +103,7 @@ namespace wups {
 
 
     void
-    button_combo_item::on_focus_changed()
+    shortcut_item::on_focus_changed()
     {
         var_item::on_focus_changed();
 
@@ -111,11 +111,11 @@ namespace wups {
         if (has_focus()) {
             // clear combo
             variable = {};
-            button_combo::update(combo_handle, variable);
+            shortcut::update(combo_handle, variable);
             state = state_t::waiting;
         } else {
             // Just lost focus, now we check for conflicts
-            if (button_combo::update(combo_handle, variable))
+            if (shortcut::update(combo_handle, variable))
                 message = "Conflict!";
             else
                 message = "";
@@ -124,7 +124,7 @@ namespace wups {
 
 
     focus_status
-    button_combo_item::on_input(const simple_pad_data& input)
+    shortcut_item::on_input(const simple_pad_data& input)
     {
         if (state == state_t::waiting)
             return focus_status::change_input; // let complex input handle waiting
@@ -146,12 +146,12 @@ namespace wups {
 
 
     focus_status
-    button_combo_item::on_input(const complex_pad_data& input)
+    shortcut_item::on_input(const complex_pad_data& input)
     {
         if (state != state_t::waiting && state != state_t::reading)
             return focus_status::keep;
 
-        button_combo::combo new_value;
+        shortcut::combo new_value;
         bool any_button_down = false;
 
         if (input.vpad.vpadError == VPAD_READ_SUCCESS) {
@@ -160,7 +160,7 @@ namespace wups {
                 state = state_t::reading;
             if (status.hold) {
                 any_button_down = true;
-                new_value = button_combo::combo::from_vpad(input.vpad_long_hold);
+                new_value = shortcut::combo::from_vpad(input.vpad_long_hold);
             }
         }
 
@@ -180,7 +180,7 @@ namespace wups {
                     case WPAD_EXT_MPLUS:
                         if (status.hold) {
                             any_button_down = true;
-                            new_value = button_combo::combo::from_wpad_core(core_long_hold);
+                            new_value = shortcut::combo::from_wpad_core(core_long_hold);
                         }
                         break;
 
@@ -190,7 +190,7 @@ namespace wups {
                             state = state_t::reading;
                         if (status.hold || status.nunchuk.hold) {
                             any_button_down = true;
-                            new_value = button_combo::combo::from_wpad_nunchuk(core_long_hold,
+                            new_value = shortcut::combo::from_wpad_nunchuk(core_long_hold,
                                                                                ext_long_hold);
                         }
                         break;
@@ -201,7 +201,7 @@ namespace wups {
                             state = state_t::reading;
                         if (status.hold || status.classic.hold) {
                             any_button_down = true;
-                            new_value = button_combo::combo::from_wpad_classic(core_long_hold,
+                            new_value = shortcut::combo::from_wpad_classic(core_long_hold,
                                                                                ext_long_hold);
                         }
                         break;
@@ -211,7 +211,7 @@ namespace wups {
                             state = state_t::reading;
                         if (status.pro.hold) {
                             any_button_down = true;
-                            new_value = button_combo::combo::from_wpad_pro(ext_long_hold);
+                            new_value = shortcut::combo::from_wpad_pro(ext_long_hold);
                         }
                         break;
 
@@ -241,11 +241,11 @@ namespace wups {
     }
 
 
-    std::unique_ptr<button_combo_item>
-    make_item(option<button_combo::combo>& opt,
-              button_combo::handle combo_handle)
+    std::unique_ptr<shortcut_item>
+    make_item(option<shortcut::combo>& opt,
+              shortcut::handle combo_handle)
     {
-        return button_combo_item::create(opt, combo_handle);
+        return shortcut_item::create(opt, combo_handle);
     }
 
 } // wups

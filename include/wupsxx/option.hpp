@@ -9,6 +9,7 @@
 #ifndef WUPSXX_OPTION_HPP
 #define WUPSXX_OPTION_HPP
 
+#include <expected>
 #include <string>
 #include <stdexcept>
 
@@ -24,11 +25,7 @@ namespace wups {
         const std::string key;
 
         option_base(const std::string& label,
-                    const std::string& key) :
-            label{label},
-            key{key}
-        {}
-
+                    const std::string& key);
 
         // disallow moving
         option_base(option_base&&) = delete;
@@ -38,10 +35,14 @@ namespace wups {
         virtual void store() const = 0;
 
 
+        std::expected<void, std::string>
+        try_load();
+
+
     protected:
 
         // Disallow destroying from base pointer.
-        ~option_base() noexcept = default;
+        ~option_base() noexcept;
 
     };
 

@@ -22,10 +22,8 @@
 
 #include <wups.h>
 #include <buttoncombo/api.h>
-#include <notifications/notifications.h>
 
 #include <wupsxx/bool_item.hpp>
-#include <wupsxx/button_combo_item.hpp>
 #include <wupsxx/button_item.hpp>
 #include <wupsxx/category.hpp>
 #include <wupsxx/color_item.hpp>
@@ -34,6 +32,8 @@
 #include <wupsxx/init.hpp>
 #include <wupsxx/int_item.hpp>
 #include <wupsxx/logger.hpp>
+#include <wupsxx/notify.hpp>
+#include <wupsxx/shortcut_item.hpp>
 #include <wupsxx/storage.hpp>
 #include <wupsxx/text_item.hpp>
 
@@ -64,14 +64,15 @@ using std::chrono::hours;
 using std::string;
 
 namespace logger = wups::logger;
-
+namespace notify = wups::notify;
+namespace shortcut = wups::shortcut;
 
 // This type has .r, .g, .b, .a members, and a to_string() function.
 using wups::color;
 
 
-// Used to store button combo shortcuts.
-using wups::button_combo::combo;
+// Used to store button shortcut combos.
+using shortcut::combo;
 
 
 namespace cfg {
@@ -150,6 +151,23 @@ namespace cfg {
 
 
     void
+    load()
+    {
+        for (auto& opt : all_options)
+            try {
+                opt->load();
+            }
+            catch (std::exception& e) {
+                logger::printf("Failed to load setting '%s': %s\n",
+                               opt->key.data(),
+                               e.what());
+            }
+        // Manually load plain variables.
+        cfg::text = *wups::load<std::string>("text");
+    }
+
+
+    void
     save()
     {
         for (const auto& opt : all_options)
@@ -157,16 +175,6 @@ namespace cfg {
         // Manually store plain variables.
         wups::store("text", cfg::text);
         wups::save();
-    }
-
-
-    void
-    load()
-    {
-        for (auto& opt : all_options)
-            opt->load();
-        // Manually load plain variables.
-        cfg::text = *wups::load<std::string>("text");
     }
 
 } // namespace cfg
@@ -283,14 +291,14 @@ activate_shortcut2(ButtonComboModule_ControllerTypes triggeredBy,
 void
 setup_shortcuts()
 {
-    using wups::button_combo::create;
+    using wups::shortcut::create;
 
 
     auto shortcut1_callback = [](ButtonComboModule_ControllerTypes,
                                  ButtonComboModule_ComboHandle)
     {
         logger::printf("activated shortcut1\n");
-        NotificationModule_AddInfoNotification("activated shortcut1");
+        notify::info::show("activated shortcut1");
     };
 
     auto [handle1, conflict1] = create(PLUGIN_NAME " - Shortcut 1",
@@ -299,7 +307,6 @@ setup_shortcuts()
     shortcut1_handle = handle1;
     if (conflict1) {
         logger::printf("Conflict in shortcut1\n");
-        NotificationModule_AddErrorNotification("Conflict in shortcut1");
     }
 
 
@@ -309,7 +316,6 @@ setup_shortcuts()
     shortcut2_handle = handle2;
     if (conflict2) {
         logger::printf("Conflict in shortcut2\n");
-        NotificationModule_AddErrorNotification("Conflict in shortcut2");
     }
 
 }
@@ -318,8 +324,8 @@ setup_shortcuts()
 void
 clear_shortcuts()
 {
-    wups::button_combo::destroy(shortcut1_handle);
-    wups::button_combo::destroy(shortcut2_handle);
+    shortcut::destroy(shortcut1_handle);
+    shortcut::destroy(shortcut2_handle);
 }
 
 
@@ -426,10 +432,11 @@ menu_close()
 
 INITIALIZE_PLUGIN()
 {
-    wups::logger::guard guard_{PLUGIN_NAME};
+    logger::set_prefix(PLUGIN_NAME);
+    logger::guard guard_;
 
-    NotificationModule_InitLibrary();
-    ButtonComboModule_InitLibrary();
+    notify::initialize(PLUGIN_NAME);
+    shortcut::initialize();
 
     try {
         wups::init(PLUGIN_NAME, menu_open, menu_close);
@@ -445,14 +452,14 @@ INITIALIZE_PLUGIN()
 DEINITIALIZE_PLUGIN()
 {
     clear_shortcuts();
-    ButtonComboModule_DeInitLibrary();
-    NotificationModule_DeInitLibrary();
+    notify::finalize();
+    shortcut::finalize();
 }
 
 
 ON_APPLICATION_START()
 {
-    logger::initialize(PLUGIN_NAME);
+    logger::initialize();
 }
 
 
@@ -467,5 +474,5 @@ activate_shortcut2(ButtonComboModule_ControllerTypes,
                    ButtonComboModule_ComboHandle)
 {
     logger::printf("activated shortcut2\n");
-    NotificationModule_AddInfoNotification("activated shortcut2");
+    notify::info::show("activated shortcut2");
 }

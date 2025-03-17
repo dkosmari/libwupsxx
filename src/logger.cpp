@@ -32,7 +32,18 @@ namespace wups::logger {
 
 
     void
-    initialize(const char* p)
+    set_prefix(const char* p)
+    {
+        std::lock_guard guard{mut};
+        if (p && std::strlen(p) > 0)
+            prefix = "["s + p + "] "s;
+        else
+            prefix.clear();
+    }
+
+
+    void
+    initialize()
     {
         std::lock_guard guard{mut};
         if (refs == 0) {
@@ -43,10 +54,6 @@ namespace wups::logger {
             if (!initialized_module && !initialized_udp)
                 return; // fail silently, can't generate logs
 
-            if (p && std::strlen(p) > 0)
-                prefix = "["s + p + "] "s;
-            else
-                prefix.clear();
         }
         ++refs;
     }
@@ -112,9 +119,9 @@ namespace wups::logger {
     }
 
 
-    guard::guard(const char* p)
+    guard::guard()
     {
-        initialize(p);
+        initialize();
     }
 
 

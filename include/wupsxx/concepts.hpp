@@ -9,6 +9,7 @@
 #ifndef WUPSXX_CONCEPTS_HPP
 #define WUPSXX_CONCEPTS_HPP
 
+#include <chrono>
 #include <type_traits>
 
 

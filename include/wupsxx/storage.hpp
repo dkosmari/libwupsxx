@@ -17,9 +17,9 @@
 
 #include <wups/storage.h>
 
-#include "button_combo.hpp"
 #include "color.hpp"
 #include "duration.hpp"
+#include "shortcut.hpp"
 
 
 namespace wups {
@@ -68,8 +68,8 @@ namespace wups {
 
 
     template<>
-    std::expected<button_combo::combo, storage_error>
-    load<button_combo::combo>(const std::string& key);
+    std::expected<shortcut::combo, storage_error>
+    load<shortcut::combo>(const std::string& key);
 
 
 
@@ -100,7 +100,7 @@ namespace wups {
 
 
     void
-    store(const std::string& key, const button_combo::combo& c);
+    store(const std::string& key, const shortcut::combo& c);
 
 
 

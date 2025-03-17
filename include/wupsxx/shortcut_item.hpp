@@ -6,19 +6,19 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef WUPSXX_BUTTON_COMBO_ITEM_HPP
-#define WUPSXX_BUTTON_COMBO_ITEM_HPP
+#ifndef WUPSXX_SHORTCUT_ITEM_HPP
+#define WUPSXX_SHORTCUT_ITEM_HPP
 
 #include <memory>
 
-#include "button_combo.hpp"
+#include "shortcut.hpp"
 
 #include "var_item.hpp"
 
 
 namespace wups {
 
-    class button_combo_item : public var_item<button_combo::combo> {
+    class shortcut_item : public var_item<shortcut::combo> {
 
         enum class state_t {
             waiting,
@@ -28,22 +28,22 @@ namespace wups {
 
         state_t state;
 
-        button_combo::handle combo_handle{};
+        shortcut::handle combo_handle{};
         ButtonComboModule_CallbackOptions old_callback{};
 
         std::string message;
 
     public:
 
-        button_combo_item(option<button_combo::combo>& opt,
-                          button_combo::handle combo_handle_);
+        shortcut_item(option<shortcut::combo>& opt,
+                      shortcut::handle combo_handle_);
 
-        virtual ~button_combo_item();
+        virtual ~shortcut_item();
 
         static
-        std::unique_ptr<button_combo_item>
-        create(option<button_combo::combo>& opt,
-               button_combo::handle combo_handle);
+        std::unique_ptr<shortcut_item>
+        create(option<shortcut::combo>& opt,
+               shortcut::handle combo_handle);
 
 
         virtual void get_display(char* buf, std::size_t size) const override;
@@ -59,9 +59,9 @@ namespace wups {
     };
 
 
-    std::unique_ptr<button_combo_item>
-    make_item(option<button_combo::combo>& opt,
-              button_combo::handle combo_handle);
+    std::unique_ptr<shortcut_item>
+    make_item(option<shortcut::combo>& opt,
+              shortcut::handle combo_handle);
 
 } // namespace wups
 

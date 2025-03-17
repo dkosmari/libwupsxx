@@ -22,45 +22,48 @@ noinst_LIBRARIES = src/libwupsxx.a
 
 src_libwupsxx_a_SOURCES = 			\
 	include/wupsxx/bool_item.hpp		\
-	include/wupsxx/button_combo.hpp		\
-	include/wupsxx/button_combo_item.hpp	\
 	include/wupsxx/button_item.hpp		\
 	include/wupsxx/cafe_glyphs.h		\
 	include/wupsxx/category.hpp		\
 	include/wupsxx/color.hpp		\
 	include/wupsxx/color_item.hpp		\
 	include/wupsxx/concepts.hpp		\
-	include/wupsxx/error.hpp		\
 	include/wupsxx/duration.hpp		\
 	include/wupsxx/duration_items.hpp	\
+	include/wupsxx/error.hpp		\
 	include/wupsxx/file_item.hpp		\
 	include/wupsxx/init.hpp			\
 	include/wupsxx/input.hpp		\
 	include/wupsxx/int_item.hpp		\
 	include/wupsxx/item.hpp			\
 	include/wupsxx/logger.hpp		\
+	include/wupsxx/notify.hpp		\
 	include/wupsxx/numeric_item.hpp		\
 	include/wupsxx/option.hpp		\
+	include/wupsxx/shortcut.hpp		\
+	include/wupsxx/shortcut_item.hpp	\
 	include/wupsxx/storage.hpp		\
 	include/wupsxx/text_item.hpp		\
 	include/wupsxx/var_item.hpp 		\
 	src/bool_item.cpp			\
-	src/button_combo.cpp			\
-	src/button_combo_item.cpp		\
 	src/button_item.cpp			\
 	src/category.cpp			\
 	src/color.cpp				\
 	src/color_item.cpp			\
-	src/error.cpp				\
 	src/duration.cpp			\
 	src/duration_items.cpp			\
+	src/error.cpp				\
 	src/file_item.cpp			\
 	src/init.cpp				\
 	src/input.cpp				\
 	src/int_item.cpp			\
 	src/item.cpp				\
 	src/logger.cpp				\
+	src/notify.cpp				\
 	src/numeric_item_impl.hpp		\
+	src/option.cpp				\
+	src/shortcut.cpp			\
+	src/shortcut_item.cpp			\
 	src/storage.cpp				\
 	src/text_item.cpp			\
 	src/utils.cpp src/utils.hpp

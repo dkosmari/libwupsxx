@@ -45,13 +45,13 @@ namespace wups {
 
 
     template<>
-    std::expected<button_combo::combo, storage_error>
-    load<button_combo::combo>(const std::string& key)
+    std::expected<shortcut::combo, storage_error>
+    load<shortcut::combo>(const std::string& key)
     {
         auto res = load<std::string>(key);
         if (!res)
             return std::unexpected{res.error()};
-        return button_combo::combo{*res};
+        return shortcut::combo{*res};
     }
 
 
@@ -70,7 +70,7 @@ namespace wups {
 
 
     void
-    store(const std::string& key, const button_combo::combo& c)
+    store(const std::string& key, const shortcut::combo& c)
     {
         store<std::string>(key, to_string(c));
     }

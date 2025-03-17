@@ -14,8 +14,10 @@
 
 namespace wups::logger {
 
+    void set_prefix(const char* prefix);
 
-    void initialize(const char* prefix = nullptr);
+    // Every call to initialize() must have a matching finalize()
+    void initialize();
     void finalize();
 
 
@@ -28,7 +30,7 @@ namespace wups::logger {
     // Keeps the logger initialized while it's constructed.
     // Use this when generating logs from initialization/finalization hooks.
     struct guard {
-        guard(const char* prefix = nullptr);
+        guard();
         ~guard();
     };
 
