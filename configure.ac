@@ -23,17 +23,40 @@ AM_PROG_AR
 AC_LANG([C++])
 AX_APPEND_COMPILE_FLAGS([-std=c++23], [CXX])
 
-WIIU_WUMS_CHECK_LIBBUTTONCOMBO
-
+WANT_SHORTCUTS=no
+WANT_NOTIFY=no
 
 AC_ARG_ENABLE([demo],
               [AS_HELP_STRING([--enable-demo],
                               [Build the libwupsxx-demo plugin.])],
               [
                   AS_IF([test x$enableval = xyes],
-                        [WIIU_WUMS_CHECK_LIBNOTIFICATIONS])
+                        [
+                            WANT_SHORTCUTS=yes
+                            WANT_NOTIFY=yes
+                        ])
               ])
 AM_CONDITIONAL([BUILD_DEMO], [test x$enable_demo = xyes])
+
+
+AC_ARG_ENABLE([shortcuts],
+              [AS_HELP_STRING([--enable-shortcuts],
+                              [Add support for libbuttoncombo])],
+              [
+                  WANT_SHORTCUTS=$enableval
+              ])
+AM_CONDITIONAL([USE_SHORTCUTS], [test x$WANT_SHORTCUTS = xyes])
+AS_IF([test x$WANT_SHORTCUTS = xyes], [WIIU_WUMS_CHECK_LIBBUTTONCOMBO])
+
+
+AC_ARG_ENABLE([notify],
+              [AS_HELP_STRING([--enable-notify],
+                              [Add support for libnotifications])],
+              [
+                  WANT_NOTIFY=$enableval
+              ])
+AM_CONDITIONAL([USE_NOTIFY], [test x$WANT_NOTIFY = xyes])
+AS_IF([test x$WANT_NOTIFY = xyes], [WIIU_WUMS_CHECK_LIBNOTIFICATIONS])
 
 
 AC_CONFIG_FILES([Makefile])

@@ -11,7 +11,6 @@
 
 namespace wups {
 
-
     option_base::option_base(const std::string& label,
                              const std::string& key) :
         label{label},
@@ -20,18 +19,5 @@ namespace wups {
 
 
     option_base::~option_base() noexcept = default;
-
-
-    std::expected<void, std::string>
-    option_base::try_load()
-    {
-        try {
-            load();
-            return {};
-        }
-        catch (std::exception& e) {
-            return std::unexpected{e.what()};
-        }
-    }
 
 } // namespace wups

@@ -22,57 +22,92 @@ namespace wups {
     {}
 
 
+    template<typename T>
+    bool
+    load(const std::string& key, T& value)
+        noexcept
+    {
+        auto status = WUPSStorageAPI::Get(key, value);
+        if (status)
+            return false;
+        return true;
+    }
+
+    // Explicit instantiation for all types supported by WUPSStorageAPI::Get()
+    template bool load<bool>(const std::string& key, bool& value);
+    template bool load<int32_t>(const std::string& key, int32_t& value);
+    template bool load<int64_t>(const std::string& key, int64_t& value);
+    template bool load<uint32_t>(const std::string& key, uint32_t& value);
+    template bool load<uint64_t>(const std::string& key, uint64_t& value);
+    template bool load<float>(const std::string& key, float& value);
+    template bool load<double>(const std::string& key, double& value);
+
+
+    // std::string has special instantiation, to allow resizing
     template<>
-    std::expected<color, storage_error>
-    load<color>(const std::string& key)
+    bool
+    load<std::string>(const std::string& key,
+                      std::string& value)
+        noexcept
     {
-        auto res = load<std::string>(key);
-        if (!res)
-            return std::unexpected{res.error()};
-        return color{*res};
+        try {
+            auto status = WUPSStorageAPI::Get(key, value,
+                                              WUPSStorageAPI::GetOptions::RESIZE_EXISTING_BUFFER);
+            if (status)
+                return false;
+            return true;
+        }
+        catch (...) {
+            return false;
+        }
     }
 
 
     template<>
-    std::expected<std::filesystem::path, storage_error>
-    load<std::filesystem::path>(const std::string& key)
-    {
-        auto res = load<std::string>(key);
-        if (!res)
-            return std::unexpected{res.error()};
-        return std::filesystem::path{*res};
+    bool
+    load<std::filesystem::path>(const std::string& key,
+                                std::filesystem::path& value)
+        noexcept
+    try {
+        std::string value_str;
+        if (!load(key, value_str))
+            return false;
+        value = value_str;
+        return true;
     }
+    catch (...) {
+        return false;
+    }
+
+
+    template<typename T>
+    void
+    store(const std::string& key,
+          const T& value)
+    {
+        auto status = WUPSStorageAPI::Store(key, value);
+        if (status)
+            throw storage_error{status, "error storing key \"" + key + "\""};
+    }
+
+
+    // Explicit instantiation for all types supported by WUPSStorageAPI::Store()
+    template void store<bool>(const std::string& key, const bool& value);
+    template void store<int32_t>(const std::string& key, const int32_t& value);
+    template void store<int64_t>(const std::string& key, const int64_t& value);
+    template void store<uint32_t>(const std::string& key, const uint32_t& value);
+    template void store<uint64_t>(const std::string& key, const uint64_t& value);
+    template void store<float>(const std::string& key, const float& value);
+    template void store<double>(const std::string& key, const double& value);
+    template void store<std::string>(const std::string& key, const std::string& value);
 
 
     template<>
-    std::expected<shortcut::combo, storage_error>
-    load<shortcut::combo>(const std::string& key)
-    {
-        auto res = load<std::string>(key);
-        if (!res)
-            return std::unexpected{res.error()};
-        return shortcut::combo{*res};
-    }
-
-
     void
-    store(const std::string& key, const color& c)
+    store<std::filesystem::path>(const std::string& key,
+                                 const std::filesystem::path& p)
     {
-        store<std::string>(key, to_string(c));
-    }
-
-
-    void
-    store(const std::string& key, const std::filesystem::path& p)
-    {
-        store<std::string>(key, p);
-    }
-
-
-    void
-    store(const std::string& key, const shortcut::combo& c)
-    {
-        store<std::string>(key, to_string(c));
+        store(key, p.string());
     }
 
 

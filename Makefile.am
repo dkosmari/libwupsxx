@@ -37,11 +37,8 @@ src_libwupsxx_a_SOURCES = 			\
 	include/wupsxx/int_item.hpp		\
 	include/wupsxx/item.hpp			\
 	include/wupsxx/logger.hpp		\
-	include/wupsxx/notify.hpp		\
 	include/wupsxx/numeric_item.hpp		\
 	include/wupsxx/option.hpp		\
-	include/wupsxx/shortcut.hpp		\
-	include/wupsxx/shortcut_item.hpp	\
 	include/wupsxx/storage.hpp		\
 	include/wupsxx/text_item.hpp		\
 	include/wupsxx/var_item.hpp 		\
@@ -59,14 +56,25 @@ src_libwupsxx_a_SOURCES = 			\
 	src/int_item.cpp			\
 	src/item.cpp				\
 	src/logger.cpp				\
-	src/notify.cpp				\
 	src/numeric_item_impl.hpp		\
 	src/option.cpp				\
-	src/shortcut.cpp			\
-	src/shortcut_item.cpp			\
 	src/storage.cpp				\
 	src/text_item.cpp			\
 	src/utils.cpp src/utils.hpp
+
+if USE_SHORTCUTS
+src_libwupsxx_a_SOURCES +=			\
+	include/wupsxx/shortcut.hpp		\
+	include/wupsxx/shortcut_item.hpp	\
+	src/shortcut.cpp			\
+	src/shortcut_item.cpp
+endif USE_SHORTCUTS
+
+if USE_NOTIFY
+src_libwupsxx_a_SOURCES +=			\
+	include/wupsxx/notify.hpp		\
+	src/notify.cpp
+endif USE_NOTIFY
 
 
 .PHONY: company run

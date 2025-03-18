@@ -11,6 +11,8 @@
 
 #include "wupsxx/color.hpp"
 
+#include "wupsxx/storage.hpp"
+
 
 namespace wups {
 
@@ -76,5 +78,30 @@ namespace wups {
         return buf;
     }
 
+
+    template<>
+    bool
+    load<color>(const std::string& key,
+                color& value)
+        noexcept
+    try {
+        std::string value_str;
+        if (!load(key, value_str))
+            return false;
+        value = color{value_str};
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
+
+
+    template<>
+    void
+    store<color>(const std::string& key,
+                 const color& value)
+    {
+        store(key, to_string(value));
+    }
 
 } // namespace wups

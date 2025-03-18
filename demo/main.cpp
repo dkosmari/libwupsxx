@@ -30,6 +30,7 @@
 #include <wupsxx/int_item.hpp>
 #include <wupsxx/logger.hpp>
 #include <wupsxx/notify.hpp>
+#include <wupsxx/shortcut.hpp>
 #include <wupsxx/shortcut_item.hpp>
 #include <wupsxx/storage.hpp>
 #include <wupsxx/text_item.hpp>
@@ -165,7 +166,7 @@ namespace cfg {
                                e.what());
             }
         // Manually load plain variables.
-        cfg::text = *wups::load<std::string>("text");
+        wups::load("text", cfg::text);
     }
 
 

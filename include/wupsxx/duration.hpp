@@ -23,7 +23,8 @@ namespace wups {
 
 
     template<concepts::duration D>
-    std::string to_string(D d);
+    std::string
+    to_string(D d);
 
 } // namespace wups
 

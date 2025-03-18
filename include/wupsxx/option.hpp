@@ -31,12 +31,8 @@ namespace wups {
         option_base(option_base&&) = delete;
 
 
-        virtual void load() = 0;
-        virtual void store() const = 0;
-
-
-        std::expected<void, std::string>
-        try_load();
+        virtual void load() noexcept = 0;
+        virtual void store() const noexcept = 0;
 
 
     protected:
@@ -64,15 +60,16 @@ namespace wups {
 
         void
         load()
-            override
+            noexcept override
         {
-            wups::load_or_init(key, value, default_value);
+            if (!wups::load(key, value))
+                value = default_value;
         }
 
 
         void
         store()
-            const override
+            const noexcept override
         {
             wups::store(key, value);
         }
@@ -105,25 +102,18 @@ namespace wups {
 
         void
         load()
-            override
+            noexcept override
         {
-            using std::to_string;
-            using wups::to_string;
-            wups::load_or_init(key, value, default_value);
+            if (!wups::load(key, value))
+                value = default_value;
             if (value < min_value || value > max_value)
-                throw std::range_error{"Value ("
-                                       + to_string(value)
-                                       + ") is out of range ["
-                                       + to_string(min_value)
-                                       + ", "
-                                       + to_string(max_value)
-                                       + "]"};
+                value = default_value;
         }
 
 
         void
         store()
-            const override
+            const noexcept override
         {
             wups::store(key, value);
         }

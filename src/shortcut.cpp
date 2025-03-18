@@ -18,6 +18,7 @@
 
 #include "wupsxx/cafe_glyphs.h"
 #include "wupsxx/logger.hpp"
+#include "wupsxx/storage.hpp"
 
 #include "utils.hpp"
 
@@ -682,3 +683,33 @@ namespace wups::shortcut {
     }
 
 } // namespace wups::button_combo
+
+
+namespace wups {
+
+    template<>
+    bool
+    load<shortcut::combo>(const std::string& key,
+                          shortcut::combo& value)
+        noexcept
+    try {
+        std::string value_str;
+        if (!load(key, value_str))
+            return false;
+        value = shortcut::combo{value_str};
+        return true;
+    }
+    catch (...) {
+        return false;
+    }
+
+
+    template<>
+    void
+    store<shortcut::combo>(const std::string& key,
+                           const shortcut::combo& c)
+    {
+        store(key, to_string(c));
+    }
+
+} // namespace wups
