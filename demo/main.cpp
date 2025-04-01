@@ -80,7 +80,6 @@ using shortcut::combo;
 
 namespace cfg {
 
-
     WUPSXX_OPTION("Boolean option 1",
                   bool, bool_option_1, true);
     WUPSXX_OPTION("Boolean option 2",
@@ -120,7 +119,7 @@ namespace cfg {
 
     string text = "The quick brown fox jumps over the lazy dog.";
 
-
+#if 0
     namespace foo {
 
         bool enabled;
@@ -132,9 +131,10 @@ namespace cfg {
         }
 
     }
+#endif
 
 
-    // store pointers to all options in a vector for convenient load/store.
+    // store pointers to all options in a vector for convenient load/save operations.
     std::vector<wups::option_base*> all_options{
         &bool_option_1,
         &bool_option_2,
@@ -157,14 +157,7 @@ namespace cfg {
     load()
     {
         for (auto& opt : all_options)
-            try {
-                opt->load();
-            }
-            catch (std::exception& e) {
-                logger::printf("Failed to load setting '%s': %s\n",
-                               opt->key.data(),
-                               e.what());
-            }
+            opt->load();
         // Manually load plain variables.
         wups::load("text", cfg::text);
     }
