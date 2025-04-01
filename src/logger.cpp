@@ -8,9 +8,12 @@
 
 #include <cstring>
 #include <mutex>
+#include <optional>
+#include <stdexcept>
 #include <string>
 
 #include <whb/log.h>
+#include <whb/log_cafe.h>
 #include <whb/log_module.h>
 #include <whb/log_udp.h>
 
@@ -22,13 +25,59 @@ using namespace std::literals;
 
 namespace wups::logger {
 
-    std::mutex mut;
+    namespace {
 
-    unsigned refs = 0;
-    bool initialized_module = false;
-    bool initialized_udp = false;
+        struct log_module {
+            log_module()
+            {
+                if (!WHBLogModuleInit())
+                    throw std::runtime_error{"WHBLogModuleInit() failed"};
+            }
 
-    std::string prefix;
+            ~log_module()
+                noexcept
+            {
+                WHBLogModuleDeinit();
+            }
+        };
+
+        struct log_cafe {
+            log_cafe()
+            {
+                if (!WHBLogCafeInit())
+                    throw std::runtime_error{"WHBLogCafeInit() failed"};
+            }
+
+            ~log_cafe()
+            {
+                WHBLogCafeDeinit();
+            }
+        };
+
+        struct log_udp {
+            log_udp()
+            {
+                if (!WHBLogUdpInit())
+                    throw std::runtime_error{"WHBLogUdpInit() failed"};
+            }
+
+            ~log_udp()
+            {
+                WHBLogUdpDeinit();
+            }
+        };
+
+        std::mutex mut;
+
+        unsigned refs = 0;
+
+        std::optional<log_module> log_module_guard;
+        std::optional<log_cafe>   log_cafe_guard;
+        std::optional<log_udp>    log_udp_guard;
+
+        std::string prefix;
+
+    } // namespace
 
 
     void
@@ -47,11 +96,24 @@ namespace wups::logger {
     {
         std::lock_guard guard{mut};
         if (refs == 0) {
-            initialized_module = WHBLogModuleInit();
-            if (!initialized_module)
-                initialized_udp = WHBLogUdpInit();
+            try {
+                log_module_guard.emplace();
+            }
+            catch (...) {
+                // only if module fails, we fall back to cafe + udp
+                try {
+                    log_cafe_guard.emplace();
+                }
+                catch (...) {
+                }
+                try {
+                    log_udp_guard.emplace();
+                }
+                catch (...) {
+                }
+            }
 
-            if (!initialized_module && !initialized_udp)
+            if (!log_module_guard && !log_cafe_guard && !log_udp_guard)
                 return; // fail silently, can't generate logs
 
         }
@@ -66,14 +128,9 @@ namespace wups::logger {
         if (refs == 0)
             return; // fail silently, happens when initialization fails
         if (refs == 1) {
-            if (initialized_module) {
-                WHBLogModuleDeinit();
-                initialized_module = false;
-            }
-            if (initialized_udp) {
-                WHBLogUdpDeinit();
-                initialized_udp = false;
-            }
+            log_udp_guard.reset();
+            log_cafe_guard.reset();
+            log_module_guard.reset();
         }
         --refs;
     }
@@ -112,7 +169,7 @@ namespace wups::logger {
                                sz + 1,
                                fmt,
                                args);
-                WHBLogWrite(buf.c_str());
+                WHBLogWrite(buf.data());
             }
         }
         catch (...) {}
