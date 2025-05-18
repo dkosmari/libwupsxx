@@ -4,18 +4,9 @@ EXTRA_DIST = \
 	README.md
 
 
-AM_CPPFLAGS = \
-	$(DEVKITPRO_CPPFLAGS) \
-	-I$(top_srcdir)/include
+AM_CPPFLAGS = -I$(srcdir)/include
 
-AM_CXXFLAGS = \
-	$(DEVKITPRO_CXXFLAGS) \
-	-Wall -Wextra -Werror
-
-AM_LDFLAGS = $(DEVKITPRO_LDFLAGS)
-
-LIBS = $(DEVKITPRO_LIBS)
-
+AM_CXXFLAGS = -Wall -Wextra -Werror
 
 noinst_LIBRARIES = src/libwupsxx.a
 

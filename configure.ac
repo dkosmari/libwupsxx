@@ -13,6 +13,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
 
 WIIU_WUPS_INIT
+WIIU_WUMS_INIT
 
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 
@@ -25,6 +26,9 @@ AX_APPEND_COMPILE_FLAGS([-std=c++23], [CXX])
 
 WANT_SHORTCUTS=no
 WANT_NOTIFY=no
+
+WIIU_WUPS_SETUP
+WIIU_WUMS_SETUP
 
 AC_ARG_ENABLE([demo],
               [AS_HELP_STRING([--enable-demo],
