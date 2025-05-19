@@ -93,7 +93,10 @@ demo_wupsxx_demo_elf_SOURCES = 		\
 	demo/wait_5_seconds_item.hpp 	\
 	demo/main.cpp
 
-demo_wupsxx_demo_elf_LDADD = src/libwupsxx.a
+demo_wupsxx_demo_elf_LDADD = \
+	src/libwupsxx.a \
+	-lbuttoncombo \
+	-lnotifications
 
 
 all-local: $(WPS_FILE)
