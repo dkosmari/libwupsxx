@@ -41,11 +41,9 @@ namespace wups::utils {
     }
 
 
-    template<typename... Ts>
-    struct overloaded : Ts...
-    {
-        using Ts::operator ()...;
-    };
+    std::string
+    to_utf8(const std::u32string& input);
+
 
 } // namespace wups::utils
 

@@ -17,6 +17,8 @@
 
 #include "wupsxx/cafe_glyphs.h"
 
+#include "utils.hpp"
+
 
 namespace wups {
 
@@ -78,14 +80,6 @@ namespace wups {
         }
 
 
-        std::string
-        to_utf8(const std::u32string& s)
-        {
-            std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
-            return conv.to_bytes(s);
-        }
-
-
         std::u32string
         prefix(const std::u32string& str, std::size_t prefix_size)
         {
@@ -142,7 +136,7 @@ namespace wups {
                     str = parent_name + separator + file_name;
                 }
             }
-            return to_utf8(str);
+            return utils::to_utf8(str);
         }
 
 
