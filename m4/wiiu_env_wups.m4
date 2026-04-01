@@ -8,7 +8,7 @@
 # any medium without royalty provided the copyright notice and this notice are
 # preserved. This file is offered as-is, without any warranty.
 
-#serial 2
+#serial 3
 
 # WIIU_ENV_SETUP_WUPS([RELATIVE-PATH-TO-WUPS])
 # --------------------------------------------
@@ -78,6 +78,8 @@ $WUPS_DEBUG_LIB:
 .PHONY: clean-wiiu-env-WUPS
 
 clean: clean-wiiu-env-WUPS
+
+distclean: clean-wiiu-env-WUPS
 
 clean-wiiu-env-WUPS:
 	-\$([AM_V_at])\$(MAKE) \$(AM_MAKEFLAGS) -C \$(WUPS_DIR) clean

@@ -23,10 +23,10 @@ AM_LDFLAGS = $(WUPS_LDFLAGS)
 LDADD = $(WUPS_LIB)
 
 
-noinst_LIBRARIES = src/libwupsxx.a
+noinst_LIBRARIES = lib/libwupsxx.a
 
 
-src_libwupsxx_a_SOURCES = 			\
+lib_libwupsxx_a_SOURCES = 			\
 	include/wupsxx/bool_item.hpp		\
 	include/wupsxx/button_item.hpp		\
 	include/wupsxx/cafe_glyphs.h		\
@@ -75,7 +75,7 @@ AM_CPPFLAGS += $(LIBBUTTONCOMBO_CPPFLAGS)
 
 SUBDIRS += external/libbuttoncombo
 
-src_libwupsxx_a_SOURCES +=			\
+lib_libwupsxx_a_SOURCES +=			\
 	include/wupsxx/shortcut.hpp		\
 	include/wupsxx/shortcut_item.hpp	\
 	src/shortcut.cpp			\
@@ -90,12 +90,11 @@ AM_CPPFLAGS += $(LIBNOTIFICATIONS_CPPFLAGS)
 
 SUBDIRS += external/libnotifications
 
-src_libwupsxx_a_SOURCES +=			\
+lib_libwupsxx_a_SOURCES +=			\
 	include/wupsxx/notify.hpp		\
 	src/notify.cpp
 
 endif USE_NOTIFY
-
 
 
 .PHONY: company run
@@ -117,7 +116,7 @@ demo_wupsxx_demo_elf_SOURCES = 		\
 	demo/main.cpp
 
 demo_wupsxx_demo_elf_LDADD = \
-	src/libwupsxx.a \
+	lib/libwupsxx.a \
 	$(LIBBUTTONCOMBO_LIB) \
 	$(LIBNOTIFICATIONS_LIB) \
 	$(LDADD)
