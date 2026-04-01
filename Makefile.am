@@ -4,9 +4,24 @@ EXTRA_DIST = \
 	README.md
 
 
-AM_CPPFLAGS = -I$(srcdir)/include
+SUBDIRS = external/WiiUPluginSystem
+
+DIST_SUBDIRS =
+
+
+AM_CPPFLAGS = \
+	$(WUPS_CPPFLAGS) \
+	-I$(srcdir)/include
+
 
 AM_CXXFLAGS = -Wall -Wextra -Werror
+
+
+AM_LDFLAGS = $(WUPS_LDFLAGS)
+
+
+LDADD = $(WUPS_LIB)
+
 
 noinst_LIBRARIES = src/libwupsxx.a
 
@@ -53,29 +68,37 @@ src_libwupsxx_a_SOURCES = 			\
 	src/text_item.cpp			\
 	src/utils.cpp src/utils.hpp
 
+
 if USE_SHORTCUTS
+
+AM_CPPFLAGS += $(LIBBUTTONCOMBO_CPPFLAGS)
+
+SUBDIRS += external/libbuttoncombo
+
 src_libwupsxx_a_SOURCES +=			\
 	include/wupsxx/shortcut.hpp		\
 	include/wupsxx/shortcut_item.hpp	\
 	src/shortcut.cpp			\
 	src/shortcut_item.cpp
+
 endif USE_SHORTCUTS
 
+
 if USE_NOTIFY
+
+AM_CPPFLAGS += $(LIBNOTIFICATIONS_CPPFLAGS)
+
+SUBDIRS += external/libnotifications
+
 src_libwupsxx_a_SOURCES +=			\
 	include/wupsxx/notify.hpp		\
 	src/notify.cpp
+
 endif USE_NOTIFY
 
 
+
 .PHONY: company run
-
-
-company: compile_flags.txt
-
-compile_flags.txt: Makefile
-	printf "%s" "$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS)" | xargs -n1 | sort -u > $(srcdir)/compile_flags.txt
-	$(CPP) -xc++ /dev/null -E -Wp,-v 2>&1 | sed -n 's,^ ,-I,p' >> $(srcdir)/compile_flags.txt
 
 
 if BUILD_DEMO
@@ -95,9 +118,9 @@ demo_wupsxx_demo_elf_SOURCES = 		\
 
 demo_wupsxx_demo_elf_LDADD = \
 	src/libwupsxx.a \
-	-lbuttoncombo \
-	-lnotifications
-
+	$(LIBBUTTONCOMBO_LIB) \
+	$(LIBNOTIFICATIONS_LIB) \
+	$(LDADD)
 
 all-local: $(WPS_FILE)
 
@@ -110,3 +133,11 @@ endif BUILD_DEMO
 
 @INC_AMINCLUDE@
 DISTCLEANFILES = $(AMINCLUDE)
+
+
+.PHONY: company
+company: compile_flags.txt
+
+compile_flags.txt: Makefile
+	printf "%s" "$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS)" | xargs -n1 | sort -u > compile_flags.txt
+	$(CPP) -xc++ /dev/null -E -Wp,-v 2>&1 | sed -n 's,^ ,-I,p' >> compile_flags.txt

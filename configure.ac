@@ -12,10 +12,11 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
 
-WIIU_WUPS_INIT
-WIIU_WUMS_INIT
+DEVKITPRO_WUT_INIT
 
 AM_INIT_AUTOMAKE([foreign subdir-objects])
+
+DEVKITPRO_WUT_SETUP
 
 AC_PROG_RANLIB
 AC_PROG_CXX
@@ -27,8 +28,9 @@ AX_APPEND_COMPILE_FLAGS([-std=c++23], [CXX])
 WANT_SHORTCUTS=no
 WANT_NOTIFY=no
 
-WIIU_WUPS_SETUP
-WIIU_WUMS_SETUP
+WIIU_ENV_SETUP_WUPS([external/WiiUPluginSystem])
+WIIU_ENV_SETUP_LIBNOTIFICATIONS([external/libnotifications])
+WIIU_ENV_SETUP_LIBBUTTONCOMBO([external/libbuttoncombo])
 
 AC_ARG_ENABLE([demo],
               [AS_HELP_STRING([--enable-demo],
@@ -45,22 +47,19 @@ AM_CONDITIONAL([BUILD_DEMO], [test x$enable_demo = xyes])
 
 AC_ARG_ENABLE([shortcuts],
               [AS_HELP_STRING([--enable-shortcuts],
-                              [Add support for libbuttoncombo])],
+                              [Enable support for ButtonCombo module.])],
               [
                   WANT_SHORTCUTS=$enableval
               ])
 AM_CONDITIONAL([USE_SHORTCUTS], [test x$WANT_SHORTCUTS = xyes])
-AS_IF([test x$WANT_SHORTCUTS = xyes], [WIIU_WUMS_CHECK_LIBBUTTONCOMBO])
-
 
 AC_ARG_ENABLE([notify],
               [AS_HELP_STRING([--enable-notify],
-                              [Add support for libnotifications])],
+                              [Enable suport for Notifications module.])],
               [
                   WANT_NOTIFY=$enableval
               ])
 AM_CONDITIONAL([USE_NOTIFY], [test x$WANT_NOTIFY = xyes])
-AS_IF([test x$WANT_NOTIFY = xyes], [WIIU_WUMS_CHECK_LIBNOTIFICATIONS])
 
 
 AC_CONFIG_FILES([Makefile])
