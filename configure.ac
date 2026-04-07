@@ -16,11 +16,11 @@ DEVKITPRO_WUT_INIT
 
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 
+LT_INIT([disable-shared])
+
 DEVKITPRO_WUT_SETUP
 
-AC_PROG_RANLIB
 AC_PROG_CXX
-AM_PROG_AR
 
 AC_LANG([C++])
 AX_APPEND_COMPILE_FLAGS([-std=c++23], [CXX])

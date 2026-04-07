@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2025  Daniel K. O.
+ * Copyright (C) 2025-2026  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -22,7 +22,7 @@ namespace wups {
     category::category(const std::string& label) :
         own_handle{true}
     {
-        WUPSConfigAPICreateCategoryOptionsV1 options{ .name = label.c_str() };
+        WUPSConfigAPICreateCategoryOptionsV1 options{ .name = label.data() };
         auto status = WUPSConfigAPI_Category_Create(options, &handle);
         if (status != WUPSCONFIG_API_RESULT_SUCCESS)
             throw error{status, "could not create category \"" + label + "\""};

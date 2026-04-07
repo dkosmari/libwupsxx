@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2025  Daniel K. O.
+ * Copyright (C) 2025-2026  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -55,7 +55,7 @@ namespace wups {
 
         if (width >= text.size()) {
             // Easy case: text fits, just show it all.
-            std::snprintf(buf, size, "%s", text.c_str());
+            std::snprintf(buf, size, "%s", text.data());
             return;
         }
 
@@ -80,9 +80,9 @@ namespace wups {
 
         std::snprintf(buf, size,
                       "%s%s%s",
-                      prefix.c_str(),
-                      slice.c_str(),
-                      suffix.c_str());
+                      prefix.data(),
+                      slice.data(),
+                      suffix.data());
     }
 
 
@@ -99,7 +99,7 @@ namespace wups {
 
         if (width >= text.size()) {
             // Easy case: text fits, just show it all.
-            std::snprintf(buf, size, "%s", text.c_str());
+            std::snprintf(buf, size, "%s", text.data());
             return;
         }
 
@@ -122,9 +122,9 @@ namespace wups {
 
         std::snprintf(buf, size,
                       "%s%s%s",
-                      prefix.c_str(),
-                      slice.c_str(),
-                      suffix.c_str());
+                      prefix.data(),
+                      slice.data(),
+                      suffix.data());
     }
 
 

@@ -28,7 +28,7 @@ namespace wups {
         if (!status_msg.empty())
             std::snprintf(buf, size,
                           "%s (Press " CAFE_GLYPH_BTN_A ")",
-                          status_msg.c_str());
+                          status_msg.data());
         else
             std::snprintf(buf, size,
                           "(Press " CAFE_GLYPH_BTN_A ")");
@@ -48,7 +48,7 @@ namespace wups {
             else
                 std::snprintf(buf, size,
                               "%s (Press " CAFE_GLYPH_BTN_B " to cancel )",
-                              status_msg.c_str());
+                              status_msg.data());
             break;
 
         case state::stopped:

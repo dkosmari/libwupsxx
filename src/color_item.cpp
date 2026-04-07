@@ -110,7 +110,7 @@ namespace wups {
             str = get_hex_str(variable, has_alpha);
             break;
         }
-        std::snprintf(buf, size, "%s", str.c_str());
+        std::snprintf(buf, size, "%s", str.data());
     }
 
 
@@ -145,7 +145,7 @@ namespace wups {
         std::snprintf(buf, size,
                       "%s %s %s",
                       left_right,
-                      str.c_str(),
+                      str.data(),
                       up_down);
     }
 

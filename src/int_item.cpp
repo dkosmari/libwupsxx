@@ -10,6 +10,7 @@
 
 #include "numeric_item_impl.hpp"
 
+
 namespace wups {
 
     // Instantiate the template for `int`.

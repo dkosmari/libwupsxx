@@ -27,6 +27,8 @@ namespace wups {
 
             T fast_increment = T{10};
             T slow_increment = T{1};
+            std::string format = {};
+            bool round_to_format = true;
 
         }; // struct specs
 

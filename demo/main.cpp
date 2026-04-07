@@ -24,8 +24,9 @@
 #include <wupsxx/bool_item.hpp>
 #include <wupsxx/category.hpp>
 #include <wupsxx/color_item.hpp>
-#include <wupsxx/duration_items.hpp> // note, plural
+#include <wupsxx/duration_items.hpp> // NOTE: plural
 #include <wupsxx/file_item.hpp>
+#include <wupsxx/float_item.hpp>
 #include <wupsxx/init.hpp>
 #include <wupsxx/int_item.hpp>
 #include <wupsxx/logger.hpp>
@@ -104,6 +105,9 @@ namespace cfg {
     WUPSXX_OPTION("Integer option 2",
                   int, int_value_2, 0, -1000, 1000);
 
+    WUPSXX_OPTION("Float option 1",
+                  float, flt_value_1, 1.0f, 0.0f, 5.0f);
+
     WUPSXX_OPTION("Some SD root file",
                   path, some_file, "");
     WUPSXX_OPTION("Plugin file",
@@ -146,6 +150,7 @@ namespace cfg {
         &h_value,
         &int_value_1,
         &int_value_2,
+        &flt_value_1,
         &some_file,
         &plugin_file,
         &shortcut1,
@@ -271,6 +276,16 @@ menu_open(wups::category& root)
                            .fast_increment = 100,
                            .slow_increment = 10
                        }));
+
+
+    // Add a float value, show one decimal place.
+    root.add(make_item(cfg::flt_value_1,
+                       {
+                           .fast_increment = 1.0f,
+                           .slow_increment = 0.1f,
+                           .format = "%03.1f"
+                       }));
+
 
     // A text item, max width limited to 30 chars.
     root.add(make_item("Text", cfg::text, 30));

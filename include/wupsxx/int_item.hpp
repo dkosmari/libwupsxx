@@ -9,10 +9,10 @@
 #ifndef WUPSXX_INT_ITEM_HPP
 #define WUPSXX_INT_ITEM_HPP
 
-#include <concepts>
 #include <memory>
 
 #include "numeric_item.hpp"
+#include "option.hpp"
 
 
 namespace wups {

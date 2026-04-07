@@ -76,7 +76,7 @@ namespace wups {
 
         if (!message.empty())
             str += " (" + message + ")";
-        std::snprintf(buf, size, "%s", str.c_str());
+        std::snprintf(buf, size, "%s", str.data());
     }
 
 
@@ -90,7 +90,7 @@ namespace wups {
             break;
         case state_t::reading:
             std::snprintf(buf, size, "%s (reading...)",
-                          to_glyph(variable).c_str());
+                          to_glyph(variable).data());
             break;
         case state_t::confirming:
             std::snprintf(buf, size,

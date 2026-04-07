@@ -13,20 +13,18 @@ AM_CPPFLAGS = \
 	$(WUPS_CPPFLAGS) \
 	-I$(srcdir)/include
 
+AM_LDFLAGS = $(WUPS_LDFLAGS)
 
 AM_CXXFLAGS = -Wall -Wextra -Werror
-
-
-AM_LDFLAGS = $(WUPS_LDFLAGS)
 
 
 LDADD = $(WUPS_LIB)
 
 
-noinst_LIBRARIES = lib/libwupsxx.a
+noinst_LTLIBRARIES = lib/libwupsxx.la
 
 
-lib_libwupsxx_a_SOURCES = 			\
+lib_libwupsxx_la_SOURCES = 			\
 	include/wupsxx/bool_item.hpp		\
 	include/wupsxx/button_item.hpp		\
 	include/wupsxx/cafe_glyphs.h		\
@@ -38,6 +36,7 @@ lib_libwupsxx_a_SOURCES = 			\
 	include/wupsxx/duration_items.hpp	\
 	include/wupsxx/error.hpp		\
 	include/wupsxx/file_item.hpp		\
+	include/wupsxx/float_item.hpp		\
 	include/wupsxx/init.hpp			\
 	include/wupsxx/input.hpp		\
 	include/wupsxx/int_item.hpp		\
@@ -57,6 +56,7 @@ lib_libwupsxx_a_SOURCES = 			\
 	src/duration_items.cpp			\
 	src/error.cpp				\
 	src/file_item.cpp			\
+	src/float_item.cpp			\
 	src/init.cpp				\
 	src/input.cpp				\
 	src/int_item.cpp			\
@@ -69,30 +69,41 @@ lib_libwupsxx_a_SOURCES = 			\
 	src/utils.cpp src/utils.hpp
 
 
-if USE_SHORTCUTS
+EXTRA_lib_libwupsxx_la_DEPENDENCIES = external/WiiUPluginSystem/lib/libwups.a
 
-AM_CPPFLAGS += $(LIBBUTTONCOMBO_CPPFLAGS)
+
+if USE_SHORTCUTS
 
 SUBDIRS += external/libbuttoncombo
 
-lib_libwupsxx_a_SOURCES +=			\
+lib_libwupsxx_la_SOURCES +=			\
 	include/wupsxx/shortcut.hpp		\
 	include/wupsxx/shortcut_item.hpp	\
 	src/shortcut.cpp			\
 	src/shortcut_item.cpp
+
+EXTRA_lib_libwupsxx_la_DEPENDENCIES += external/libbuttoncombo/lib/libbuttoncombo.a
+
+AM_CPPFLAGS += $(LIBBUTTONCOMBO_CPPFLAGS)
+
+LDADD += $(LIBBUTTONCOMBO_LIB)
 
 endif USE_SHORTCUTS
 
 
 if USE_NOTIFY
 
-AM_CPPFLAGS += $(LIBNOTIFICATIONS_CPPFLAGS)
-
 SUBDIRS += external/libnotifications
 
-lib_libwupsxx_a_SOURCES +=			\
+lib_libwupsxx_la_SOURCES +=			\
 	include/wupsxx/notify.hpp		\
 	src/notify.cpp
+
+EXTRA_lib_libwupsxx_la_DEPENDENCIES += external/libnotifications/lib/libnotifications.a
+
+AM_CPPFLAGS += $(LIBNOTIFICATIONS_CPPFLAGS)
+
+LDADD += $(LIBNOTIFICATIONS_LIB)
 
 endif USE_NOTIFY
 
@@ -116,9 +127,7 @@ demo_wupsxx_demo_elf_SOURCES = 		\
 	demo/main.cpp
 
 demo_wupsxx_demo_elf_LDADD = \
-	lib/libwupsxx.a \
-	$(LIBBUTTONCOMBO_LIB) \
-	$(LIBNOTIFICATIONS_LIB) \
+	lib/libwupsxx.la \
 	$(LDADD)
 
 all-local: $(WPS_FILE)
@@ -134,7 +143,6 @@ endif BUILD_DEMO
 DISTCLEANFILES = $(AMINCLUDE)
 
 
-.PHONY: company
 company: compile_flags.txt
 
 compile_flags.txt: Makefile

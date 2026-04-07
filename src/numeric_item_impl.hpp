@@ -13,7 +13,6 @@
 #include <chrono>
 #include <cstdio>               // snprintf()
 #include <exception>
-#include <string.h>             // BSD strlcpy()
 
 #include "wupsxx/numeric_item.hpp"
 
@@ -47,10 +46,14 @@ namespace wups {
     numeric_item<T>::get_display(char* buf, std::size_t size)
         const
     {
-        using std::to_string;
-        using wups::to_string;
-        std::string str = to_string(variable);
-        ::strlcpy(buf, str.c_str(), size);
+        if (options.format.empty()) {
+            using std::to_string;
+            using wups::to_string;
+            const std::string variable_str = to_string(variable);
+            std::snprintf(buf, size, "%s", variable_str.data());
+        } else {
+            std::snprintf(buf, size, options.format.data(), variable);
+        }
     }
 
 
@@ -70,16 +73,28 @@ namespace wups {
             slow_right = " " CAFE_GLYPH_BTN_RIGHT;
             fast_right = CAFE_GLYPH_BTN_R;
         }
-        using std::to_string;
-        using wups::to_string;
-        std::string str = to_string(variable);
-        std::snprintf(buf, size,
-                      "%s%s" "%s" "%s%s",
-                      fast_left,
-                      slow_left,
-                      str.c_str(),
-                      slow_right,
-                      fast_right);
+
+        if (options.format.empty()) {
+            using std::to_string;
+            using wups::to_string;
+            const std::string variable_str = to_string(variable);
+            std::snprintf(buf, size,
+                          "%s%s" "%s" "%s%s",
+                          fast_left,
+                          slow_left,
+                          variable_str.data(),
+                          slow_right,
+                          fast_right);
+        } else {
+            const std::string format = "%s%s" + options.format + "%s%s";
+            std::snprintf(buf, size,
+                          format.data(),
+                          fast_left,
+                          slow_left,
+                          variable,
+                          slow_right,
+                          fast_right);
+        }
     }
 
 
@@ -100,6 +115,12 @@ namespace wups {
             variable += options.fast_increment;
 
         variable = std::clamp(variable, min_value, max_value);
+
+        if (options.round_to_format && !options.format.empty()) {
+            char buf[64];
+            std::snprintf(buf, sizeof buf, options.format.data(), variable);
+            std::sscanf(buf, options.format.data(), &variable);
+        }
 
         return var_item<T>::on_input(input);
     }
