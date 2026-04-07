@@ -1,16 +1,16 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2025  Daniel K. O.
+ * Copyright (C) 2025-2026  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
 
 #include <algorithm>
 #include <cstdio>
-#include <locale>
 #include <ranges>
 #include <set>
+#include <stdexcept>
 #include <utility>              // move()
 
 #include "wupsxx/file_item.hpp"
@@ -19,11 +19,12 @@
 
 #include "utils.hpp"
 
+#include "wupsxx/logger.hpp" // DEBUG
+
 
 namespace wups {
 
     namespace {
-
 
         char
         upper_char(char c)
@@ -73,15 +74,9 @@ namespace wups {
         }
 
 
-        bool
-        is_sd_root(const std::filesystem::path& p)
-        {
-            return p == "fs:/vol/external01";
-        }
-
-
         std::u32string
-        prefix(const std::u32string& str, std::size_t prefix_size)
+        prefix(const std::u32string& str,
+               std::size_t prefix_size)
         {
             // Note: count argument for substr() can safely exceed the string size.
             return str.substr(0, prefix_size);
@@ -89,7 +84,8 @@ namespace wups {
 
 
         std::u32string
-        suffix(const std::u32string& str, std::size_t suffix_size)
+        suffix(const std::u32string& str,
+               std::size_t suffix_size)
         {
             if (suffix_size >= str.size())
                 return str;
@@ -99,16 +95,20 @@ namespace wups {
 
 
         std::string
-        ellipsize_path(const std::filesystem::path& p,
-                       std::size_t max_width)
+        format_filename(const std::filesystem::path& p,
+                        std::size_t max_width,
+                        bool show_full_path)
         {
-            std::u32string str = p.u32string();
+            std::u32string str = show_full_path
+                                 ? p.u32string()
+                                 : p.filename().u32string();
 
-            // Replace "fs:/vol/external01/" by "sd:/"
-            const std::u32string pre = U"fs:/vol/external01";
-            if (str.starts_with(pre))
-                str.replace(0, pre.size(), U"SD:");
-
+            if (show_full_path) {
+                // Replace "fs:/vol/external01/" by "sd:/"
+                const std::u32string pre = U"fs:/vol/external01";
+                if (str.starts_with(pre))
+                    str.replace(0, pre.size(), U"SD:");
+            }
 
             if (str.size() > max_width) {
                 const std::u32string ellipsis = U"…";
@@ -139,96 +139,70 @@ namespace wups {
             return utils::to_utf8(str);
         }
 
-
     } // namespace
 
 
     file_item::file_item(option<std::filesystem::path>& opt,
-                         std::size_t max_width,
-                         const std::vector<std::string>& extensions) :
+                         const std::filesystem::path& base_dir,
+                         const specs& options_) :
         var_item{opt},
-        max_width{max_width},
-        extensions{extensions},
-        current_idx{0},
-        variable_is_dir{is_directory(variable)}
+        base_dir{base_dir},
+        options{options_},
+        current_idx{0}
     {
         // Convert all extensions to upper-case.
-        for (auto& ext : this->extensions)
+        for (auto& ext : options.extensions)
             for (char& c : ext)
                 c = upper_char(c);
         // and sort them.
-        std::ranges::sort(this->extensions);
+        std::ranges::sort(options.extensions);
     }
 
 
     std::unique_ptr<file_item>
     file_item::create(option<std::filesystem::path>& opt,
-                      std::size_t max_width,
-                      const std::vector<std::string>& extensions)
+                      const std::filesystem::path& base_dir,
+                      const specs& options)
     {
-        return std::make_unique<file_item>(opt, max_width, extensions);
+        return std::make_unique<file_item>(opt, base_dir, options);
     }
 
 
     void
-    file_item::get_display(char* buf, std::size_t size)
+    file_item::get_display(char* buf,
+                           std::size_t size)
         const
     {
-        const char* dir_indicator = "";
-        if (variable_is_dir)
-            dir_indicator = "/";
-
-        std::string variable_str = ellipsize_path(variable, max_width);
-
-        std::snprintf(buf, size,
-                      "%s%s",
-                      variable_str.c_str(),
-                      dir_indicator);
+        std::string variable_str = format_filename(variable,
+                                                   options.max_width,
+                                                   options.show_full_path);
+        std::snprintf(buf, size, "%s", variable_str.data());
     }
 
 
     void
-    file_item::get_focused_display(char* buf, std::size_t size)
+    file_item::get_focused_display(char* buf,
+                                   std::size_t size)
         const
     {
-        std::string left;
-        std::string right;
+        std::string left, right;
         const char* const blank = CAFE_GLYPH_BTN_DPAD;
-
-        bool variable_is_root = is_sd_root(variable);
-
-        if (variable_is_dir && variable_is_root)
-            left = CAFE_GLYPH_BTN_RIGHT;
-        else if (variable_is_dir)
-            left = CAFE_GLYPH_BTN_LEFT_RIGHT;
-        else if (variable_is_root)
-            left = blank; // should never happen, root is dir
-        else // !root && !dir
-            left = CAFE_GLYPH_BTN_LEFT;
 
         bool has_prev = current_idx > 0;
         bool has_next = current_idx + 1 < entries.size();
 
-        if (has_prev && has_next)
-            right = CAFE_GLYPH_BTN_UP_DOWN;
-        else if (has_prev)
-            right = CAFE_GLYPH_BTN_UP;
-        else if (has_next)
-            right = CAFE_GLYPH_BTN_DOWN;
-        else
-            right = blank;
+        left = has_prev ? CAFE_GLYPH_BTN_LEFT : blank;
+        right = has_next ? CAFE_GLYPH_BTN_RIGHT : blank;
 
-        std::string variable_str = ellipsize_path(variable, max_width);
-        const char* dir_indicator = "";
-        if (variable_is_dir)
-            dir_indicator = "/";
+        std::string variable_str = format_filename(variable,
+                                                   options.max_width,
+                                                   options.show_full_path);
 
         std::snprintf(buf, size,
-                      "%s " "%s%s" " %s",
-                      left.c_str(),
-                      variable_str.c_str(),
-                      dir_indicator,
-                      right.c_str());
+                      "%s " "%s" " %s",
+                      left.data(),
+                      variable_str.data(),
+                      right.data());
     }
 
 
@@ -237,7 +211,9 @@ namespace wups {
     {
         var_item::on_focus_changed();
         if (has_focus())
-            enter_directory(variable.parent_path(), variable);
+            read_directory();
+        else
+            entries.clear();
     }
 
 
@@ -245,125 +221,99 @@ namespace wups {
     file_item::restore_default()
     {
         var_item::restore_default();
-        // we must update variable_is_dir.
-        variable_is_dir = is_directory(variable);
     }
 
 
     focus_status
     file_item::on_input(const simple_pad_data& input)
     {
-        if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_UP))
+        if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_LEFT))
             navigate_prev();
 
-        if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_DOWN))
+        if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_RIGHT))
             navigate_next();
-
-        if (input.buttons_d & WUPS_CONFIG_BUTTON_RIGHT)
-            enter_directory(variable);
-
-        if (input.buttons_d & WUPS_CONFIG_BUTTON_LEFT)
-            navigate_up();
 
         return var_item::on_input(input);
     }
 
 
     void
-    file_item::enter_directory(std::filesystem::path dirname,
-                               std::filesystem::path filename)
-    {
-        try {
-            // Special handling for "fs:/vol", because it's not counted as a directory.
-            if (dirname == "fs:/vol" && is_sd_root(filename)) {
-                entries.clear();
-                entries.emplace_back(filename);
-                current_idx = 0;
-                variable = filename;
-                variable_is_dir = is_directory(variable);
-                return;
+    file_item::read_directory()
+        noexcept
+    try {
+        current_idx = 0;
+        entries.clear();
+
+        if (!exists(base_dir) || !is_directory(base_dir))
+            throw std::runtime_error{base_dir.string() + " not found or not directory"};
+
+        for (auto& entry : std::filesystem::directory_iterator{base_dir}) {
+            // filter out wrong entry types
+            switch (options.valid) {
+                case type::regular:
+                    if (!entry.is_regular_file())
+                        continue;
+                    break;
+                case type::directory:
+                    if (!entry.is_directory())
+                        continue;
+                    break;
+                default:
+                        ;
             }
 
-            if (!is_directory(dirname))
-                return;
-
-
-            std::vector<std::filesystem::directory_entry> new_entries;
-            for (auto& entry : std::filesystem::directory_iterator{dirname}) {
-                if (!extensions.empty() && entry.is_regular_file()) {
-                    // Apply filtering by extension.
-                    std::string ext = upper(entry.path().extension().string());
-                    if (std::ranges::binary_search(extensions, ext))
-                        new_entries.push_back(entry);
-                } else
-                    new_entries.push_back(entry);
-            }
-
-            // Don't enter empty directories, there's nothing to select.
-            if (new_entries.empty())
-                return;
-
-            current_idx = 0;
-            entries = std::move(new_entries);
-            std::ranges::sort(entries, icase_compare);
-
-            // find the entry that matches filename
-            if (!filename.empty()) {
-                for (std::size_t i = 0; i < entries.size(); ++i)
-                    if (entries[i].path() == filename) {
-                        current_idx = i;
-                        break;
-                    }
-            }
-
-            variable = entries[current_idx];
-            variable_is_dir = entries[current_idx].is_directory();
-
+            if (!options.extensions.empty()) {
+                // Apply filtering by extension.
+                std::string ext = upper(entry.path().extension().string());
+                if (std::ranges::binary_search(options.extensions, ext))
+                    entries.push_back(entry);
+            } else
+                entries.push_back(entry);
         }
-        catch (std::exception& e) {
-        }
+        // Add an empty entry.
+        entries.push_back({});
+        std::ranges::sort(entries, icase_compare);
+
+        // find the entry that matches the current value, and set current_idx
+        for (std::size_t i = 0; i < entries.size(); ++i)
+            if (entries[i].path() == variable) {
+                current_idx = i;
+                break;
+            }
+    }
+    catch (std::exception& e) {
+        logger::printf("ERROR in file_item::read_directory(): %s\n", e.what());
     }
 
 
     void
     file_item::navigate_prev()
     {
+        if (entries.empty())
+            return;
         if (current_idx == 0)
             return;
-        --current_idx;
-        if (!entries.empty()) {
-            variable = entries[current_idx];
-            variable_is_dir = entries[current_idx].is_directory();
-        }
+        variable = entries[--current_idx];
     }
 
 
     void
     file_item::navigate_next()
     {
+        if (entries.empty())
+            return;
         if (current_idx + 1 >= entries.size())
             return;
-        ++current_idx;
-        variable = entries[current_idx];
-        variable_is_dir = entries[current_idx].is_directory();
-    }
-
-
-    void
-    file_item::navigate_up()
-    {
-        if (!is_sd_root(variable))
-            enter_directory(variable.parent_path().parent_path(),
-                            variable.parent_path());
+        variable = entries[++current_idx];
     }
 
 
     std::unique_ptr<file_item>
     make_item(option<std::filesystem::path>& opt,
-              std::size_t max_width,
-              const std::vector<std::string>& extensions)
+              const std::filesystem::path& base_dir,
+              const file_item::specs& options)
     {
-        return file_item::create(opt, max_width, extensions);
+        return file_item::create(opt, base_dir, options);
     }
 
 } // namespace wups

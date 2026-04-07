@@ -35,15 +35,29 @@ namespace wups {
                std::size_t max_width = 50);
 
 
-        virtual void get_display(char* buf, std::size_t size) const override;
+        virtual
+        void
+        get_display(char* buf,
+                    std::size_t size)
+            const override;
 
-        virtual void get_focused_display(char* buf, std::size_t size) const override;
+        virtual
+        void
+        get_focused_display(char* buf,
+                            std::size_t size)
+            const override;
 
-        virtual bool on_focus_request(bool new_focus) const override;
+        virtual
+        bool
+        on_focus_request(bool new_focus)
+            const override;
 
-        virtual focus_status on_input(const simple_pad_data& input) override;
+        virtual
+        focus_status
+        on_input(const simple_pad_data& input)
+            override;
 
-    };
+    }; // struct text_item
 
 
     std::unique_ptr<text_item>

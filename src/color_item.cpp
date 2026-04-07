@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2025  Daniel K. O.
+ * Copyright (C) 2025-2026  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -115,7 +115,8 @@ namespace wups {
 
 
     void
-    color_item::get_focused_display(char* buf, std::size_t size)
+    color_item::get_focused_display(char* buf,
+                                    std::size_t size)
         const
     {
         const unsigned max_edit_idx = has_alpha ? 3 : 2;

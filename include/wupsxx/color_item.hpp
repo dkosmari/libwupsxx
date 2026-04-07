@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2025  Daniel K. O.
+ * Copyright (C) 2025-2026  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -39,11 +39,21 @@ namespace wups {
                bool has_alpha = false);
 
 
-        virtual void get_display(char* buf, std::size_t size) const override;
+        virtual
+        void
+        get_display(char* buf, std::size_t size)
+            const override;
 
-        virtual void get_focused_display(char* buf, std::size_t size) const override;
+        virtual
+        void
+        get_focused_display(char* buf,
+                            std::size_t size)
+            const override;
 
-        virtual focus_status on_input(const simple_pad_data& input) override;
+        virtual
+        focus_status
+        on_input(const simple_pad_data& input)
+            override;
 
     };
 

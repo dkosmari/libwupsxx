@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2025  Daniel K. O.
+ * Copyright (C) 2025-2026  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -38,7 +38,9 @@ namespace wups {
         shortcut_item(option<shortcut::combo>& opt,
                       shortcut::handle combo_handle_);
 
-        virtual ~shortcut_item();
+        virtual
+        ~shortcut_item()
+            noexcept;
 
         static
         std::unique_ptr<shortcut_item>

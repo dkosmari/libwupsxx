@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2025  Daniel K. O.
+ * Copyright (C) 2025-2026  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -50,6 +50,7 @@ namespace wups {
 
 
     shortcut_item::~shortcut_item()
+        noexcept
     {
         ButtonComboModule_UpdateButtonComboCallback(combo_handle, &old_callback);
     }

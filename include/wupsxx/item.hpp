@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2025  Daniel K. O.
+ * Copyright (C) 2025-2026  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -48,7 +48,9 @@ namespace wups {
 
     public:
 
-        virtual ~item();
+        virtual
+        ~item()
+            noexcept;
 
         // Gives up ownership of the handle.
         void release() noexcept;

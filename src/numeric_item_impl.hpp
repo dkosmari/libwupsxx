@@ -25,25 +25,20 @@ namespace wups {
 
     template<typename T>
     numeric_item<T>::numeric_item(option<T>& opt,
-                                  T fast_increment,
-                                  T slow_increment) :
+                                  const specs& options_) :
         var_item<T>{opt},
         min_value{opt.min_value},
         max_value{opt.max_value},
-        fast_increment{fast_increment},
-        slow_increment{slow_increment}
+        options{options_}
     {}
 
 
     template<typename T>
     std::unique_ptr<numeric_item<T>>
     numeric_item<T>::create(option<T>& opt,
-                            T fast_increment,
-                            T slow_increment)
+                            const specs& options)
     {
-        return std::make_unique<numeric_item<T>>(opt,
-                                                 fast_increment,
-                                                 slow_increment);
+        return std::make_unique<numeric_item<T>>(opt, options);
     }
 
 
@@ -93,16 +88,16 @@ namespace wups {
     numeric_item<T>::on_input(const simple_pad_data& input)
     {
         if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_LEFT))
-            variable -= slow_increment;
+            variable -= options.slow_increment;
 
         if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_RIGHT))
-            variable += slow_increment;
+            variable += options.slow_increment;
 
         if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_L))
-            variable -= fast_increment;
+            variable -= options.fast_increment;
 
         if (input.pressed_or_long_held(WUPS_CONFIG_BUTTON_R))
-            variable += fast_increment;
+            variable += options.fast_increment;
 
         variable = std::clamp(variable, min_value, max_value);
 

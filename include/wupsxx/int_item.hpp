@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2025  Daniel K. O.
+ * Copyright (C) 2025-2026  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -22,8 +22,7 @@ namespace wups {
 
     std::unique_ptr<int_item>
     make_item(option<int>& opt,
-              int fast_increment = 10,
-              int slow_increment = 1);
+              const int_item::specs& options = {});
 
 } // namespace wups
 

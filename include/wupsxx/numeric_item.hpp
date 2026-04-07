@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2025  Daniel K. O.
+ * Copyright (C) 2025-2026  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -21,35 +21,50 @@ namespace wups {
     template<typename T>
     class numeric_item : public var_item<T> {
 
-    protected:
-
-        using var_item<T>::variable;
-
-        T min_value;
-        T max_value;
-        T fast_increment;
-        T slow_increment;
-
     public:
 
+        struct specs {
+
+            T fast_increment = T{10};
+            T slow_increment = T{1};
+
+        }; // struct specs
+
+
         numeric_item(option<T>& opt,
-                     T fast_increment = T{10},
-                     T slow_increment = T{1});
+                     const specs& options);
 
         static
         std::unique_ptr<numeric_item>
         create(option<T>& opt,
-               T fast_increment = T{10},
-               T slow_increment = T{1});
+               const specs& options);
 
 
-        virtual void get_display(char* buf, std::size_t size) const override;
+        virtual
+        void
+        get_display(char* buf, std::size_t size)
+            const override;
 
-        virtual void get_focused_display(char* buf, std::size_t size) const override;
+        virtual
+        void
+        get_focused_display(char* buf,
+                            std::size_t size)
+            const override;
 
-        virtual focus_status on_input(const simple_pad_data& input) override;
+        virtual
+        focus_status
+        on_input(const simple_pad_data& input)
+            override;
 
-    };
+    protected:
+
+        using var_item<T>::variable;
+
+        const T min_value;
+        const T max_value;
+        const specs options;
+
+    }; // class numeric_item<T>
 
 } // namespace wups::config
 

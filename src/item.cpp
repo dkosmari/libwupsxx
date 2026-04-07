@@ -1,24 +1,22 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2025  Daniel K. O.
+ * Copyright (C) 2025-2026  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
 
 #include <cstdio>               // snprintf()
-
-#include <whb/log.h>
-
 #include <wups/config_api.h>
 
 #include "wupsxx/item.hpp"
 
+#include "wupsxx/logger.hpp"
 #include "wupsxx/error.hpp"
 
 
 #define REPORT_ERROR(e) \
-    WHBLogPrintf("[libwupsxx] error in %s(): %s\n", __func__, e.what())
+    logger::printf("[libwupsxx] error in %s(): %s\n", __func__, e.what())
 
 
 namespace wups {
@@ -30,7 +28,9 @@ namespace wups {
     namespace glue {
 
         int32_t
-        get_display(void* ctx, char* buf, int32_t size)
+        get_display(void* ctx,
+                    char* buf,
+                    int32_t size)
             noexcept
         {
             try {
@@ -46,7 +46,9 @@ namespace wups {
 
 
         int32_t
-        get_selected_display(void* ctx, char* buf, int32_t size)
+        get_selected_display(void* ctx,
+                             char* buf,
+                             int32_t size)
             noexcept
         {
             try {
@@ -108,7 +110,8 @@ namespace wups {
 
 
         void
-        on_input(void* ctx, WUPSConfigSimplePadData input)
+        on_input(void* ctx,
+                 WUPSConfigSimplePadData input)
             noexcept
         {
             auto it = static_cast<item*>(ctx);
@@ -145,7 +148,8 @@ namespace wups {
 
 
         void
-        on_input_ex(void* ctx, WUPSConfigComplexPadData input)
+        on_input_ex(void* ctx,
+                    WUPSConfigComplexPadData input)
             noexcept
         {
             auto it = static_cast<item*>(ctx);
@@ -184,7 +188,8 @@ namespace wups {
 
 
         void
-        on_selected(void* /*ctx*/, bool /*is_selected*/)
+        on_selected(void* /*ctx*/,
+                    bool /*is_selected*/)
             noexcept
         {}
 
@@ -233,6 +238,7 @@ namespace wups {
 
 
     item::~item()
+        noexcept
     {
         if (handle.handle) {
             /* How to get here:
@@ -370,6 +376,5 @@ namespace wups {
     {
         current_mode = mode;
     }
-
 
 } // namespace wups

@@ -19,7 +19,6 @@ namespace wups {
 
     struct button_item : item {
 
-
         enum class state {
             stopped,
             running,
@@ -34,27 +33,32 @@ namespace wups {
 
         virtual
         void
-        get_display(char* buf, std::size_t size) const override;
+        get_display(char* buf, std::size_t size)
+            const override;
 
 
         virtual
         void
-        get_focused_display(char* buf, std::size_t size) const override;
+        get_focused_display(char* buf, std::size_t size)
+            const override;
 
 
         virtual
         bool
-        on_focus_request(bool new_focus) const override;
+        on_focus_request(bool new_focus)
+            const override;
 
 
         virtual
         void
-        on_focus_changed() override;
+        on_focus_changed()
+            override;
 
 
         virtual
         focus_status
-        on_input(const simple_pad_data& input) override;
+        on_input(const simple_pad_data& input)
+            override;
 
 
         // This should eventually set `current_state` to `state::stopped`.
@@ -72,8 +76,7 @@ namespace wups {
         void
         on_cancel();
 
-    };
-
+    }; // struct button_item
 
 } // namespace wups
 

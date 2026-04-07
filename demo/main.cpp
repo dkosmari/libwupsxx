@@ -1,7 +1,7 @@
 /*
  * libwupsxx - A C++ wrapper for libwups.
  *
- * Copyright (C) 2025  Daniel K. O.
+ * Copyright (C) 2025-2026  Daniel K. O.
  *
  * SPDX-License-Identifier: MIT
  */
@@ -104,10 +104,10 @@ namespace cfg {
     WUPSXX_OPTION("Integer option 2",
                   int, int_value_2, 0, -1000, 1000);
 
-    WUPSXX_OPTION("Some file",
-                  path, some_file, "fs:/vol/external01");
+    WUPSXX_OPTION("Some SD root file",
+                  path, some_file, "");
     WUPSXX_OPTION("Plugin file",
-                  path, plugin_file, "fs:/vol/external01/wiiu/environments/aroma/plugins");
+                  path, plugin_file, "");
 
     WUPSXX_OPTION("Shortcut 1",
                   combo, shortcut1,
@@ -234,13 +234,19 @@ clear_shortcuts()
 void
 menu_open(wups::category& root)
 {
+    logger::initialize();
+
     using wups::make_item;
 
-    // A bool item, strings are true/false
+    // A bool item, strings are on/off
     root.add(make_item(cfg::bool_option_1));
 
     // Another bool item, strings are ■/□
-    root.add(make_item(cfg::bool_option_2, "■", "□"));
+    root.add(make_item(cfg::bool_option_2,
+                       {
+                           .true_label = "■",
+                           .false_label = "□"
+                       }));
 
     // A color item, only RGB
     root.add(make_item(cfg::fg_color));
@@ -250,7 +256,7 @@ menu_open(wups::category& root)
 
 
     // Some time duration items
-    root.add(make_item(cfg::ms_value));
+    root.add(make_item(cfg::ms_value, {}));
     root.add(make_item(cfg::s_value));
     root.add(make_item(cfg::min_value));
     root.add(make_item(cfg::h_value));
@@ -260,7 +266,11 @@ menu_open(wups::category& root)
     root.add(make_item(cfg::int_value_1));
 
     // Another int item, with custom increments
-    root.add(make_item(cfg::int_value_2, 100, 10));
+    root.add(make_item(cfg::int_value_2,
+                       {
+                           .fast_increment = 100,
+                           .slow_increment = 10
+                       }));
 
     // A text item, max width limited to 30 chars.
     root.add(make_item("Text", cfg::text, 30));
@@ -270,10 +280,16 @@ menu_open(wups::category& root)
 
 
     // A file item
-    root.add(make_item(cfg::some_file));
+    root.add(make_item(cfg::some_file, "fs:/vol/external01"));
 
     // A file item for plugin files: only .wps extensions.
-    root.add(make_item(cfg::plugin_file, 30, {".wps"}));
+    using wups::file_item;
+    root.add(make_item(cfg::plugin_file,
+                       "fs:/vol/external01/wiiu/environments/aroma/plugins",
+                       {
+                           .extensions = {".wps"},
+                           .valid = file_item::type::regular
+                       }));
 
 
     root.add(make_item(cfg::shortcut1, shortcut1_handle));
@@ -329,6 +345,8 @@ void
 menu_close()
 {
     cfg::save();
+
+    logger::finalize();
 }
 
 
