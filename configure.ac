@@ -12,22 +12,22 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
 
+AC_CANONICAL_HOST
+
 DEVKITPRO_WUT_INIT
 
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 
 LT_INIT([disable-shared])
 
-DEVKITPRO_WUT_SETUP
-
 AC_PROG_CXX
-
 AC_LANG([C++])
 AX_APPEND_COMPILE_FLAGS([-std=c++23], [CXX])
 
 WANT_SHORTCUTS=no
 WANT_NOTIFY=no
 
+DEVKITPRO_WUT_SETUP
 WIIU_ENV_SETUP_WUPS([external/WiiUPluginSystem])
 WIIU_ENV_SETUP_LIBNOTIFICATIONS([external/libnotifications])
 WIIU_ENV_SETUP_LIBBUTTONCOMBO([external/libbuttoncombo])
@@ -36,11 +36,11 @@ AC_ARG_ENABLE([demo],
               [AS_HELP_STRING([--enable-demo],
                               [Build the libwupsxx-demo plugin.])],
               [
-                  AS_IF([test x$enableval = xyes],
-                        [
-                            WANT_SHORTCUTS=yes
-                            WANT_NOTIFY=yes
-                        ])
+                  AS_VAR_IF([enableval], [yes],
+                            [
+                                WANT_SHORTCUTS=yes
+                                WANT_NOTIFY=yes
+                            ])
               ])
 AM_CONDITIONAL([BUILD_DEMO], [test x$enable_demo = xyes])
 
