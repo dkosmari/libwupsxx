@@ -295,15 +295,20 @@ menu_open(wups::category& root)
 
 
     // A file item
-    root.add(make_item(cfg::some_file, "fs:/vol/external01"));
+    root.add(make_item(cfg::some_file,
+                       "fs:/vol/external01",
+                       {
+                           .show_full_path = true,
+                       }));
 
-    // A file item for plugin files: only .wps extensions.
+    // A file item for plugin files: only .wps extensions, very short width.
     using wups::file_item;
     root.add(make_item(cfg::plugin_file,
                        "fs:/vol/external01/wiiu/environments/aroma/plugins",
                        {
                            .extensions = {".wps"},
-                           .valid = file_item::type::regular
+                           .valid = file_item::type::regular,
+                           .max_width = 15
                        }));
 
 

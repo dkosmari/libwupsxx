@@ -33,6 +33,7 @@ namespace wups {
             std::vector<std::string> extensions = {};
             type        valid          = type::any;
             bool        show_full_path = false;
+            bool        show_dir_slash = true;
             std::size_t max_width      = 40;
 
         }; // struct specs
@@ -92,6 +93,7 @@ namespace wups {
         specs options;
         std::vector<std::filesystem::directory_entry> entries;
         std::size_t current_idx;
+        bool current_is_dir;
 
     }; // class file_item
 

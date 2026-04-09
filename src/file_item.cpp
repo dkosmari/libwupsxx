@@ -22,6 +22,9 @@
 #include "wupsxx/logger.hpp" // DEBUG
 
 
+using namespace std::literals;
+
+
 namespace wups {
 
     namespace {
@@ -75,68 +78,76 @@ namespace wups {
 
 
         std::u32string
-        prefix(const std::u32string& str,
-               std::size_t prefix_size)
+        trim_prefix(const std::u32string& str,
+                    std::size_t prefix_size)
         {
-            // Note: count argument for substr() can safely exceed the string size.
-            return str.substr(0, prefix_size);
+            if (prefix_size >= str.size())
+                return {};
+            return str.substr(prefix_size);
         }
 
 
         std::u32string
-        suffix(const std::u32string& str,
-               std::size_t suffix_size)
+        trim_suffix(const std::u32string& str,
+                    std::size_t suffix_size)
         {
             if (suffix_size >= str.size())
-                return str;
-            // Note: str.substr(str.size()) is safe, returns empty string.
-            return str.substr(str.size() - suffix_size, suffix_size);
+                return {};
+            return str.substr(0, str.size() - suffix_size);
         }
 
 
         std::string
-        format_filename(const std::filesystem::path& p,
+        format_filename(const std::filesystem::path& input,
                         std::size_t max_width,
-                        bool show_full_path)
+                        bool show_full_path,
+                        bool append_slash)
         {
-            std::u32string str = show_full_path
-                                 ? p.u32string()
-                                 : p.filename().u32string();
+            if (input.empty())
+                return {};
+
+            const std::u32string ellipsis = U"…";
+            const std::u32string separator = U"/";
+
+            std::u32string filename_str = input.filename().u32string();
+            if (append_slash)
+                filename_str += separator;
+
+            std::u32string parent_path_str;
 
             if (show_full_path) {
-                // Replace "fs:/vol/external01/" by "sd:/"
-                const std::u32string pre = U"fs:/vol/external01";
-                if (str.starts_with(pre))
-                    str.replace(0, pre.size(), U"SD:");
-            }
+                parent_path_str = input.parent_path().u32string() + separator;
 
-            if (str.size() > max_width) {
-                const std::u32string ellipsis = U"…";
-                const std::u32string separator = U"/";
-                auto file_name = p.filename().u32string();
-                auto parent_name = p.parent_path().u32string();
-                if (file_name.size() + ellipsis.size() + separator.size()
-                    > max_width) {
-                    // Can't even show "…/file_name", so we ellipsize the file too, show
-                    // "…/file_na…".
-                    parent_name = ellipsis;
-                    std::size_t remaining = max_width
-                        - parent_name.size()
-                        - separator.size()
-                        - ellipsis.size();
-                    file_name = prefix(file_name, remaining) + ellipsis;
-                    str = parent_name + separator + file_name;
-                } else {
-                    // show "…end_of_path/file_name"
-                    std::size_t remaining = max_width
-                        - ellipsis.size()
-                        - separator.size()
-                        - file_name.size();
-                    parent_name = U"…" + suffix(parent_name, remaining);
-                    str = parent_name + separator + file_name;
+                // Replace "fs:/vol/external01/" by "sd:/"
+                const std::u32string sd_prefix = U"fs:/vol/external01";
+                if (parent_path_str.starts_with(sd_prefix))
+                    parent_path_str.replace(0, sd_prefix.size(), U"sd:");
+
+                auto total_width = parent_path_str.size() + filename_str.size();
+
+                if (total_width > max_width) {
+                    // NOTE: make room for "…"
+                    auto excess_width = total_width - max_width + ellipsis.size();
+                    // trim from beginning of parent_path_str
+                    parent_path_str = ellipsis + trim_prefix(parent_path_str, excess_width);
+                    if (parent_path_str.size() <= ellipsis.size() + separator.size())
+                        parent_path_str = ellipsis + separator;
                 }
             }
-            return utils::to_utf8(str);
+
+            auto total_width = parent_path_str.size() + filename_str.size();
+
+            // check if we need to trim filename_str
+            if (total_width > max_width) {
+                // NOTE: make room for "…"
+                auto excess_width = total_width - max_width + ellipsis.size();
+                // trim from the end of filename_str
+                auto new_filename_str = trim_suffix(filename_str, excess_width) + ellipsis;
+                if (new_filename_str.size() > ellipsis.size())
+                    filename_str = new_filename_str; // only if there's something other than "…"
+            }
+
+            return utils::to_utf8(parent_path_str + filename_str);
         }
 
     } // namespace
@@ -148,7 +159,8 @@ namespace wups {
         var_item{opt},
         base_dir{base_dir},
         options{options_},
-        current_idx{0}
+        current_idx{0},
+        current_is_dir{false}
     {
         // Convert all extensions to upper-case.
         for (auto& ext : options.extensions)
@@ -156,6 +168,9 @@ namespace wups {
                 c = upper_char(c);
         // and sort them.
         std::ranges::sort(options.extensions);
+
+        if (!variable.empty() && exists(variable))
+            current_is_dir = is_directory(variable);
     }
 
 
@@ -175,7 +190,8 @@ namespace wups {
     {
         std::string variable_str = format_filename(variable,
                                                    options.max_width,
-                                                   options.show_full_path);
+                                                   options.show_full_path,
+                                                   options.show_dir_slash && current_is_dir);
         std::snprintf(buf, size, "%s", variable_str.data());
     }
 
@@ -196,7 +212,8 @@ namespace wups {
 
         std::string variable_str = format_filename(variable,
                                                    options.max_width,
-                                                   options.show_full_path);
+                                                   options.show_full_path,
+                                                   options.show_dir_slash && current_is_dir);
 
         std::snprintf(buf, size,
                       "%s " "%s" " %s",
@@ -293,7 +310,12 @@ namespace wups {
             return;
         if (current_idx == 0)
             return;
-        variable = entries[--current_idx];
+        auto& current_entry = entries[--current_idx];
+        variable = current_entry.path();
+        if (!variable.empty())
+            current_is_dir = current_entry.is_directory();
+        else
+            current_is_dir = false;
     }
 
 
@@ -304,7 +326,12 @@ namespace wups {
             return;
         if (current_idx + 1 >= entries.size())
             return;
-        variable = entries[++current_idx];
+        auto& current_entry = entries[++current_idx];
+        variable = current_entry.path();
+        if (!variable.empty())
+            current_is_dir = current_entry.is_directory();
+        else
+            current_is_dir = false;
     }
 
 
