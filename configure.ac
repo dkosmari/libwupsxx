@@ -66,5 +66,6 @@ AC_ARG_ENABLE([shortcuts],
 AM_CONDITIONAL([USE_SHORTCUTS], [test x$WANT_SHORTCUTS = xyes])
 
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile
+                 external/Makefile])
 AC_OUTPUT

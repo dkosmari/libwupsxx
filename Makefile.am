@@ -1,13 +1,12 @@
 EXTRA_DIST = \
 	bootstrap \
 	COPYING \
-	external \
 	README.md
 
 
 SUBDIRS = external/WiiUPluginSystem
 
-DIST_SUBDIRS =
+DIST_SUBDIRS = external
 
 
 AM_CPPFLAGS = \
