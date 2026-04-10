@@ -308,7 +308,7 @@ menu_open(wups::category& root)
                        {
                            .extensions = {".wps"},
                            .valid = file_item::type::regular,
-                           .max_width = 15
+                           .max_width = 18
                        }));
 
 
