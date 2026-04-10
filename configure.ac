@@ -24,13 +24,16 @@ AC_PROG_CXX
 AC_LANG([C++])
 AX_APPEND_COMPILE_FLAGS([-std=c++23], [CXX])
 
-WANT_SHORTCUTS=no
-WANT_NOTIFY=no
 
 DEVKITPRO_WUT_SETUP
 WIIU_ENV_SETUP_WUPS([external/WiiUPluginSystem])
-WIIU_ENV_SETUP_LIBNOTIFICATIONS([external/libnotifications])
 WIIU_ENV_SETUP_LIBBUTTONCOMBO([external/libbuttoncombo])
+WIIU_ENV_SETUP_LIBNOTIFICATIONS([external/libnotifications])
+
+
+WANT_NOTIFY=no
+WANT_SHORTCUTS=no
+
 
 AC_ARG_ENABLE([demo],
               [AS_HELP_STRING([--enable-demo],
@@ -38,11 +41,20 @@ AC_ARG_ENABLE([demo],
               [
                   AS_VAR_IF([enableval], [yes],
                             [
-                                WANT_SHORTCUTS=yes
                                 WANT_NOTIFY=yes
+                                WANT_SHORTCUTS=yes
                             ])
               ])
 AM_CONDITIONAL([BUILD_DEMO], [test x$enable_demo = xyes])
+
+
+AC_ARG_ENABLE([notify],
+              [AS_HELP_STRING([--enable-notify],
+                              [Enable suport for Notifications module.])],
+              [
+                  WANT_NOTIFY=$enableval
+              ])
+AM_CONDITIONAL([USE_NOTIFY], [test x$WANT_NOTIFY = xyes])
 
 
 AC_ARG_ENABLE([shortcuts],
@@ -52,14 +64,6 @@ AC_ARG_ENABLE([shortcuts],
                   WANT_SHORTCUTS=$enableval
               ])
 AM_CONDITIONAL([USE_SHORTCUTS], [test x$WANT_SHORTCUTS = xyes])
-
-AC_ARG_ENABLE([notify],
-              [AS_HELP_STRING([--enable-notify],
-                              [Enable suport for Notifications module.])],
-              [
-                  WANT_NOTIFY=$enableval
-              ])
-AM_CONDITIONAL([USE_NOTIFY], [test x$WANT_NOTIFY = xyes])
 
 
 AC_CONFIG_FILES([Makefile])
